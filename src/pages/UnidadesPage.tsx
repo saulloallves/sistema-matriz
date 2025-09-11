@@ -108,9 +108,19 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
         mega_store: "error",
         pontinha: "warning"
       };
+      
+      const labelMap: Record<string, string> = {
+        junior: "Junior",
+        light: "Light",
+        padrao: "Padrão",
+        intermediaria: "Intermediária",
+        mega_store: "Mega Store",
+        pontinha: "Pontinha"
+      };
+      
       return (
         <Chip
-          label={params.value}
+          label={labelMap[params.value] || params.value}
           color={colorMap[params.value] as any || "default"}
           size="small"
         />
