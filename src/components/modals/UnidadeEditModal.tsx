@@ -145,6 +145,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         address: data.logradouro || '',
         neighborhood: data.bairro || '',
         city: data.localidade || '',
+        state: data.uf || '',
         uf: data.uf || ''
       }));
 
@@ -299,20 +300,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             </FormControl>
           </Stack>
           
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <TextField
-              fullWidth
-              label="CNPJ"
-              value={formData.cnpj}
-              onChange={(e) => handleInputChange('cnpj', e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Estado"
-              value={formData.state}
-              onChange={(e) => handleInputChange('state', e.target.value)}
-            />
-          </Stack>
+          <TextField
+            fullWidth
+            label="CNPJ"
+            value={formData.cnpj}
+            onChange={(e) => handleInputChange('cnpj', e.target.value)}
+          />
 
           <Divider />
           
@@ -429,23 +422,32 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
+              label="CEP"
+              value={formData.postal_code}
+              onChange={(e) => handleInputChange('postal_code', e.target.value)}
+              helperText="Digite o CEP para preencher automaticamente os campos de endereço"
+            />
+            <TextField
+              fullWidth
               label="Cidade"
               value={formData.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
             />
             <TextField
               fullWidth
+              label="Estado"
+              value={formData.state}
+              onChange={(e) => handleInputChange('state', e.target.value)}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
               label="UF"
               value={formData.uf}
               onChange={(e) => handleInputChange('uf', e.target.value)}
               inputProps={{ maxLength: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="CEP"
-              value={formData.postal_code}
-              onChange={(e) => handleInputChange('postal_code', e.target.value)}
-              helperText="Digite o CEP para preencher automaticamente os campos de endereço"
             />
           </Stack>
 
