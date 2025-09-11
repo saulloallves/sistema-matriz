@@ -83,18 +83,46 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   }, [unidade]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Se desmarcar "has_partner_parking", limpar o endereço do estacionamento parceiro
+      if (field === 'has_partner_parking' && !value) {
+        newData.partner_parking_address = '';
+      }
+      
+      return newData;
+    });
+  };
+
+  const validateForm = () => {
+    // Validar constraint do estacionamento parceiro
+    if (formData.has_partner_parking && !formData.partner_parking_address?.trim()) {
+      toast.error('Quando "Possui Estacionamento Parceiro" está marcado, é obrigatório informar o endereço do estacionamento parceiro.');
+      return false;
+    }
+    
+    if (!formData.has_partner_parking && formData.partner_parking_address?.trim()) {
+      toast.error('Quando "Possui Estacionamento Parceiro" não está marcado, o endereço do estacionamento parceiro deve ficar vazio.');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSave = async () => {
+    // Validar antes de enviar
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
     try {
       const updateData = {
         ...formData,
-        parking_spots: formData.parking_spots ? Number(formData.parking_spots) : null
+        parking_spots: formData.parking_spots ? Number(formData.parking_spots) : null,
+        // Garantir que partner_parking_address seja null se has_partner_parking for false
+        partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null
       };
 
       const { error } = await supabase
@@ -108,7 +136,16 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       onUpdate();
       onClose();
     } catch (error: any) {
-      toast.error('Erro ao atualizar unidade: ' + error.message);
+      console.error('Erro ao salvar:', error);
+      
+      // Tratar erros específicos do banco
+      if (error.message?.includes('chk_partner_parking_address_when_flag')) {
+        toast.error('Erro de validação: Se "Possui Estacionamento Parceiro" estiver marcado, é obrigatório informar o endereço. Se não estiver marcado, o endereço deve ficar vazio.');
+      } else if (error.message?.includes('violates check constraint')) {
+        toast.error('Erro de validação: Verifique se todos os campos obrigatórios estão preenchidos corretamente.');
+      } else {
+        toast.error('Erro ao atualizar unidade: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -290,9 +327,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           {formData.has_partner_parking && (
             <TextField
               fullWidth
+              required
               label="Endereço do Estacionamento Parceiro"
               value={formData.partner_parking_address}
               onChange={(e) => handleInputChange('partner_parking_address', e.target.value)}
+              helperText="Campo obrigatório quando 'Possui Estacionamento Parceiro' estiver marcado"
+              error={formData.has_partner_parking && !formData.partner_parking_address?.trim()}
             />
           )}
         </Stack>
