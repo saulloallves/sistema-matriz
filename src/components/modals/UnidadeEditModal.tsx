@@ -200,11 +200,44 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
     setLoading(true);
     try {
+      // Mapear apenas os campos que existem na tabela unidades
       const updateData = {
-        ...formData,
+        group_name: formData.group_name,
+        store_model: formData.store_model,
+        store_phase: formData.store_phase,
+        store_imp_phase: formData.store_imp_phase,
+        address: formData.address,
+        number_address: formData.number_address,
+        address_complement: formData.address_complement,
+        neighborhood: formData.neighborhood,
+        city: formData.city,
+        state: formData.state, // Este campo agora será salvo corretamente
+        uf: formData.uf,
+        postal_code: formData.postal_code,
+        phone: formData.phone,
+        email: formData.email,
+        has_parking: formData.has_parking,
         parking_spots: formData.parking_spots ? Number(formData.parking_spots) : null,
-        // Garantir que partner_parking_address seja null se has_partner_parking for false
-        partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null
+        has_partner_parking: formData.has_partner_parking,
+        partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null,
+        purchases_active: formData.purchases_active,
+        sales_active: formData.sales_active,
+        cnpj: formData.cnpj,
+        instagram_profile: formData.instagram_profile,
+        operation_mon: formData.operation_mon,
+        operation_tue: formData.operation_tue,
+        operation_wed: formData.operation_wed,
+        operation_thu: formData.operation_thu,
+        operation_fri: formData.operation_fri,
+        operation_sat: formData.operation_sat,
+        operation_sun: formData.operation_sun,
+        operation_hol: formData.operation_hol,
+        ai_agent_id: formData.ai_agent_id,
+        notion_page_id: formData.notion_page_id,
+        drive_folder_id: formData.drive_folder_id,
+        drive_folder_link: formData.drive_folder_link,
+        docs_folder_id: formData.docs_folder_id,
+        docs_folder_link: formData.docs_folder_link
       };
 
       const { error } = await supabase
