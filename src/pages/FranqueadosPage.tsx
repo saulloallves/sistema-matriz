@@ -306,31 +306,6 @@ export default function FranqueadosPage() {
                     opacity: 0.8
                   }}
                 />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    right: 12,
-                    top: 12,
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    backgroundColor: card.color,
-                    opacity: 0.1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: '50%',
-                      backgroundColor: card.color,
-                      opacity: 0.3,
-                    }}
-                  />
-                </Box>
               </CardContent>
             </Card>
           );
