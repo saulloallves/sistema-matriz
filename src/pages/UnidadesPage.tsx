@@ -159,7 +159,15 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     headerName: "UF",
     width: 80,
     renderCell: (params) => (
-      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          fontFamily: 'monospace',
+          display: 'flex',
+          alignItems: 'center',
+          height: '100%'
+        }}
+      >
         {params.value}
       </Typography>
     ),
