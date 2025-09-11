@@ -171,6 +171,8 @@ export default function FranqueadosPage() {
       headerName: "Tipo",
       flex: 1,
       minWidth: 120,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
         <Chip
           label={params.value}
@@ -184,6 +186,8 @@ export default function FranqueadosPage() {
       headerName: "Contrato",
       flex: 1,
       minWidth: 120,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
         <Chip
           label={params.value ? "Ativo" : "Inativo"}
@@ -197,12 +201,14 @@ export default function FranqueadosPage() {
       headerName: "Pró-labore",
       flex: 1.5,
       minWidth: 140,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => {
         const receives = params.value;
         const prolaboreValue = params.row.prolabore_value;
         
         return (
-          <Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Chip
               label={receives ? "Sim" : "Não"}
               color={receives ? "success" : "default"}
@@ -222,8 +228,10 @@ export default function FranqueadosPage() {
       headerName: "Disponibilidade",
       flex: 1.8,
       minWidth: 150,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
-        <Typography variant="body2">
+        <Typography variant="body2" textAlign="center">
           {params.value || "-"}
         </Typography>
       ),
@@ -233,10 +241,12 @@ export default function FranqueadosPage() {
       headerName: "Cadastro",
       flex: 1,
       minWidth: 120,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => {
         const date = new Date(params.value);
         return (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" textAlign="center">
             {date.toLocaleDateString("pt-BR")}
           </Typography>
         );
@@ -248,6 +258,8 @@ export default function FranqueadosPage() {
       width: 120,
       sortable: false,
       filterable: false,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => <ActionCell row={params.row} onView={handleView} onEdit={handleEdit} />,
     },
   ];
