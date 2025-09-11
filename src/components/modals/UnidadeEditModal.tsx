@@ -82,6 +82,34 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     }
   }, [unidade]);
 
+  const fetchAddressByCEP = async (cep: string) => {
+    try {
+      const cleanCEP = cep.replace(/\D/g, '');
+      if (cleanCEP.length !== 8) return;
+
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        toast.error('CEP não encontrado');
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        address: data.logradouro || '',
+        neighborhood: data.bairro || '',
+        city: data.localidade || '',
+        uf: data.uf || ''
+      }));
+
+      toast.success('Endereço preenchido automaticamente');
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar informações do CEP');
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
@@ -93,6 +121,14 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       
       return newData;
     });
+
+    // Se o campo for CEP e tiver 8 dígitos, buscar endereço
+    if (field === 'postal_code') {
+      const cleanCEP = value.replace(/\D/g, '');
+      if (cleanCEP.length === 8) {
+        fetchAddressByCEP(cleanCEP);
+      }
+    }
   };
 
   const validateForm = () => {
