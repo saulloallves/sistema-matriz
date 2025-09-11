@@ -251,7 +251,9 @@ export default function FranqueadosPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: 3,
-                height: '100%'
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
                 <Box
                   sx={{
@@ -290,6 +292,31 @@ export default function FranqueadosPage() {
                   >
                     {card.title}
                   </Typography>
+                </Box>
+                {/* Elemento decorativo no lado direito */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: -10,
+                    top: -10,
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${card.color}08, ${card.color}20)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.6
+                  }}
+                >
+                  <Box
+                    sx={{
+                      color: `${card.color}60`,
+                      transform: 'scale(1.5)'
+                    }}
+                  >
+                    {renderIcon()}
+                  </Box>
                 </Box>
               </CardContent>
             </Card>
