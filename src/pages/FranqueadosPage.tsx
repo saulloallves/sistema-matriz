@@ -14,6 +14,7 @@ import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
 import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
+import { FranqueadoAddModal } from "@/components/modals/FranqueadoAddModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
@@ -74,6 +75,7 @@ export default function FranqueadosPage() {
   const [selectedFranqueado, setSelectedFranqueado] = useState<Franqueado | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   useEffect(() => {
     loadFranqueados();
@@ -101,7 +103,7 @@ export default function FranqueadosPage() {
   };
 
   const handleAdd = () => {
-    toast("Funcionalidade de adicionar em desenvolvimento");
+    setAddModalOpen(true);
   };
 
   const handleEdit = (franqueado: Franqueado) => {
@@ -126,6 +128,10 @@ export default function FranqueadosPage() {
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
     setSelectedFranqueado(null);
+  };
+
+  const handleCloseAddModal = () => {
+    setAddModalOpen(false);
   };
 
 
@@ -278,6 +284,12 @@ export default function FranqueadosPage() {
         open={editModalOpen}
         onClose={handleCloseEditModal}
         franqueado={selectedFranqueado}
+        onUpdate={loadFranqueados}
+      />
+
+      <FranqueadoAddModal
+        open={addModalOpen}
+        onClose={handleCloseAddModal}
         onUpdate={loadFranqueados}
       />
     </>
