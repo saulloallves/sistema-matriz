@@ -19,6 +19,15 @@ import {
   InputLabel
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { 
+  Info, 
+  Plug, 
+  Settings, 
+  MapPin, 
+  Phone, 
+  Car, 
+  Clock 
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
 
@@ -236,7 +245,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 2 }}>
-          <Typography variant="h6">Dados Básicos</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Info size={20} />
+            <Typography variant="h6">Dados Básicos</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
@@ -304,7 +316,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Integrações</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Plug size={20} />
+            <Typography variant="h6">Integrações</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
@@ -352,7 +367,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Status Operacional</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Settings size={20} />
+            <Typography variant="h6">Status Operacional</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormControlLabel
               control={
@@ -376,7 +394,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Endereço</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <MapPin size={20} />
+            <Typography variant="h6">Endereço</Typography>
+          </Box>
           <TextField
             fullWidth
             label="Endereço"
@@ -430,7 +451,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Contato</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Phone size={20} />
+            <Typography variant="h6">Contato</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
@@ -456,7 +480,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Estacionamento</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Car size={20} />
+            <Typography variant="h6">Estacionamento</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormControlLabel
               control={
@@ -504,7 +531,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
           <Divider />
           
-          <Typography variant="h6">Horários de Funcionamento</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Clock size={20} />
+            <Typography variant="h6">Horários de Funcionamento</Typography>
+          </Box>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
