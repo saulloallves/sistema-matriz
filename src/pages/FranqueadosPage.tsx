@@ -260,19 +260,34 @@ export default function FranqueadosPage() {
       minWidth: 150,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          height: '100%',
-          py: 1
-        }}>
-          <Typography variant="body2" textAlign="center">
-            {params.value || "-"}
-          </Typography>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const formatAvailability = (availability: string) => {
+          if (availability === 'integral') return 'Integral';
+          return availability;
+        };
+        
+        return (
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            py: 1
+          }}>
+            {params.value ? (
+              <Chip
+                label={formatAvailability(params.value)}
+                color={params.value === 'integral' ? 'info' : 'default'}
+                size="small"
+              />
+            ) : (
+              <Typography variant="body2" textAlign="center">
+                -
+              </Typography>
+            )}
+          </Box>
+        );
+      },
     },
     {
       field: "created_at",
