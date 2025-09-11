@@ -14,6 +14,7 @@ import {
   GridToolbar,
   GridPaginationModel,
 } from '@mui/x-data-grid';
+import { ptBR } from "@mui/x-data-grid/locales";
 import {
   Plus,
   Search,
@@ -112,6 +113,7 @@ export function DataTable({
           columns={finalColumns}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
           pageSizeOptions={[5, 10, 25, 50]}
           loading={loading}
           slots={{ toolbar: GridToolbar }}
