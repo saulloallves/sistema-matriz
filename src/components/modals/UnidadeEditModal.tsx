@@ -29,6 +29,7 @@ import {
   Clock 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
 import toast from 'react-hot-toast';
 
 interface UnidadeEditModalProps {
@@ -83,6 +84,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     operation_hol: ''
   });
   const [loading, setLoading] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   useEffect(() => {
     if (unidade) {
@@ -113,7 +115,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         partner_parking_address: unidade.partner_parking_address || '',
         purchases_active: unidade.purchases_active || false,
         sales_active: unidade.sales_active || false,
-        cnpj: unidade.cnpj || '',
+        cnpj: unidade.cnpj ? applyCnpjMask(unidade.cnpj) : '',
         instagram_profile: unidade.instagram_profile || '',
         operation_mon: unidade.operation_mon || '',
         operation_tue: unidade.operation_tue || '',
@@ -165,6 +167,13 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         newData.partner_parking_address = '';
       }
       
+      // Se o campo for CNPJ, aplicar máscara e validar
+      if (field === 'cnpj') {
+        newData.cnpj = applyCnpjMask(value);
+        const error = getCnpjValidationError(value);
+        setCnpjError(error);
+      }
+      
       return newData;
     });
 
@@ -178,6 +187,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   };
 
   const validateForm = () => {
+    // Validar CNPJ se preenchido
+    if (formData.cnpj && cnpjError) {
+      toast.error(cnpjError);
+      return false;
+    }
+    
     // Validar constraint do estacionamento parceiro
     if (formData.has_partner_parking && !formData.partner_parking_address?.trim()) {
       toast.error('Quando "Possui Estacionamento Parceiro" está marcado, é obrigatório informar o endereço do estacionamento parceiro.');
@@ -222,7 +237,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null,
         purchases_active: formData.purchases_active,
         sales_active: formData.sales_active,
-        cnpj: formData.cnpj,
+        cnpj: formData.cnpj ? removeCnpjMask(formData.cnpj) : null,
         instagram_profile: formData.instagram_profile,
         operation_mon: formData.operation_mon,
         operation_tue: formData.operation_tue,
@@ -338,6 +353,9 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             label="CNPJ"
             value={formData.cnpj}
             onChange={(e) => handleInputChange('cnpj', e.target.value)}
+            error={!!cnpjError}
+            helperText={cnpjError || 'Formato: 00.000.000/0000-00'}
+            inputProps={{ maxLength: 18 }}
           />
 
           <Divider />

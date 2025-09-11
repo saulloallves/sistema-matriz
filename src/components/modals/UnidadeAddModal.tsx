@@ -29,6 +29,7 @@ import {
   Clock 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
 import toast from 'react-hot-toast';
 
 interface UnidadeAddModalProps {
@@ -82,6 +83,7 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
     operation_hol: ''
   });
   const [loading, setLoading] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   const fetchAddressByCEP = async (cep: string) => {
     try {
@@ -121,6 +123,13 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         newData.partner_parking_address = '';
       }
       
+      // Se o campo for CNPJ, aplicar máscara e validar
+      if (field === 'cnpj') {
+        newData.cnpj = applyCnpjMask(value);
+        const error = getCnpjValidationError(value);
+        setCnpjError(error);
+      }
+      
       return newData;
     });
 
@@ -137,6 +146,12 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
     // Validar campos obrigatórios
     if (!formData.group_code || !formData.group_name || !formData.store_model) {
       toast.error('Código, Nome e Modelo da Loja são obrigatórios');
+      return false;
+    }
+
+    // Validar CNPJ se preenchido
+    if (formData.cnpj && cnpjError) {
+      toast.error(cnpjError);
       return false;
     }
 
@@ -185,7 +200,7 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null,
         purchases_active: formData.purchases_active,
         sales_active: formData.sales_active,
-        cnpj: formData.cnpj || null,
+        cnpj: formData.cnpj ? removeCnpjMask(formData.cnpj) : null,
         instagram_profile: formData.instagram_profile || null,
         operation_mon: formData.operation_mon || null,
         operation_tue: formData.operation_tue || null,
@@ -354,6 +369,9 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
               label="CNPJ"
               value={formData.cnpj}
               onChange={(e) => handleInputChange('cnpj', e.target.value)}
+              error={!!cnpjError}
+              helperText={cnpjError || 'Formato: 00.000.000/0000-00'}
+              inputProps={{ maxLength: 18 }}
             />
           </Stack>
 
