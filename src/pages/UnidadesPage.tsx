@@ -61,7 +61,7 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unida
         </MenuItem>
         <MenuItem onClick={handleClose}>
           <Trash2 size={18} style={{ marginRight: 8 }} />
-          Excluir
+          Inativar
         </MenuItem>
       </Menu>
     </Box>
