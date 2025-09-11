@@ -145,7 +145,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         address: data.logradouro || '',
         neighborhood: data.bairro || '',
         city: data.localidade || '',
-        state: data.uf || '',
+        state: data.estado || '',
         uf: data.uf || ''
       }));
 
