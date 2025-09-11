@@ -391,20 +391,22 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             <MapPin size={20} />
             <Typography variant="h6">Endereço</Typography>
           </Box>
-          <TextField
-            fullWidth
-            label="Endereço"
-            value={formData.address}
-            onChange={(e) => handleInputChange('address', e.target.value)}
-          />
-          
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Endereço"
+              value={formData.address}
+              onChange={(e) => handleInputChange('address', e.target.value)}
+            />
             <TextField
               fullWidth
               label="Número"
               value={formData.number_address}
               onChange={(e) => handleInputChange('number_address', e.target.value)}
             />
+          </Stack>
+          
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Complemento"
@@ -417,8 +419,15 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               value={formData.neighborhood}
               onChange={(e) => handleInputChange('neighborhood', e.target.value)}
             />
+            <TextField
+              fullWidth
+              label="UF"
+              value={formData.uf}
+              onChange={(e) => handleInputChange('uf', e.target.value)}
+              inputProps={{ maxLength: 2 }}
+            />
           </Stack>
-          
+
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
@@ -438,16 +447,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               label="Estado"
               value={formData.state}
               onChange={(e) => handleInputChange('state', e.target.value)}
-            />
-          </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <TextField
-              fullWidth
-              label="UF"
-              value={formData.uf}
-              onChange={(e) => handleInputChange('uf', e.target.value)}
-              inputProps={{ maxLength: 2 }}
             />
           </Stack>
 
