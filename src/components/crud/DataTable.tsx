@@ -21,6 +21,7 @@ import {
   Filter,
   Download,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface DataTableProps {
   columns: GridColDef[];
@@ -61,6 +62,13 @@ export function DataTable({
 
   const finalColumns = columns;
 
+  const handleExport = () => {
+    toast("Funcionalidade de exportar ainda está em desenvolvimento", {
+      icon: "🚧",
+      duration: 3000,
+    });
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ mb: 3 }}>
@@ -70,7 +78,7 @@ export function DataTable({
             {description && <Typography variant="body1" color="text.secondary">{description}</Typography>}
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" startIcon={<Download size={16} />} size="small">Exportar</Button>
+            <Button variant="outlined" startIcon={<Download size={16} />} size="small" onClick={handleExport}>Exportar</Button>
             {onAdd && <Button variant="contained" startIcon={<Plus size={16} />} onClick={onAdd}>Adicionar</Button>}
           </Box>
         </Box>
