@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Typography,
   Box,
-  Divider,
+  Tooltip,
   IconButton,
 } from '@mui/material';
 import {
@@ -20,12 +12,9 @@ import {
   Users,
   MessageCircle,
   Calendar,
-  ChevronLeft,
-  Menu,
+  Settings,
+  HelpCircle,
 } from 'lucide-react';
-
-const DRAWER_WIDTH = 280;
-const COLLAPSED_WIDTH = 70;
 
 const menuItems = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
@@ -34,104 +23,147 @@ const menuItems = [
   { text: 'Franqueados/Unidades', icon: Users, path: '/franqueados-unidades' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
+  { text: 'Ajuda', icon: HelpCircle, path: '/ajuda' },
+  { text: 'Configurações', icon: Settings, path: '/configuracoes' },
 ];
 
 const AppSidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleToggle = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const drawerWidth = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
+  const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
 
   return (
-    <Drawer
-      variant="permanent"
+    <Box
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          transition: 'width 0.3s ease',
-          borderRight: '1px solid #e0e0e0',
-          backgroundColor: '#fff',
-        },
+        position: 'fixed',
+        top: 16,
+        left: 16,
+        background: '#fff',
+        borderRadius: '10px',
+        padding: '16px 0',
+        boxShadow: '0 0 40px rgba(0,0,0,0.03)',
+        height: 'calc(100vh - 64px)',
+        width: '88px',
+        zIndex: 1200,
+        border: '1px solid rgba(0,0,0,0.05)',
       }}
     >
-      <Toolbar
+      <Box
+        component="nav"
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'space-between',
-          px: 2,
-          backgroundColor: '#1976d2',
-          color: 'white',
+          position: 'relative',
+          height: '100%',
         }}
       >
-        {!collapsed && (
-          <Typography variant="h6" noWrap component="div">
-            CRUD System
-          </Typography>
-        )}
-        <IconButton color="inherit" onClick={handleToggle}>
-          {collapsed ? <Menu /> : <ChevronLeft />}
-        </IconButton>
-      </Toolbar>
-      
-      <Divider />
-      
-      <Box sx={{ overflow: 'auto', flex: 1 }}>
-        <List>
-          {menuItems.map((item) => {
+        <Box
+          component="ul"
+          sx={{
+            position: 'relative',
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const isHovered = hoveredIndex === index;
             
             return (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  onClick={() => navigate(item.path)}
+              <Box
+                key={item.text}
+                component="li"
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
+                <Tooltip 
+                  title={item.text} 
+                  placement="right"
+                  arrow
                   sx={{
-                    minHeight: 48,
-                    justifyContent: collapsed ? 'center' : 'initial',
-                    px: 2.5,
-                    backgroundColor: isActive ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
-                    borderRight: isActive ? '3px solid #1976d2' : 'none',
-                    '&:hover': {
-                      backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                    '& .MuiTooltip-tooltip': {
+                      backgroundColor: '#406ff3',
+                      color: '#fff',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      borderRadius: '17.5px',
+                      padding: '12px 16px',
+                      marginLeft: '16px !important',
                     },
+                    '& .MuiTooltip-arrow': {
+                      color: '#406ff3',
+                    }
                   }}
                 >
-                  <ListItemIcon
+                  <IconButton
+                    onClick={() => navigate(item.path)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
                     sx={{
-                      minWidth: 0,
-                      mr: collapsed ? 'auto' : 3,
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
-                      color: isActive ? '#1976d2' : 'inherit',
+                      height: '56px',
+                      width: '56px',
+                      color: isActive ? '#fff' : '#6a778e',
+                      transition: 'all 250ms ease',
+                      borderRadius: '17.5px',
+                      zIndex: 2,
+                      '&:hover': {
+                        color: '#fff',
+                        backgroundColor: 'transparent',
+                      },
                     }}
                   >
                     <Icon size={20} />
-                  </ListItemIcon>
-                  {!collapsed && (
-                    <ListItemText
-                      primary={item.text}
-                      sx={{
-                        opacity: 1,
-                        color: isActive ? '#1976d2' : 'inherit',
-                        fontWeight: isActive ? 600 : 400,
-                      }}
-                    />
-                  )}
-                </ListItemButton>
-              </ListItem>
+                  </IconButton>
+                </Tooltip>
+              </Box>
             );
           })}
-        </List>
+          
+          {/* Animated background indicator */}
+          <Box
+            sx={{
+              content: '""',
+              position: 'absolute',
+              opacity: activeIndex >= 0 || hoveredIndex !== null ? 1 : 0,
+              zIndex: 1,
+              top: 0,
+              left: '16px',
+              width: '56px',
+              height: '56px',
+              background: '#406ff3',
+              borderRadius: '17.5px',
+              transition: 'all 250ms cubic-bezier(1, 0.2, 0.1, 1.2)',
+              transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px)`,
+              animation: hoveredIndex !== null ? 'gooeyEffect 250ms ease 1' : 'none',
+              '@keyframes gooeyEffect': {
+                '0%': {
+                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(1, 1)`,
+                },
+                '50%': {
+                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(0.5, 1.5)`,
+                },
+                '100%': {
+                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(1, 1)`,
+                }
+              }
+            }}
+          />
+        </Box>
       </Box>
-    </Drawer>
+    </Box>
   );
 };
 

@@ -9,11 +9,25 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      minHeight: '100vh',
+      backgroundColor: '#eaeef6',
+      position: 'relative'
+    }}>
       <AppSidebar />
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ 
+        flexGrow: 1, 
+        display: 'flex', 
+        flexDirection: 'column',
+        marginLeft: '120px', // Espaço para a sidebar flutuante
+      }}>
         <Header />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#fafafa' }}>
+        <Box component="main" sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          backgroundColor: 'transparent'
+        }}>
           <Container maxWidth="xl" disableGutters>
             {children}
           </Container>
