@@ -12,13 +12,14 @@ import {
 import { GridColDef } from '@mui/x-data-grid';
 import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
+import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Franqueado = Tables<"franqueados">;
 
-const ActionCell = ({ row }: { row: any }) => {
+const ActionCell = ({ row, onView }: { row: any; onView: (franqueado: Franqueado) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -27,6 +28,11 @@ const ActionCell = ({ row }: { row: any }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleView = () => {
+    onView(row);
+    handleClose();
   };
 
   return (
@@ -39,7 +45,7 @@ const ActionCell = ({ row }: { row: any }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleView}>
           <Eye size={18} style={{ marginRight: 8 }} />
           Visualizar
         </MenuItem>
@@ -56,126 +62,11 @@ const ActionCell = ({ row }: { row: any }) => {
   );
 };
 
-const columns: GridColDef[] = [
-  {
-    field: "full_name",
-    headerName: "Nome",
-    flex: 3,
-    minWidth: 250,
-    renderCell: (params) => {
-      const franqueado = params.row;
-      const initials = franqueado.full_name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .slice(0, 2);
-
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ width: 32, height: 32 }}>
-            {initials}
-          </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight="medium">
-              {franqueado.full_name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {franqueado.contact}
-            </Typography>
-          </Box>
-        </Box>
-      );
-    },
-  },
-  {
-    field: "owner_type",
-    headerName: "Tipo",
-    flex: 1,
-    minWidth: 120,
-    renderCell: (params) => (
-      <Chip
-        label={params.value}
-        color="secondary"
-        size="small"
-      />
-    ),
-  },
-  {
-    field: "is_in_contract",
-    headerName: "Contrato",
-    flex: 1,
-    minWidth: 120,
-    renderCell: (params) => (
-      <Chip
-        label={params.value ? "Ativo" : "Inativo"}
-        color={params.value ? "success" : "default"}
-        size="small"
-      />
-    ),
-  },
-  {
-    field: "receives_prolabore",
-    headerName: "Pró-labore",
-    flex: 1.5,
-    minWidth: 140,
-    renderCell: (params) => {
-      const receives = params.value;
-      const prolaboreValue = params.row.prolabore_value;
-      
-      return (
-        <Box>
-          <Chip
-            label={receives ? "Sim" : "Não"}
-            color={receives ? "success" : "default"}
-            size="small"
-          />
-          {receives && prolaboreValue && (
-            <Typography variant="caption" display="block" color="text.secondary">
-              R$ {prolaboreValue.toLocaleString()}
-            </Typography>
-          )}
-        </Box>
-      );
-    },
-  },
-  {
-    field: "availability",
-    headerName: "Disponibilidade",
-    flex: 1.8,
-    minWidth: 150,
-    renderCell: (params) => (
-      <Typography variant="body2">
-        {params.value || "-"}
-      </Typography>
-    ),
-  },
-  {
-    field: "created_at",
-    headerName: "Cadastro",
-    flex: 1,
-    minWidth: 120,
-    renderCell: (params) => {
-      const date = new Date(params.value);
-      return (
-        <Typography variant="body2" color="text.secondary">
-          {date.toLocaleDateString("pt-BR")}
-        </Typography>
-      );
-    },
-  },
-  {
-    field: "actions",
-    headerName: "Ações",
-    width: 120,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <ActionCell row={params.row} />,
-  },
-];
-
 export default function FranqueadosPage() {
   const [data, setData] = useState<Franqueado[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFranqueado, setSelectedFranqueado] = useState<Franqueado | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   useEffect(() => {
     loadFranqueados();
@@ -214,6 +105,133 @@ export default function FranqueadosPage() {
     toast("Funcionalidade de excluir em desenvolvimento");
   };
 
+  const handleView = (franqueado: Franqueado) => {
+    setSelectedFranqueado(franqueado);
+    setViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedFranqueado(null);
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: "full_name",
+      headerName: "Nome",
+      flex: 3,
+      minWidth: 250,
+      renderCell: (params) => {
+        const franqueado = params.row;
+        const initials = franqueado.full_name
+          .split(" ")
+          .map((n: string) => n[0])
+          .join("")
+          .slice(0, 2);
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar sx={{ width: 32, height: 32 }}>
+              {initials}
+            </Avatar>
+            <Box>
+              <Typography variant="body2" fontWeight="medium">
+                {franqueado.full_name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {franqueado.contact}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      },
+    },
+    {
+      field: "owner_type",
+      headerName: "Tipo",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color="secondary"
+          size="small"
+        />
+      ),
+    },
+    {
+      field: "is_in_contract",
+      headerName: "Contrato",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value ? "Ativo" : "Inativo"}
+          color={params.value ? "success" : "default"}
+          size="small"
+        />
+      ),
+    },
+    {
+      field: "receives_prolabore",
+      headerName: "Pró-labore",
+      flex: 1.5,
+      minWidth: 140,
+      renderCell: (params) => {
+        const receives = params.value;
+        const prolaboreValue = params.row.prolabore_value;
+        
+        return (
+          <Box>
+            <Chip
+              label={receives ? "Sim" : "Não"}
+              color={receives ? "success" : "default"}
+              size="small"
+            />
+            {receives && prolaboreValue && (
+              <Typography variant="caption" display="block" color="text.secondary">
+                R$ {prolaboreValue.toLocaleString()}
+              </Typography>
+            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "availability",
+      headerName: "Disponibilidade",
+      flex: 1.8,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography variant="body2">
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "created_at",
+      headerName: "Cadastro",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        return (
+          <Typography variant="body2" color="text.secondary">
+            {date.toLocaleDateString("pt-BR")}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Ações",
+      width: 120,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => <ActionCell row={params.row} onView={handleView} />,
+    },
+  ];
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -223,16 +241,24 @@ export default function FranqueadosPage() {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      onAdd={handleAdd}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      searchPlaceholder="Pesquisar franqueados..."
-      title="Franqueados"
-      description="Gerencie todos os franqueados do sistema"
-      loading={loading}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={data}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        searchPlaceholder="Pesquisar franqueados..."
+        title="Franqueados"
+        description="Gerencie todos os franqueados do sistema"
+        loading={loading}
+      />
+
+      <FranqueadoViewModal
+        open={viewModalOpen}
+        onClose={handleCloseViewModal}
+        franqueado={selectedFranqueado}
+      />
+    </>
   );
 }
