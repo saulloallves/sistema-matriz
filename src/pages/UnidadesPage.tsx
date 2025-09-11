@@ -364,7 +364,9 @@ export default function UnidadesPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: 3,
-                height: '100%'
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
                 <Box
                   sx={{
@@ -404,6 +406,19 @@ export default function UnidadesPage() {
                     {card.title}
                   </Typography>
                 </Box>
+                {/* Elemento decorativo moderno no lado direito */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 4,
+                    backgroundColor: card.color,
+                    borderRadius: '0 12px 12px 0',
+                    opacity: 0.8
+                  }}
+                />
               </CardContent>
             </Card>
           );
