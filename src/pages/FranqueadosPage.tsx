@@ -301,8 +301,9 @@ export default function FranqueadosPage() {
                     top: 0,
                     bottom: 0,
                     width: 4,
-                    background: `linear-gradient(180deg, ${card.color}, ${card.color}80)`,
-                    borderRadius: '0 12px 12px 0'
+                    backgroundColor: card.color,
+                    borderRadius: '0 12px 12px 0',
+                    opacity: 0.8
                   }}
                 />
                 <Box
@@ -313,7 +314,8 @@ export default function FranqueadosPage() {
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${card.color}10, ${card.color}25)`,
+                    backgroundColor: card.color,
+                    opacity: 0.1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -324,7 +326,8 @@ export default function FranqueadosPage() {
                       width: 16,
                       height: 16,
                       borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${card.color}20, ${card.color}40)`,
+                      backgroundColor: card.color,
+                      opacity: 0.3,
                     }}
                   />
                 </Box>
