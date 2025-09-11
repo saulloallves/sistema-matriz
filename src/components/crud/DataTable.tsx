@@ -56,32 +56,7 @@ export function DataTable({
     )
   );
 
-  const actionColumns: GridColDef[] = [];
-  if (onEdit || onDelete) {
-    actionColumns.push({
-      field: 'actions',
-      headerName: 'Ações',
-      width: 150,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {onEdit && (
-            <Button size="small" variant="outlined" onClick={() => onEdit(params.row)}>
-              Editar
-            </Button>
-          )}
-          {onDelete && (
-            <Button size="small" variant="outlined" color="error" onClick={() => onDelete(params.row)}>
-              Excluir
-            </Button>
-          )}
-        </Box>
-      ),
-    });
-  }
-
-  const finalColumns = [...columns, ...actionColumns];
+  const finalColumns = columns;
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

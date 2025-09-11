@@ -137,8 +137,8 @@ const columns: GridColDef[] = [
       };
 
       return (
-        <>
-          <IconButton onClick={handleClick} size="small">
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <IconButton onClick={handleClick} size="small" color="primary">
             <MoreHoriz />
           </IconButton>
           <Menu
@@ -147,19 +147,19 @@ const columns: GridColDef[] = [
             onClose={handleClose}
           >
             <MenuItem onClick={handleClose}>
-              <Visibility sx={{ mr: 1 }} />
+              <Visibility sx={{ mr: 1, fontSize: 18 }} />
               Visualizar
             </MenuItem>
             <MenuItem onClick={handleClose}>
-              <Edit sx={{ mr: 1 }} />
+              <Edit sx={{ mr: 1, fontSize: 18 }} />
               Editar
             </MenuItem>
             <MenuItem onClick={handleClose}>
-              <Delete sx={{ mr: 1 }} />
+              <Delete sx={{ mr: 1, fontSize: 18 }} />
               Excluir
             </MenuItem>
           </Menu>
-        </>
+        </Box>
       );
     },
   },
