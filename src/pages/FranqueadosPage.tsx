@@ -299,9 +299,17 @@ export default function FranqueadosPage() {
       renderCell: (params) => {
         const date = new Date(params.value);
         return (
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            {date.toLocaleDateString("pt-BR")}
-          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            py: 1
+          }}>
+            <Typography variant="body2" color="text.secondary" textAlign="center">
+              {date.toLocaleDateString("pt-BR")}
+            </Typography>
+          </Box>
         );
       },
     },
