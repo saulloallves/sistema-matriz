@@ -13,13 +13,14 @@ import { GridColDef } from '@mui/x-data-grid';
 import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
+import { UnidadeEditModal } from "@/components/modals/UnidadeEditModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
 
-const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => void }) => {
+const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -32,6 +33,11 @@ const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => v
 
   const handleView = () => {
     onView(row);
+    handleClose();
+  };
+
+  const handleEdit = () => {
+    onEdit(row);
     handleClose();
   };
 
@@ -49,7 +55,7 @@ const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => v
           <Eye size={18} style={{ marginRight: 8 }} />
           Visualizar
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleEdit}>
           <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
@@ -62,7 +68,7 @@ const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => v
   );
 };
 
-const createColumns = (onView: (unidade: Unidade) => void): GridColDef[] => [
+const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Unidade) => void): GridColDef[] => [
   {
     field: "group_code",
     headerName: "Código",
@@ -151,7 +157,7 @@ const createColumns = (onView: (unidade: Unidade) => void): GridColDef[] => [
     width: 120,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <ActionCell row={params.row} onView={onView} />,
+    renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} />,
   },
 ];
 
@@ -159,6 +165,7 @@ export default function UnidadesPage() {
   const [data, setData] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUnidade, setSelectedUnidade] = useState<Unidade | null>(null);
 
   useEffect(() => {
@@ -192,7 +199,8 @@ export default function UnidadesPage() {
   };
 
   const handleEdit = (unidade: Unidade) => {
-    toast("Funcionalidade de editar em desenvolvimento");
+    setSelectedUnidade(unidade);
+    setEditModalOpen(true);
   };
 
   const handleDelete = (unidade: Unidade) => {
@@ -203,7 +211,7 @@ export default function UnidadesPage() {
     toast("Funcionalidade de adicionar em desenvolvimento");
   };
 
-  const columns = createColumns(handleView);
+  const columns = createColumns(handleView, handleEdit);
 
   if (loading) {
     return (
@@ -231,6 +239,13 @@ export default function UnidadesPage() {
         open={viewModalOpen}
         onClose={() => setViewModalOpen(false)}
         unidade={selectedUnidade}
+      />
+      
+      <UnidadeEditModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        unidade={selectedUnidade}
+        onUpdate={loadUnidades}
       />
     </>
   );

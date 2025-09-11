@@ -12,7 +12,11 @@ import {
   Typography,
   Divider,
   IconButton,
-  Stack
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,44 +36,48 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   onUpdate
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    status: '',
+    group_name: '',
+    store_model: '',
+    store_phase: '',
     address: '',
+    number_address: '',
+    address_complement: '',
+    neighborhood: '',
     city: '',
-    state: '',
+    uf: '',
     postal_code: '',
     phone: '',
     email: '',
-    manager: '',
-    opening_hours: '',
-    capacity: '',
     has_parking: false,
-    has_wifi: false,
-    has_accessibility: false,
-    description: ''
+    parking_spots: 0,
+    has_partner_parking: false,
+    partner_parking_address: '',
+    cnpj: '',
+    instagram_profile: ''
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (unidade) {
       setFormData({
-        name: unidade.name || '',
-        type: unidade.type || '',
-        status: unidade.status || '',
+        group_name: unidade.group_name || '',
+        store_model: unidade.store_model || '',
+        store_phase: unidade.store_phase || '',
         address: unidade.address || '',
+        number_address: unidade.number_address || '',
+        address_complement: unidade.address_complement || '',
+        neighborhood: unidade.neighborhood || '',
         city: unidade.city || '',
-        state: unidade.state || '',
+        uf: unidade.uf || '',
         postal_code: unidade.postal_code || '',
         phone: unidade.phone || '',
         email: unidade.email || '',
-        manager: unidade.manager || '',
-        opening_hours: unidade.opening_hours || '',
-        capacity: unidade.capacity?.toString() || '',
         has_parking: unidade.has_parking || false,
-        has_wifi: unidade.has_wifi || false,
-        has_accessibility: unidade.has_accessibility || false,
-        description: unidade.description || ''
+        parking_spots: unidade.parking_spots || 0,
+        has_partner_parking: unidade.has_partner_parking || false,
+        partner_parking_address: unidade.partner_parking_address || '',
+        cnpj: unidade.cnpj || '',
+        instagram_profile: unidade.instagram_profile || ''
       });
     }
   }, [unidade]);
@@ -86,7 +94,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     try {
       const updateData = {
         ...formData,
-        capacity: formData.capacity ? parseInt(formData.capacity) : null
+        parking_spots: formData.parking_spots ? Number(formData.parking_spots) : null
       };
 
       const { error } = await supabase
@@ -123,41 +131,46 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="Nome"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              label="Nome da Unidade"
+              value={formData.group_name}
+              onChange={(e) => handleInputChange('group_name', e.target.value)}
             />
-            <TextField
-              fullWidth
-              label="Tipo"
-              value={formData.type}
-              onChange={(e) => handleInputChange('type', e.target.value)}
-            />
+            <FormControl fullWidth>
+              <InputLabel>Modelo da Loja</InputLabel>
+              <Select
+                value={formData.store_model}
+                label="Modelo da Loja"
+                onChange={(e) => handleInputChange('store_model', e.target.value)}
+              >
+                <MenuItem value="junior">Junior</MenuItem>
+                <MenuItem value="light">Light</MenuItem>
+                <MenuItem value="padrao">Padrão</MenuItem>
+                <MenuItem value="intermediaria">Intermediária</MenuItem>
+                <MenuItem value="mega_store">Mega Store</MenuItem>
+                <MenuItem value="pontinha">Pontinha</MenuItem>
+              </Select>
+            </FormControl>
           </Stack>
           
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <FormControl fullWidth>
+              <InputLabel>Fase da Loja</InputLabel>
+              <Select
+                value={formData.store_phase}
+                label="Fase da Loja"
+                onChange={(e) => handleInputChange('store_phase', e.target.value)}
+              >
+                <MenuItem value="implantacao">Implantação</MenuItem>
+                <MenuItem value="operacao">Operação</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               fullWidth
-              label="Status"
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Gerente"
-              value={formData.manager}
-              onChange={(e) => handleInputChange('manager', e.target.value)}
+              label="CNPJ"
+              value={formData.cnpj}
+              onChange={(e) => handleInputChange('cnpj', e.target.value)}
             />
           </Stack>
-
-          <TextField
-            fullWidth
-            label="Descrição"
-            multiline
-            rows={3}
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-          />
 
           <Divider />
           
@@ -172,15 +185,37 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
+              label="Número"
+              value={formData.number_address}
+              onChange={(e) => handleInputChange('number_address', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Complemento"
+              value={formData.address_complement}
+              onChange={(e) => handleInputChange('address_complement', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Bairro"
+              value={formData.neighborhood}
+              onChange={(e) => handleInputChange('neighborhood', e.target.value)}
+            />
+          </Stack>
+          
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
               label="Cidade"
               value={formData.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
             />
             <TextField
               fullWidth
-              label="Estado"
-              value={formData.state}
-              onChange={(e) => handleInputChange('state', e.target.value)}
+              label="UF"
+              value={formData.uf}
+              onChange={(e) => handleInputChange('uf', e.target.value)}
+              inputProps={{ maxLength: 2 }}
             />
             <TextField
               fullWidth
@@ -209,26 +244,16 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             />
           </Stack>
 
+          <TextField
+            fullWidth
+            label="Instagram"
+            value={formData.instagram_profile}
+            onChange={(e) => handleInputChange('instagram_profile', e.target.value)}
+          />
+
           <Divider />
           
-          <Typography variant="h6">Operações</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <TextField
-              fullWidth
-              label="Horário de Funcionamento"
-              value={formData.opening_hours}
-              onChange={(e) => handleInputChange('opening_hours', e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Capacidade"
-              type="number"
-              value={formData.capacity}
-              onChange={(e) => handleInputChange('capacity', e.target.value)}
-            />
-          </Stack>
-
-          <Typography variant="subtitle1">Facilidades</Typography>
+          <Typography variant="h6">Estacionamento</Typography>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormControlLabel
               control={
@@ -237,27 +262,39 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
                   onChange={(e) => handleInputChange('has_parking', e.target.checked)}
                 />
               }
-              label="Estacionamento"
+              label="Possui Estacionamento"
             />
+            {formData.has_parking && (
+              <TextField
+                fullWidth
+                label="Número de Vagas"
+                type="number"
+                value={formData.parking_spots}
+                onChange={(e) => handleInputChange('parking_spots', e.target.value)}
+              />
+            )}
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormControlLabel
               control={
                 <Switch
-                  checked={formData.has_wifi}
-                  onChange={(e) => handleInputChange('has_wifi', e.target.checked)}
+                  checked={formData.has_partner_parking}
+                  onChange={(e) => handleInputChange('has_partner_parking', e.target.checked)}
                 />
               }
-              label="Wi-Fi"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.has_accessibility}
-                  onChange={(e) => handleInputChange('has_accessibility', e.target.checked)}
-                />
-              }
-              label="Acessibilidade"
+              label="Possui Estacionamento Parceiro"
             />
           </Stack>
+
+          {formData.has_partner_parking && (
+            <TextField
+              fullWidth
+              label="Endereço do Estacionamento Parceiro"
+              value={formData.partner_parking_address}
+              onChange={(e) => handleInputChange('partner_parking_address', e.target.value)}
+            />
+          )}
         </Stack>
       </DialogContent>
 
