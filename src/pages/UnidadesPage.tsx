@@ -1,112 +1,142 @@
 import { useState, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { 
+  Box, 
+  Typography, 
+  Chip, 
+  IconButton, 
+  Menu, 
+  MenuItem,
+  Avatar,
+  CircularProgress
+} from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import { MoreHoriz, Edit, Delete, Visibility } from '@mui/icons-material';
 import { DataTable } from "@/components/crud/DataTable";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { toast } from "sonner";
+import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
 
-const columns: ColumnDef<Unidade>[] = [
+const columns: GridColDef[] = [
   {
-    accessorKey: "group_code",
-    header: "Código",
-    cell: ({ row }) => (
-      <div className="font-mono text-sm bg-muted px-2 py-1 rounded">
-        {row.getValue("group_code")}
-      </div>
+    field: "group_code",
+    headerName: "Código",
+    width: 120,
+    renderCell: (params) => (
+      <Chip
+        label={params.value}
+        variant="outlined"
+        size="small"
+        sx={{ fontFamily: 'monospace' }}
+      />
     ),
   },
   {
-    accessorKey: "group_name",
-    header: "Nome",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("group_name")}</div>
+    field: "group_name",
+    headerName: "Nome",
+    width: 200,
+    renderCell: (params) => (
+      <Typography variant="body2" fontWeight="medium">
+        {params.value}
+      </Typography>
     ),
   },
   {
-    accessorKey: "store_model",
-    header: "Modelo",
-    cell: ({ row }) => {
-      const model = row.getValue("store_model") as string;
-      const variants: Record<string, string> = {
-        junior: "secondary",
-        light: "outline", 
-        padrao: "default",
-        intermediaria: "secondary",
-        mega_store: "destructive",
-        pontinha: "outline"
+    field: "store_model",
+    headerName: "Modelo",
+    width: 150,
+    renderCell: (params) => {
+      const colorMap: Record<string, string> = {
+        junior: "default",
+        light: "secondary", 
+        padrao: "primary",
+        intermediaria: "info",
+        mega_store: "error",
+        pontinha: "warning"
       };
       return (
-        <Badge variant={variants[model] as any || "default"}>
-          {model}
-        </Badge>
+        <Chip
+          label={params.value}
+          color={colorMap[params.value] as any || "default"}
+          size="small"
+        />
       );
     },
   },
   {
-    accessorKey: "store_phase",
-    header: "Fase",
-    cell: ({ row }) => {
-      const phase = row.getValue("store_phase") as string;
-      return (
-        <Badge variant={phase === "operacao" ? "default" : "secondary"}>
-          {phase === "operacao" ? "Operação" : "Implantação"}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "city",
-    header: "Cidade",
-  },
-  {
-    accessorKey: "uf",
-    header: "UF",
-    cell: ({ row }) => (
-      <div className="font-mono text-sm">{row.getValue("uf")}</div>
+    field: "store_phase",
+    headerName: "Fase",
+    width: 130,
+    renderCell: (params) => (
+      <Chip
+        label={params.value === "operacao" ? "Operação" : "Implantação"}
+        color={params.value === "operacao" ? "success" : "warning"}
+        size="small"
+      />
     ),
   },
   {
-    accessorKey: "phone",
-    header: "Telefone",
+    field: "city",
+    headerName: "Cidade",
+    width: 150,
   },
   {
-    id: "actions",
-    cell: ({ row }) => {
-      const unidade = row.original;
+    field: "uf",
+    headerName: "UF",
+    width: 80,
+    renderCell: (params) => (
+      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+        {params.value}
+      </Typography>
+    ),
+  },
+  {
+    field: "phone",
+    headerName: "Telefone",
+    width: 140,
+  },
+  {
+    field: "actions",
+    headerName: "Ações",
+    width: 120,
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => {
+      const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+      const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+      };
+
+      const handleClose = () => {
+        setAnchorEl(null);
+      };
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="gap-2">
-              <Eye className="h-4 w-4" />
+        <>
+          <IconButton onClick={handleClick} size="small">
+            <MoreHoriz />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleClose}>
+              <Visibility sx={{ mr: 1 }} />
               Visualizar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2">
-              <Edit className="h-4 w-4" />
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              <Edit sx={{ mr: 1 }} />
               Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 text-destructive">
-              <Trash2 className="h-4 w-4" />
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              <Delete sx={{ mr: 1 }} />
               Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </MenuItem>
+          </Menu>
+        </>
       );
     },
   },
@@ -142,22 +172,22 @@ export default function UnidadesPage() {
   };
 
   const handleAdd = () => {
-    toast.info("Funcionalidade de adicionar em desenvolvimento");
+    toast("Funcionalidade de adicionar em desenvolvimento");
   };
 
   const handleEdit = (unidade: Unidade) => {
-    toast.info("Funcionalidade de editar em desenvolvimento");
+    toast("Funcionalidade de editar em desenvolvimento");
   };
 
   const handleDelete = (unidade: Unidade) => {
-    toast.info("Funcionalidade de excluir em desenvolvimento");
+    toast("Funcionalidade de excluir em desenvolvimento");
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Carregando unidades...</div>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -170,7 +200,8 @@ export default function UnidadesPage() {
       onDelete={handleDelete}
       searchPlaceholder="Pesquisar unidades..."
       title="Unidades"
-      description="Gerencie todas as unidades e lojas do sistema"
+      description="Gerencie todas as unidades do sistema"
+      loading={loading}
     />
   );
 }

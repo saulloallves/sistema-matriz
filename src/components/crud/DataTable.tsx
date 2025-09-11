@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   TextField,
-  Grid,
   InputAdornment,
 } from '@mui/material';
 import { 
@@ -98,26 +97,26 @@ export function DataTable({
           </Box>
         </Box>
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} sm={4}>
-            <Card><CardContent sx={{ py: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Card sx={{ flex: 1 }}>
+            <CardContent sx={{ py: 2 }}>
               <Typography variant="h5">{data.length}</Typography>
               <Typography color="text.secondary" variant="body2">Total de registros</Typography>
-            </CardContent></Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card><CardContent sx={{ py: 2 }}>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent sx={{ py: 2 }}>
               <Typography variant="h5">{filteredData.length}</Typography>
               <Typography color="text.secondary" variant="body2">Registros filtrados</Typography>
-            </CardContent></Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card><CardContent sx={{ py: 2 }}>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent sx={{ py: 2 }}>
               <Typography variant="h5">{Math.ceil(filteredData.length / paginationModel.pageSize)}</Typography>
               <Typography color="text.secondary" variant="body2">Total de páginas</Typography>
-            </CardContent></Card>
-          </Grid>
-        </Grid>
+            </CardContent>
+          </Card>
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField

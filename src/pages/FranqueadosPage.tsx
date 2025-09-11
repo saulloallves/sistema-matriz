@@ -1,139 +1,165 @@
 import { useState, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { 
+  Box, 
+  Typography, 
+  Chip, 
+  IconButton, 
+  Menu, 
+  MenuItem,
+  Avatar,
+  CircularProgress
+} from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import { MoreHoriz, Edit, Delete, Visibility } from '@mui/icons-material';
 import { DataTable } from "@/components/crud/DataTable";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { toast } from "sonner";
+import toast from 'react-hot-toast';
 
 type Franqueado = Tables<"franqueados">;
 
-const columns: ColumnDef<Franqueado>[] = [
+const columns: GridColDef[] = [
   {
-    accessorKey: "full_name",
-    header: "Nome",
-    cell: ({ row }) => {
-      const franqueado = row.original;
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={franqueado.profile_image || ""} />
-            <AvatarFallback>
-              {franqueado.full_name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-medium">{franqueado.full_name}</div>
-            <div className="text-sm text-muted-foreground">{franqueado.contact}</div>
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "owner_type",
-    header: "Tipo",
-    cell: ({ row }) => {
-      const type = row.getValue("owner_type") as string;
-      return (
-        <Badge variant="secondary">
-          {type}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "is_in_contract",
-    header: "Contrato",
-    cell: ({ row }) => {
-      const inContract = row.getValue("is_in_contract") as boolean;
-      return (
-        <Badge variant={inContract ? "default" : "outline"}>
-          {inContract ? "Ativo" : "Inativo"}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "receives_prolabore",
-    header: "Pró-labore",
-    cell: ({ row }) => {
-      const receives = row.getValue("receives_prolabore") as boolean;
-      const value = row.original.prolabore_value;
-      return (
-        <div className="text-sm">
-          {receives ? (
-            <div>
-              <Badge variant="default">Sim</Badge>
-              {value && <div className="text-muted-foreground mt-1">R$ {value.toLocaleString()}</div>}
-            </div>
-          ) : (
-            <Badge variant="outline">Não</Badge>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "availability",
-    header: "Disponibilidade",
-    cell: ({ row }) => {
-      const availability = row.getValue("availability") as string;
-      return availability ? (
-        <div className="text-sm">{availability}</div>
-      ) : (
-        <div className="text-muted-foreground text-sm">-</div>
-      );
-    },
-  },
-  {
-    accessorKey: "created_at",
-    header: "Cadastro",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("created_at"));
-      return (
-        <div className="text-sm text-muted-foreground">
-          {date.toLocaleDateString("pt-BR")}
-        </div>
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const franqueado = row.original;
+    field: "full_name",
+    headerName: "Nome",
+    width: 250,
+    renderCell: (params) => {
+      const franqueado = params.row;
+      const initials = franqueado.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .slice(0, 2);
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="gap-2">
-              <Eye className="h-4 w-4" />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ width: 32, height: 32 }}>
+            {initials}
+          </Avatar>
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {franqueado.full_name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {franqueado.contact}
+            </Typography>
+          </Box>
+        </Box>
+      );
+    },
+  },
+  {
+    field: "owner_type",
+    headerName: "Tipo",
+    width: 120,
+    renderCell: (params) => (
+      <Chip
+        label={params.value}
+        color="secondary"
+        size="small"
+      />
+    ),
+  },
+  {
+    field: "is_in_contract",
+    headerName: "Contrato",
+    width: 120,
+    renderCell: (params) => (
+      <Chip
+        label={params.value ? "Ativo" : "Inativo"}
+        color={params.value ? "success" : "default"}
+        size="small"
+      />
+    ),
+  },
+  {
+    field: "receives_prolabore",
+    headerName: "Pró-labore",
+    width: 140,
+    renderCell: (params) => {
+      const receives = params.value;
+      const prolaboreValue = params.row.prolabore_value;
+      
+      return (
+        <Box>
+          <Chip
+            label={receives ? "Sim" : "Não"}
+            color={receives ? "success" : "default"}
+            size="small"
+          />
+          {receives && prolaboreValue && (
+            <Typography variant="caption" display="block" color="text.secondary">
+              R$ {prolaboreValue.toLocaleString()}
+            </Typography>
+          )}
+        </Box>
+      );
+    },
+  },
+  {
+    field: "availability",
+    headerName: "Disponibilidade",
+    width: 150,
+    renderCell: (params) => (
+      <Typography variant="body2">
+        {params.value || "-"}
+      </Typography>
+    ),
+  },
+  {
+    field: "created_at",
+    headerName: "Cadastro",
+    width: 120,
+    renderCell: (params) => {
+      const date = new Date(params.value);
+      return (
+        <Typography variant="body2" color="text.secondary">
+          {date.toLocaleDateString("pt-BR")}
+        </Typography>
+      );
+    },
+  },
+  {
+    field: "actions",
+    headerName: "Ações",
+    width: 120,
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => {
+      const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+      const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+      };
+
+      const handleClose = () => {
+        setAnchorEl(null);
+      };
+
+      return (
+        <>
+          <IconButton onClick={handleClick} size="small">
+            <MoreHoriz />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleClose}>
+              <Visibility sx={{ mr: 1 }} />
               Visualizar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2">
-              <Edit className="h-4 w-4" />
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              <Edit sx={{ mr: 1 }} />
               Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 text-destructive">
-              <Trash2 className="h-4 w-4" />
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              <Delete sx={{ mr: 1 }} />
               Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </MenuItem>
+          </Menu>
+        </>
       );
     },
   },
@@ -169,22 +195,22 @@ export default function FranqueadosPage() {
   };
 
   const handleAdd = () => {
-    toast.info("Funcionalidade de adicionar em desenvolvimento");
+    toast("Funcionalidade de adicionar em desenvolvimento");
   };
 
   const handleEdit = (franqueado: Franqueado) => {
-    toast.info("Funcionalidade de editar em desenvolvimento");
+    toast("Funcionalidade de editar em desenvolvimento");
   };
 
   const handleDelete = (franqueado: Franqueado) => {
-    toast.info("Funcionalidade de excluir em desenvolvimento");
+    toast("Funcionalidade de excluir em desenvolvimento");
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Carregando franqueados...</div>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -198,6 +224,7 @@ export default function FranqueadosPage() {
       searchPlaceholder="Pesquisar franqueados..."
       title="Franqueados"
       description="Gerencie todos os franqueados do sistema"
+      loading={loading}
     />
   );
 }
