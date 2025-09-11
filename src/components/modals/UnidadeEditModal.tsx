@@ -53,7 +53,15 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     has_partner_parking: false,
     partner_parking_address: '',
     cnpj: '',
-    instagram_profile: ''
+    instagram_profile: '',
+    operation_mon: '',
+    operation_tue: '',
+    operation_wed: '',
+    operation_thu: '',
+    operation_fri: '',
+    operation_sat: '',
+    operation_sun: '',
+    operation_hol: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -77,7 +85,15 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         has_partner_parking: unidade.has_partner_parking || false,
         partner_parking_address: unidade.partner_parking_address || '',
         cnpj: unidade.cnpj || '',
-        instagram_profile: unidade.instagram_profile || ''
+        instagram_profile: unidade.instagram_profile || '',
+        operation_mon: unidade.operation_mon || '',
+        operation_tue: unidade.operation_tue || '',
+        operation_wed: unidade.operation_wed || '',
+        operation_thu: unidade.operation_thu || '',
+        operation_fri: unidade.operation_fri || '',
+        operation_sat: unidade.operation_sat || '',
+        operation_sun: unidade.operation_sun || '',
+        operation_hol: unidade.operation_hol || ''
       });
     }
   }, [unidade]);
@@ -372,6 +388,77 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               error={formData.has_partner_parking && !formData.partner_parking_address?.trim()}
             />
           )}
+
+          <Divider />
+          
+          <Typography variant="h6">Horários de Funcionamento</Typography>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Segunda-feira"
+              value={formData.operation_mon}
+              onChange={(e) => handleInputChange('operation_mon', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+            <TextField
+              fullWidth
+              label="Terça-feira"
+              value={formData.operation_tue}
+              onChange={(e) => handleInputChange('operation_tue', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Quarta-feira"
+              value={formData.operation_wed}
+              onChange={(e) => handleInputChange('operation_wed', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+            <TextField
+              fullWidth
+              label="Quinta-feira"
+              value={formData.operation_thu}
+              onChange={(e) => handleInputChange('operation_thu', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Sexta-feira"
+              value={formData.operation_fri}
+              onChange={(e) => handleInputChange('operation_fri', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+            <TextField
+              fullWidth
+              label="Sábado"
+              value={formData.operation_sat}
+              onChange={(e) => handleInputChange('operation_sat', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Domingo"
+              value={formData.operation_sun}
+              onChange={(e) => handleInputChange('operation_sun', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+            <TextField
+              fullWidth
+              label="Feriados"
+              value={formData.operation_hol}
+              onChange={(e) => handleInputChange('operation_hol', e.target.value)}
+              placeholder="ex: 08:00 - 18:00"
+            />
+          </Stack>
         </Stack>
       </DialogContent>
 
