@@ -8,10 +8,10 @@ import {
 } from '@mui/material';
 import {
   Store,
-  Person,
+  User,
   TrendingUp,
-  Assessment,
-} from '@mui/icons-material';
+  BarChart3,
+} from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
 
@@ -108,7 +108,7 @@ const DashboardPage = () => {
               </Box>
             )}
           </Box>
-          <Icon sx={{ fontSize: 40, color, opacity: 0.7 }} />
+          <Icon size={40} style={{ color, opacity: 0.7 }} />
         </Box>
       </CardContent>
     </Card>
@@ -132,13 +132,13 @@ const DashboardPage = () => {
           percentage={100}
         />
         
-        <StatCard
-          title="Total de Franqueados"
-          value={stats.totalFranqueados}
-          icon={Person}
-          color="#9c27b0"
-          percentage={100}
-        />
+          <StatCard
+            title="Total de Franqueados"
+            value={stats.totalFranqueados}
+            icon={User}
+            color="#9c27b0"
+            percentage={100}
+          />
         
         <StatCard
           title="Unidades Ativas"
@@ -148,13 +148,13 @@ const DashboardPage = () => {
           percentage={stats.totalUnidades > 0 ? Math.round((stats.unidadesAtivas / stats.totalUnidades) * 100) : 0}
         />
         
-        <StatCard
-          title="Relacionamentos"
-          value={stats.franqueadosComUnidades}
-          icon={Assessment}
-          color="#ed6c02"
-          percentage={stats.totalFranqueados > 0 ? Math.round((stats.franqueadosComUnidades / stats.totalFranqueados) * 100) : 0}
-        />
+          <StatCard
+            title="Relacionamentos"
+            value={stats.franqueadosComUnidades}
+            icon={BarChart3}
+            color="#ed6c02"
+            percentage={stats.totalFranqueados > 0 ? Math.round((stats.franqueadosComUnidades / stats.totalFranqueados) * 100) : 0}
+          />
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2 }}>

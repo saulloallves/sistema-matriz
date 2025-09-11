@@ -15,11 +15,11 @@ import {
   GridPaginationModel,
 } from '@mui/x-data-grid';
 import {
-  Add,
+  Plus,
   Search,
-  FilterList,
-  FileDownload,
-} from '@mui/icons-material';
+  Filter,
+  Download,
+} from 'lucide-react';
 
 interface DataTableProps {
   columns: GridColDef[];
@@ -67,8 +67,8 @@ export function DataTable({
             {description && <Typography variant="body1" color="text.secondary">{description}</Typography>}
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" startIcon={<FileDownload />} size="small">Exportar</Button>
-            {onAdd && <Button variant="contained" startIcon={<Add />} onClick={onAdd}>Adicionar</Button>}
+            <Button variant="outlined" startIcon={<Download size={16} />} size="small">Exportar</Button>
+            {onAdd && <Button variant="contained" startIcon={<Plus size={16} />} onClick={onAdd}>Adicionar</Button>}
           </Box>
         </Box>
 
@@ -99,10 +99,10 @@ export function DataTable({
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><Search /></InputAdornment> }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment> }}
             sx={{ maxWidth: 400 }}
           />
-          <Button variant="outlined" startIcon={<FilterList />}>Filtros</Button>
+          <Button variant="outlined" startIcon={<Filter size={16} />}>Filtros</Button>
         </Box>
       </Box>
 

@@ -8,7 +8,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { AccountCircle, Notifications, Settings } from '@mui/icons-material';
+import { User, Bell, Settings } from 'lucide-react';
 import { useState } from 'react';
 
 const Header = () => {
@@ -47,7 +47,7 @@ const Header = () => {
             color="inherit"
             sx={{ color: '#666' }}
           >
-            <Notifications />
+            <Bell size={20} />
           </IconButton>
           
           <IconButton
@@ -55,7 +55,7 @@ const Header = () => {
             color="inherit"
             sx={{ color: '#666' }}
           >
-            <Settings />
+            <Settings size={20} />
           </IconButton>
           
           <IconButton
@@ -64,9 +64,9 @@ const Header = () => {
             color="inherit"
             sx={{ color: '#666' }}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
-              <AccountCircle />
-            </Avatar>
+             <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
+               <User size={16} />
+             </Avatar>
           </IconButton>
           
           <Menu

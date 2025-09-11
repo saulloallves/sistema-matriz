@@ -10,7 +10,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { MoreHoriz, Edit, Delete, Visibility } from '@mui/icons-material';
+import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +38,7 @@ const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => v
   return (
     <Box sx={{ display: 'flex', gap: 0.5 }}>
       <IconButton onClick={handleClick} size="small" color="primary">
-        <MoreHoriz />
+        <MoreHorizontal size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -46,15 +46,15 @@ const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => v
         onClose={handleClose}
       >
         <MenuItem onClick={handleView}>
-          <Visibility sx={{ mr: 1, fontSize: 18 }} />
+          <Eye size={18} style={{ marginRight: 8 }} />
           Visualizar
         </MenuItem>
         <MenuItem onClick={handleClose}>
-          <Edit sx={{ mr: 1, fontSize: 18 }} />
+          <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
         <MenuItem onClick={handleClose}>
-          <Delete sx={{ mr: 1, fontSize: 18 }} />
+          <Trash2 size={18} style={{ marginRight: 8 }} />
           Excluir
         </MenuItem>
       </Menu>

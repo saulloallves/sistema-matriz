@@ -14,26 +14,26 @@ import {
   IconButton,
 } from '@mui/material';
 import {
-  Dashboard,
+  LayoutDashboard,
   Store,
-  Person,
-  Group,
-  WhatsApp,
-  Event,
+  User,
+  Users,
+  MessageCircle,
+  Calendar,
   ChevronLeft,
   Menu,
-} from '@mui/icons-material';
+} from 'lucide-react';
 
 const DRAWER_WIDTH = 280;
 const COLLAPSED_WIDTH = 70;
 
 const menuItems = [
-  { text: 'Dashboard', icon: Dashboard, path: '/' },
+  { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { text: 'Unidades', icon: Store, path: '/unidades' },
-  { text: 'Franqueados', icon: Person, path: '/franqueados' },
-  { text: 'Franqueados/Unidades', icon: Group, path: '/franqueados-unidades' },
-  { text: 'Grupos WhatsApp', icon: WhatsApp, path: '/grupos-whatsapp' },
-  { text: 'Evento Seguidores', icon: Event, path: '/evento-seguidores' },
+  { text: 'Franqueados', icon: User, path: '/franqueados' },
+  { text: 'Franqueados/Unidades', icon: Users, path: '/franqueados-unidades' },
+  { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
+  { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
 ];
 
 const AppSidebar = () => {
@@ -113,7 +113,7 @@ const AppSidebar = () => {
                       color: isActive ? '#1976d2' : 'inherit',
                     }}
                   >
-                    <Icon />
+                    <Icon size={20} />
                   </ListItemIcon>
                   {!collapsed && (
                     <ListItemText

@@ -13,13 +13,13 @@ import {
   CardContent,
 } from '@mui/material';
 import {
-  Close,
+  X,
   Info,
-  ContactPhone,
-  Schedule,
+  Phone as ContactPhone,
+  Clock,
   Link,
-  LocalParking,
-} from '@mui/icons-material';
+  MapPin,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -135,7 +135,7 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
           </Typography>
         </Box>
         <IconButton onClick={onClose} edge="end">
-          <Close />
+          <X size={20} />
         </IconButton>
       </DialogTitle>
 
@@ -148,11 +148,11 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
             scrollButtons="auto"
             sx={{ px: 3 }}
           >
-            <Tab icon={<Info />} label="Informações Básicas" {...a11yProps(0)} />
-            <Tab icon={<ContactPhone />} label="Contato & Endereço" {...a11yProps(1)} />
-            <Tab icon={<Schedule />} label="Horários" {...a11yProps(2)} />
-            <Tab icon={<Link />} label="Integrações" {...a11yProps(3)} />
-            <Tab icon={<LocalParking />} label="Operações" {...a11yProps(4)} />
+            <Tab icon={<Info size={16} />} label="Informações Básicas" {...a11yProps(0)} />
+            <Tab icon={<ContactPhone size={16} />} label="Contato & Endereço" {...a11yProps(1)} />
+            <Tab icon={<Clock size={16} />} label="Horários" {...a11yProps(2)} />
+            <Tab icon={<Link size={16} />} label="Integrações" {...a11yProps(3)} />
+            <Tab icon={<MapPin size={16} />} label="Operações" {...a11yProps(4)} />
           </Tabs>
         </Box>
 
