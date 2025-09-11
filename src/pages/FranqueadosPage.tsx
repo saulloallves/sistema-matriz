@@ -183,13 +183,21 @@ export default function FranqueadosPage() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color="secondary"
-          size="small"
-        />
-      ),
+      renderCell: (params) => {
+        const formatOwnerType = (type: string) => {
+          if (type === 'integral') return 'Integral';
+          if (type === 'principal') return 'Principal';
+          return type;
+        };
+        
+        return (
+          <Chip
+            label={formatOwnerType(params.value)}
+            color="secondary"
+            size="small"
+          />
+        );
+      },
     },
     {
       field: "is_in_contract",
