@@ -218,14 +218,21 @@ export default function FranqueadosPage() {
         const prolaboreValue = params.row.prolabore_value;
         
         return (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            py: 1
+          }}>
             <Chip
               label={receives ? "Sim" : "Não"}
               color={receives ? "success" : "default"}
               size="small"
             />
             {receives && prolaboreValue && (
-              <Typography variant="caption" display="block" color="text.secondary">
+              <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
                 R$ {prolaboreValue.toLocaleString()}
               </Typography>
             )}
