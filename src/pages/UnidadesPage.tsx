@@ -34,7 +34,7 @@ import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
 
-const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void }) => {
+const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void; onDelete: (unidade: Unidade) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -47,6 +47,11 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unida
 
   const handleView = () => {
     onView(row);
+    handleClose();
+  };
+
+  const handleDelete = () => {
+    onDelete(row);
     handleClose();
   };
 
@@ -79,16 +84,16 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unida
           <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleDelete}>
           <Trash2 size={18} style={{ marginRight: 8 }} />
-          Inativar
+          {row.is_active ? 'Inativar' : 'Ativar'}
         </MenuItem>
       </Menu>
     </Box>
   );
 };
 
-const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Unidade) => void): GridColDef[] => [
+const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Unidade) => void, onDelete: (unidade: Unidade) => void): GridColDef[] => [
   {
     field: "group_code",
     headerName: "Código",
@@ -198,12 +203,25 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     minWidth: 140,
   },
   {
+    field: "is_active",
+    headerName: "Status",
+    width: 100,
+    renderCell: (params) => (
+      <Chip
+        label={params.value ? "Ativo" : "Inativo"}
+        color={params.value ? "success" : "default"}
+        size="small"
+        variant={params.value ? "filled" : "outlined"}
+      />
+    ),
+  },
+  {
     field: "actions",
     headerName: "Ações",
     width: 120,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} />,
+    renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onDelete={onDelete} />,
   },
 ];
 
@@ -404,15 +422,31 @@ export default function UnidadesPage() {
     setEditModalOpen(true);
   };
 
-  const handleDelete = (unidade: Unidade) => {
-    toast("Funcionalidade de excluir em desenvolvimento");
+  const handleDelete = async (unidade: Unidade) => {
+    try {
+      const newStatus = !unidade.is_active;
+      const { error } = await supabase
+        .from("unidades")
+        .update({ is_active: newStatus })
+        .eq("id", unidade.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success(`Unidade ${newStatus ? 'ativada' : 'inativada'} com sucesso!`);
+      loadUnidades();
+    } catch (error) {
+      console.error("Erro ao alterar status da unidade:", error);
+      toast.error("Erro ao alterar status da unidade");
+    }
   };
 
   const handleAdd = () => {
     setAddModalOpen(true);
   };
 
-  const columns = createColumns(handleView, handleEdit);
+  const columns = createColumns(handleView, handleEdit, handleDelete);
 
   if (loading) {
     return (

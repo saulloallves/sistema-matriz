@@ -200,6 +200,7 @@ export type Database = {
           has_partner_parking: boolean | null
           id: string
           instagram_profile: string | null
+          is_active: boolean
           neighborhood: string | null
           notion_page_id: string | null
           number_address: string | null
@@ -242,6 +243,7 @@ export type Database = {
           has_partner_parking?: boolean | null
           id?: string
           instagram_profile?: string | null
+          is_active?: boolean
           neighborhood?: string | null
           notion_page_id?: string | null
           number_address?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           has_partner_parking?: boolean | null
           id?: string
           instagram_profile?: string | null
+          is_active?: boolean
           neighborhood?: string | null
           notion_page_id?: string | null
           number_address?: string | null
