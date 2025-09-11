@@ -23,8 +23,6 @@ const menuItems = [
   { text: 'Franqueados/Unidades', icon: Users, path: '/franqueados-unidades' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
-  { text: 'Ajuda', icon: HelpCircle, path: '/ajuda' },
-  { text: 'Configurações', icon: Settings, path: '/configuracoes' },
 ];
 
 const AppSidebar = () => {
@@ -33,6 +31,7 @@ const AppSidebar = () => {
   const navigate = useNavigate();
 
   const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
+  const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
 
   return (
     <Box
@@ -70,10 +69,28 @@ const AppSidebar = () => {
             gap: '4px',
           }}
         >
+          {/* Animated background indicator */}
+          <Box
+            sx={{
+              position: 'absolute',
+              opacity: currentIndicatorIndex >= 0 ? 1 : 0,
+              zIndex: 1,
+              top: 0,
+              left: '16px',
+              width: '56px',
+              height: '56px',
+              background: '#406ff3',
+              borderRadius: '17.5px',
+              transition: 'all 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+              transform: `translateY(${currentIndicatorIndex * 60}px)`,
+            }}
+          />
+
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             const isHovered = hoveredIndex === index;
+            const shouldBeWhite = isActive || isHovered;
             
             return (
               <Box
@@ -89,18 +106,22 @@ const AppSidebar = () => {
                   title={item.text} 
                   placement="right"
                   arrow
-                  sx={{
-                    '& .MuiTooltip-tooltip': {
-                      backgroundColor: '#406ff3',
-                      color: '#fff',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      borderRadius: '17.5px',
-                      padding: '12px 16px',
-                      marginLeft: '16px !important',
+                  slotProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: '#406ff3',
+                        color: '#fff',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        borderRadius: '17.5px',
+                        padding: '12px 16px',
+                        marginLeft: '16px !important',
+                      }
                     },
-                    '& .MuiTooltip-arrow': {
-                      color: '#406ff3',
+                    arrow: {
+                      sx: {
+                        color: '#406ff3',
+                      }
                     }
                   }}
                 >
@@ -115,12 +136,12 @@ const AppSidebar = () => {
                       justifyContent: 'center',
                       height: '56px',
                       width: '56px',
-                      color: isActive ? '#fff' : '#6a778e',
-                      transition: 'all 250ms ease',
+                      color: shouldBeWhite ? '#fff' : '#6a778e',
+                      transition: 'color 300ms ease',
                       borderRadius: '17.5px',
                       zIndex: 2,
+                      backgroundColor: 'transparent',
                       '&:hover': {
-                        color: '#fff',
                         backgroundColor: 'transparent',
                       },
                     }}
@@ -131,36 +152,6 @@ const AppSidebar = () => {
               </Box>
             );
           })}
-          
-          {/* Animated background indicator */}
-          <Box
-            sx={{
-              content: '""',
-              position: 'absolute',
-              opacity: activeIndex >= 0 || hoveredIndex !== null ? 1 : 0,
-              zIndex: 1,
-              top: 0,
-              left: '16px',
-              width: '56px',
-              height: '56px',
-              background: '#406ff3',
-              borderRadius: '17.5px',
-              transition: 'all 250ms cubic-bezier(1, 0.2, 0.1, 1.2)',
-              transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px)`,
-              animation: hoveredIndex !== null ? 'gooeyEffect 250ms ease 1' : 'none',
-              '@keyframes gooeyEffect': {
-                '0%': {
-                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(1, 1)`,
-                },
-                '50%': {
-                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(0.5, 1.5)`,
-                },
-                '100%': {
-                  transform: `translateY(${((hoveredIndex !== null ? hoveredIndex : activeIndex) * 60)}px) scale(1, 1)`,
-                }
-              }
-            }}
-          />
         </Box>
       </Box>
     </Box>
