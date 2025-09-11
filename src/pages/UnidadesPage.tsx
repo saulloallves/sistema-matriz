@@ -12,13 +12,14 @@ import {
 import { GridColDef } from '@mui/x-data-grid';
 import { MoreHoriz, Edit, Delete, Visibility } from '@mui/icons-material';
 import { DataTable } from "@/components/crud/DataTable";
+import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
 
-const ActionCell = ({ row }: { row: any }) => {
+const ActionCell = ({ row, onView }: { row: any; onView: (unidade: Unidade) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -27,6 +28,11 @@ const ActionCell = ({ row }: { row: any }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleView = () => {
+    onView(row);
+    handleClose();
   };
 
   return (
@@ -39,7 +45,7 @@ const ActionCell = ({ row }: { row: any }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleView}>
           <Visibility sx={{ mr: 1, fontSize: 18 }} />
           Visualizar
         </MenuItem>
@@ -56,7 +62,7 @@ const ActionCell = ({ row }: { row: any }) => {
   );
 };
 
-const columns: GridColDef[] = [
+const createColumns = (onView: (unidade: Unidade) => void): GridColDef[] => [
   {
     field: "group_code",
     headerName: "Código",
@@ -145,13 +151,15 @@ const columns: GridColDef[] = [
     width: 120,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <ActionCell row={params.row} />,
+    renderCell: (params) => <ActionCell row={params.row} onView={onView} />,
   },
 ];
 
 export default function UnidadesPage() {
   const [data, setData] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedUnidade, setSelectedUnidade] = useState<Unidade | null>(null);
 
   useEffect(() => {
     loadUnidades();
@@ -178,8 +186,9 @@ export default function UnidadesPage() {
     }
   };
 
-  const handleAdd = () => {
-    toast("Funcionalidade de adicionar em desenvolvimento");
+  const handleView = (unidade: Unidade) => {
+    setSelectedUnidade(unidade);
+    setViewModalOpen(true);
   };
 
   const handleEdit = (unidade: Unidade) => {
@@ -190,6 +199,12 @@ export default function UnidadesPage() {
     toast("Funcionalidade de excluir em desenvolvimento");
   };
 
+  const handleAdd = () => {
+    toast("Funcionalidade de adicionar em desenvolvimento");
+  };
+
+  const columns = createColumns(handleView);
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -199,16 +214,24 @@ export default function UnidadesPage() {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      onAdd={handleAdd}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      searchPlaceholder="Pesquisar unidades..."
-      title="Unidades"
-      description="Gerencie todas as unidades do sistema"
-      loading={loading}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={data}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        searchPlaceholder="Pesquisar unidades..."
+        title="Unidades"
+        description="Gerencie todas as unidades do sistema"
+        loading={loading}
+      />
+      
+      <UnidadeViewModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        unidade={selectedUnidade}
+      />
+    </>
   );
 }
