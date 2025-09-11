@@ -90,7 +90,8 @@ const AppSidebar = () => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             const isHovered = hoveredIndex === index;
-            const shouldBeWhite = isActive || isHovered;
+            // Ícone fica branco apenas se está sendo hovered OU se está ativo E não há hover em outro item
+            const shouldBeWhite = isHovered || (isActive && hoveredIndex === null);
             
             return (
               <Box
