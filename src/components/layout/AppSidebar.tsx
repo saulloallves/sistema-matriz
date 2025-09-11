@@ -20,7 +20,7 @@ const menuItems = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { text: 'Unidades', icon: Store, path: '/unidades' },
   { text: 'Franqueados', icon: User, path: '/franqueados' },
-  { text: 'Franqueados/Unidades', icon: Users, path: '/franqueados-unidades' },
+  { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
 ];
