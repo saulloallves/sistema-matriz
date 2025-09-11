@@ -41,9 +41,7 @@ const franqueadoSchema = z.object({
     required_error: "Tipo de proprietário é obrigatório"
   }),
   contact: z.string().min(1, "Contato é obrigatório"),
-  availability: z.enum(['integral', 'parcial'], {
-    required_error: "Disponibilidade é obrigatória"
-  }),
+  availability: z.string().optional(),
   education: z.string().optional(),
   previous_profession: z.string().optional(),
   previous_salary_range: z.string().optional(),
@@ -52,6 +50,8 @@ const franqueadoSchema = z.object({
   referrer_unit_code: z.string().optional(),
   other_activities_description: z.string().optional(),
   prolabore_value: z.number().optional(),
+  profile_image: z.string().optional(),
+  web_password: z.string().min(1, "Senha é obrigatória"),
   is_in_contract: z.boolean(),
   receives_prolabore: z.boolean(),
   has_other_activities: z.boolean(),
@@ -83,7 +83,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       address: '',
       owner_type: 'principal',
       contact: '',
-      availability: 'integral',
+      availability: '',
       education: '',
       previous_profession: '',
       previous_salary_range: '',
@@ -92,6 +92,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       referrer_unit_code: '',
       other_activities_description: '',
       prolabore_value: 0,
+      profile_image: '',
+      web_password: '',
       is_in_contract: false,
       receives_prolabore: false,
       has_other_activities: false,
@@ -117,7 +119,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         address: franqueado.address || '',
         owner_type: franqueado.owner_type as 'principal' | 'socio',
         contact: franqueado.contact || '',
-        availability: franqueado.availability as 'integral' | 'parcial',
+        availability: franqueado.availability || '',
         education: franqueado.education || '',
         previous_profession: franqueado.previous_profession || '',
         previous_salary_range: franqueado.previous_salary_range || '',
@@ -126,6 +128,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         referrer_unit_code: franqueado.referrer_unit_code || '',
         other_activities_description: franqueado.other_activities_description || '',
         prolabore_value: franqueado.prolabore_value || 0,
+        profile_image: franqueado.profile_image || '',
+        web_password: franqueado.web_password || '',
         is_in_contract: franqueado.is_in_contract || false,
         receives_prolabore: franqueado.receives_prolabore || false,
         has_other_activities: franqueado.has_other_activities || false,
@@ -154,7 +158,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           address: data.address || null,
           owner_type: data.owner_type,
           contact: data.contact,
-          availability: data.availability,
+          availability: data.availability || null,
           education: data.education || null,
           previous_profession: data.previous_profession || null,
           previous_salary_range: data.previous_salary_range || null,
@@ -163,6 +167,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           referrer_unit_code: data.referrer_unit_code || null,
           other_activities_description: data.other_activities_description || null,
           prolabore_value: data.receives_prolabore ? data.prolabore_value : null,
+          profile_image: data.profile_image || null,
+          web_password: data.web_password,
           is_in_contract: data.is_in_contract,
           receives_prolabore: data.receives_prolabore,
           has_other_activities: data.has_other_activities,
@@ -369,15 +375,10 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                       <TextField
                         {...field}
                         label="Disponibilidade"
-                        select
                         sx={{ flex: 1 }}
-                        required
                         error={!!errors.availability}
                         helperText={errors.availability?.message}
-                      >
-                        <MenuItem value="integral">Integral</MenuItem>
-                        <MenuItem value="parcial">Parcial</MenuItem>
-                      </TextField>
+                      />
                     )}
                   />
                 </Box>
@@ -412,21 +413,37 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                   />
                 </Box>
 
-                <Controller
-                  name="discovery_source"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Como conheceu a franquia"
-                      fullWidth
-                      error={!!errors.discovery_source}
-                      helperText={errors.discovery_source?.message}
-                    />
-                  )}
-                />
-              </Box>
-            </Box>
+                 <Box sx={{ display: 'flex', gap: 2 }}>
+                   <Controller
+                     name="discovery_source"
+                     control={control}
+                     render={({ field }) => (
+                       <TextField
+                         {...field}
+                         label="Como conheceu a franquia"
+                         sx={{ flex: 1 }}
+                         error={!!errors.discovery_source}
+                         helperText={errors.discovery_source?.message}
+                       />
+                     )}
+                   />
+
+                   <Controller
+                     name="previous_salary_range"
+                     control={control}
+                     render={({ field }) => (
+                       <TextField
+                         {...field}
+                         label="Faixa Salarial Anterior"
+                         sx={{ flex: 1 }}
+                         error={!!errors.previous_salary_range}
+                         helperText={errors.previous_salary_range?.message}
+                       />
+                     )}
+                   />
+                 </Box>
+               </Box>
+             </Box>
 
             {/* Pró-labore */}
             <Box>
@@ -548,6 +565,45 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
               </Box>
             </Box>
 
+            {/* Dados do Sistema */}
+            <Box>
+              <Typography variant="h6" gutterBottom color="primary">
+                Dados do Sistema
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Controller
+                  name="profile_image"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="URL da Foto de Perfil"
+                      fullWidth
+                      error={!!errors.profile_image}
+                      helperText={errors.profile_image?.message}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="web_password"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Senha do Sistema"
+                      type="password"
+                      fullWidth
+                      required
+                      error={!!errors.web_password}
+                      helperText={errors.web_password?.message}
+                    />
+                  )}
+                />
+              </Box>
+            </Box>
+
             {/* Referência */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
@@ -602,6 +658,63 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                     />
                   </Box>
                 )}
+              </Box>
+            </Box>
+
+            {/* Termos e Condições */}
+            <Box>
+              <Typography variant="h6" gutterBottom color="primary">
+                Termos e Condições
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Controller
+                  name="lgpd_term_accepted"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={field.value}
+                          onChange={field.onChange}
+                        />
+                      }
+                      label="Termo LGPD Aceito"
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="confidentiality_term_accepted"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={field.value}
+                          onChange={field.onChange}
+                        />
+                      }
+                      label="Termo de Confidencialidade Aceito"
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="system_term_accepted"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={field.value}
+                          onChange={field.onChange}
+                        />
+                      }
+                      label="Termo do Sistema Aceito"
+                    />
+                  )}
+                />
               </Box>
             </Box>
           </Box>
