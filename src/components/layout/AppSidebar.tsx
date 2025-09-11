@@ -1,121 +1,138 @@
-import { 
-  Building2, 
-  Users, 
-  Network, 
-  MessageSquare, 
-  BarChart3,
-  Database
-} from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
-
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Typography,
+  Box,
+  Divider,
+  IconButton,
+} from '@mui/material';
+import {
+  Dashboard,
+  Store,
+  Person,
+  Group,
+  WhatsApp,
+  Event,
+  ChevronLeft,
+  Menu,
+} from '@mui/icons-material';
+
+const DRAWER_WIDTH = 280;
+const COLLAPSED_WIDTH = 70;
 
 const menuItems = [
-  { 
-    title: "Unidades", 
-    url: "/unidades", 
-    icon: Building2,
-    description: "Gerenciar unidades e lojas"
-  },
-  { 
-    title: "Franqueados", 
-    url: "/franqueados", 
-    icon: Users,
-    description: "Gerenciar franqueados"
-  },
-  { 
-    title: "Relacionamentos", 
-    url: "/franqueados-unidades", 
-    icon: Network,
-    description: "Franqueados x Unidades"
-  },
-  { 
-    title: "Grupos WhatsApp", 
-    url: "/grupos-whatsapp", 
-    icon: MessageSquare,
-    description: "Grupos de WhatsApp das unidades"
-  },
-  { 
-    title: "Evento Seguidores", 
-    url: "/evento-seguidores", 
-    icon: BarChart3,
-    description: "Controle de eventos"
-  },
+  { text: 'Dashboard', icon: Dashboard, path: '/' },
+  { text: 'Unidades', icon: Store, path: '/unidades' },
+  { text: 'Franqueados', icon: Person, path: '/franqueados' },
+  { text: 'Franqueados/Unidades', icon: Group, path: '/franqueados-unidades' },
+  { text: 'Grupos WhatsApp', icon: WhatsApp, path: '/grupos-whatsapp' },
+  { text: 'Evento Seguidores', icon: Event, path: '/evento-seguidores' },
 ];
 
-export function AppSidebar() {
-  const { state } = useSidebar();
+const AppSidebar = () => {
+  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const currentPath = location.pathname;
-  const collapsed = state === "collapsed";
+  const navigate = useNavigate();
 
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + "/");
+  const handleToggle = () => {
+    setCollapsed(!collapsed);
+  };
+
+  const drawerWidth = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r bg-card shadow-soft`} collapsible="icon">
-      <SidebarContent>
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-primary rounded-lg shadow-soft">
-              <Database className="h-5 w-5 text-primary-foreground" />
-            </div>
-            {!collapsed && (
-              <div>
-                <h2 className="font-semibold text-foreground">OPUS Manager</h2>
-                <p className="text-xs text-muted-foreground">Sistema de Gestão</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {!collapsed && "Gestão de Dados"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                        isActive(item.url) 
-                          ? "bg-primary text-primary-foreground shadow-soft" 
-                          : "hover:bg-muted/50 text-foreground"
-                      }`}
-                    >
-                      <item.icon className={`h-4 w-4 ${isActive(item.url) ? "text-primary-foreground" : "text-muted-foreground"}`} />
-                      {!collapsed && (
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm">{item.title}</div>
-                          <div className={`text-xs truncate ${
-                            isActive(item.url) 
-                              ? "text-primary-foreground/80" 
-                              : "text-muted-foreground"
-                          }`}>
-                            {item.description}
-                          </div>
-                        </div>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          transition: 'width 0.3s ease',
+          borderRight: '1px solid #e0e0e0',
+          backgroundColor: '#fff',
+        },
+      }}
+    >
+      <Toolbar
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'space-between',
+          px: 2,
+          backgroundColor: '#1976d2',
+          color: 'white',
+        }}
+      >
+        {!collapsed && (
+          <Typography variant="h6" noWrap component="div">
+            CRUD System
+          </Typography>
+        )}
+        <IconButton color="inherit" onClick={handleToggle}>
+          {collapsed ? <Menu /> : <ChevronLeft />}
+        </IconButton>
+      </Toolbar>
+      
+      <Divider />
+      
+      <Box sx={{ overflow: 'auto', flex: 1 }}>
+        <List>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: collapsed ? 'center' : 'initial',
+                    px: 2.5,
+                    backgroundColor: isActive ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                    borderRight: isActive ? '3px solid #1976d2' : 'none',
+                    '&:hover': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: collapsed ? 'auto' : 3,
+                      justifyContent: 'center',
+                      color: isActive ? '#1976d2' : 'inherit',
+                    }}
+                  >
+                    <Icon />
+                  </ListItemIcon>
+                  {!collapsed && (
+                    <ListItemText
+                      primary={item.text}
+                      sx={{
+                        opacity: 1,
+                        color: isActive ? '#1976d2' : 'inherit',
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
+    </Drawer>
   );
-}
+};
+
+export default AppSidebar;

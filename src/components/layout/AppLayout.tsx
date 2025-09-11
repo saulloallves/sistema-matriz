@@ -1,19 +1,26 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./AppSidebar";
-import { Header } from "./Header";
+import { Box, Container } from '@mui/material';
+import { ReactNode } from 'react';
+import AppSidebar from './AppSidebar';
+import Header from './Header';
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-surface">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 p-6">
-            {children}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
+interface AppLayoutProps {
+  children: ReactNode;
 }
+
+const AppLayout = ({ children }: AppLayoutProps) => {
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      <AppSidebar />
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <Header />
+        <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#fafafa' }}>
+          <Container maxWidth="xl" disableGutters>
+            {children}
+          </Container>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default AppLayout;
