@@ -302,7 +302,7 @@ export default function UnidadesPage() {
     return (
       <Box sx={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gridTemplateColumns: 'repeat(3, 1fr)', 
         gap: 3, 
         mb: 3 
       }}>
@@ -310,19 +310,19 @@ export default function UnidadesPage() {
           const renderIcon = () => {
             switch(card.icon) {
               case "Building2":
-                return <Building2 size={24} color="white" />;
+                return <Building2 size={24} />;
               case "Play":
-                return <Play size={24} color="white" />;
+                return <Play size={24} />;
               case "Construction":
-                return <Construction size={24} color="white" />;
+                return <Construction size={24} />;
               case "Crown":
-                return <Crown size={24} color="white" />;
+                return <Crown size={24} />;
               case "Zap":
-                return <Zap size={24} color="white" />;
+                return <Zap size={24} />;
               case "TrendingUp":
-                return <TrendingUp size={24} color="white" />;
+                return <TrendingUp size={24} />;
               default:
-                return <Building2 size={24} color="white" />;
+                return <Building2 size={24} />;
             }
           };
           
@@ -330,54 +330,62 @@ export default function UnidadesPage() {
             <Card 
               key={index}
               sx={{ 
-                height: '100%',
-                background: `linear-gradient(135deg, ${card.bgColor}15, ${card.bgColor}08)`,
+                height: '100px',
+                background: 'background.paper',
                 border: `1px solid ${card.color}20`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 25px ${card.color}20`,
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 4px 20px ${card.color}15`,
                   border: `1px solid ${card.color}40`
                 }
               }}
             >
-              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <CardContent sx={{ 
+                p: 3, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 3,
+                height: '100%'
+              }}>
                 <Box
                   sx={{
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${card.iconBg}, ${card.color})`,
+                    backgroundColor: `${card.color}15`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    mb: 2,
-                    boxShadow: `0 4px 20px ${card.color}30`
+                    flexShrink: 0,
+                    color: card.color
                   }}
                 >
                   {renderIcon()}
                 </Box>
-                <Typography 
-                  variant="h3" 
-                  sx={{ 
-                    color: card.color, 
-                    fontWeight: 700,
-                    mb: 0.5,
-                    fontSize: '2rem'
-                  }}
-                >
-                  {card.value}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: 'text.secondary',
-                    fontWeight: 500,
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  {card.title}
-                </Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: card.color, 
+                      fontWeight: 700,
+                      mb: 0.5,
+                      fontSize: '1.75rem'
+                    }}
+                  >
+                    {card.value}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 500,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {card.title}
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
           );
