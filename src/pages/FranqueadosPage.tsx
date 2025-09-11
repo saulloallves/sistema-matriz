@@ -314,18 +314,20 @@ export default function FranqueadosPage() {
                     height: 32,
                     borderRadius: '50%',
                     background: `linear-gradient(135deg, ${card.color}10, ${card.color}25)`,
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Box
+                    sx={{
                       width: 16,
                       height: 16,
                       borderRadius: '50%',
                       background: `linear-gradient(135deg, ${card.color}20, ${card.color}40)`,
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </Box>
               </CardContent>
             </Card>
           );
