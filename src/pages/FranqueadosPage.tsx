@@ -293,31 +293,39 @@ export default function FranqueadosPage() {
                     {card.title}
                   </Typography>
                 </Box>
-                {/* Elemento decorativo no lado direito */}
+                {/* Elemento decorativo moderno no lado direito */}
                 <Box
                   sx={{
                     position: 'absolute',
-                    right: -10,
-                    top: -10,
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${card.color}08, ${card.color}20)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0.6
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 4,
+                    background: `linear-gradient(180deg, ${card.color}, ${card.color}80)`,
+                    borderRadius: '0 12px 12px 0'
                   }}
-                >
-                  <Box
-                    sx={{
-                      color: `${card.color}60`,
-                      transform: 'scale(1.5)'
-                    }}
-                  >
-                    {renderIcon()}
-                  </Box>
-                </Box>
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: 12,
+                    top: 12,
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${card.color}10, ${card.color}25)`,
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      width: 16,
+                      height: 16,
+                      borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${card.color}20, ${card.color}40)`,
+                    }
+                  }}
+                />
               </CardContent>
             </Card>
           );
