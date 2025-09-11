@@ -18,6 +18,44 @@ import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
 
+const ActionCell = ({ row }: { row: any }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5 }}>
+      <IconButton onClick={handleClick} size="small" color="primary">
+        <MoreHoriz />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleClose}>
+          <Visibility sx={{ mr: 1, fontSize: 18 }} />
+          Visualizar
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <Edit sx={{ mr: 1, fontSize: 18 }} />
+          Editar
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <Delete sx={{ mr: 1, fontSize: 18 }} />
+          Excluir
+        </MenuItem>
+      </Menu>
+    </Box>
+  );
+};
+
 const columns: GridColDef[] = [
   {
     field: "group_code",
@@ -102,43 +140,7 @@ const columns: GridColDef[] = [
     width: 120,
     sortable: false,
     filterable: false,
-    renderCell: (params) => {
-      const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-      const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-      };
-
-      const handleClose = () => {
-        setAnchorEl(null);
-      };
-
-      return (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <IconButton onClick={handleClick} size="small" color="primary">
-            <MoreHoriz />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleClose}>
-              <Visibility sx={{ mr: 1, fontSize: 18 }} />
-              Visualizar
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Edit sx={{ mr: 1, fontSize: 18 }} />
-              Editar
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Delete sx={{ mr: 1, fontSize: 18 }} />
-              Excluir
-            </MenuItem>
-          </Menu>
-        </Box>
-      );
-    },
+    renderCell: (params) => <ActionCell row={params.row} />,
   },
 ];
 
