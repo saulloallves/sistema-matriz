@@ -39,11 +39,19 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     group_name: '',
     store_model: '',
     store_phase: '',
+    store_imp_phase: '',
+    ai_agent_id: '',
+    notion_page_id: '',
+    drive_folder_id: '',
+    drive_folder_link: '',
+    docs_folder_id: '',
+    docs_folder_link: '',
     address: '',
     number_address: '',
     address_complement: '',
     neighborhood: '',
     city: '',
+    state: '',
     uf: '',
     postal_code: '',
     phone: '',
@@ -52,6 +60,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     parking_spots: 0,
     has_partner_parking: false,
     partner_parking_address: '',
+    purchases_active: false,
+    sales_active: false,
     cnpj: '',
     instagram_profile: '',
     operation_mon: '',
@@ -71,11 +81,19 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         group_name: unidade.group_name || '',
         store_model: unidade.store_model || '',
         store_phase: unidade.store_phase || '',
+        store_imp_phase: unidade.store_imp_phase || '',
+        ai_agent_id: unidade.ai_agent_id || '',
+        notion_page_id: unidade.notion_page_id || '',
+        drive_folder_id: unidade.drive_folder_id || '',
+        drive_folder_link: unidade.drive_folder_link || '',
+        docs_folder_id: unidade.docs_folder_id || '',
+        docs_folder_link: unidade.docs_folder_link || '',
         address: unidade.address || '',
         number_address: unidade.number_address || '',
         address_complement: unidade.address_complement || '',
         neighborhood: unidade.neighborhood || '',
         city: unidade.city || '',
+        state: unidade.state || '',
         uf: unidade.uf || '',
         postal_code: unidade.postal_code || '',
         phone: unidade.phone || '',
@@ -84,6 +102,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         parking_spots: unidade.parking_spots || 0,
         has_partner_parking: unidade.has_partner_parking || false,
         partner_parking_address: unidade.partner_parking_address || '',
+        purchases_active: unidade.purchases_active || false,
+        sales_active: unidade.sales_active || false,
         cnpj: unidade.cnpj || '',
         instagram_profile: unidade.instagram_profile || '',
         operation_mon: unidade.operation_mon || '',
@@ -253,11 +273,104 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
                 <MenuItem value="operacao">Operação</MenuItem>
               </Select>
             </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Fase de Implantação</InputLabel>
+              <Select
+                value={formData.store_imp_phase}
+                label="Fase de Implantação"
+                onChange={(e) => handleInputChange('store_imp_phase', e.target.value)}
+              >
+                <MenuItem value="pre_abertura">Pré-abertura</MenuItem>
+                <MenuItem value="implantacao">Implantação</MenuItem>
+                <MenuItem value="pos_abertura">Pós-abertura</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+          
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="CNPJ"
               value={formData.cnpj}
               onChange={(e) => handleInputChange('cnpj', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Estado"
+              value={formData.state}
+              onChange={(e) => handleInputChange('state', e.target.value)}
+            />
+          </Stack>
+
+          <Divider />
+          
+          <Typography variant="h6">Integrações</Typography>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="AI Agent ID"
+              value={formData.ai_agent_id}
+              onChange={(e) => handleInputChange('ai_agent_id', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Notion Page ID"
+              value={formData.notion_page_id}
+              onChange={(e) => handleInputChange('notion_page_id', e.target.value)}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Drive Folder ID"
+              value={formData.drive_folder_id}
+              onChange={(e) => handleInputChange('drive_folder_id', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Drive Folder Link"
+              value={formData.drive_folder_link}
+              onChange={(e) => handleInputChange('drive_folder_link', e.target.value)}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Docs Folder ID"
+              value={formData.docs_folder_id}
+              onChange={(e) => handleInputChange('docs_folder_id', e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Docs Folder Link"
+              value={formData.docs_folder_link}
+              onChange={(e) => handleInputChange('docs_folder_link', e.target.value)}
+            />
+          </Stack>
+
+          <Divider />
+          
+          <Typography variant="h6">Status Operacional</Typography>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.purchases_active}
+                  onChange={(e) => handleInputChange('purchases_active', e.target.checked)}
+                />
+              }
+              label="Compras Ativas"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.sales_active}
+                  onChange={(e) => handleInputChange('sales_active', e.target.checked)}
+                />
+              }
+              label="Vendas Ativas"
             />
           </Stack>
 
