@@ -73,7 +73,8 @@ const columns: GridColDef[] = [
   {
     field: "group_name",
     headerName: "Nome",
-    width: 200,
+    flex: 1,
+    minWidth: 200,
     renderCell: (params) => (
       <Typography variant="body2" fontWeight="medium">
         {params.value}
@@ -117,7 +118,8 @@ const columns: GridColDef[] = [
   {
     field: "city",
     headerName: "Cidade",
-    width: 150,
+    flex: 0.8,
+    minWidth: 150,
   },
   {
     field: "uf",
@@ -132,7 +134,8 @@ const columns: GridColDef[] = [
   {
     field: "phone",
     headerName: "Telefone",
-    width: 140,
+    flex: 0.6,
+    minWidth: 140,
   },
   {
     field: "actions",

@@ -60,7 +60,8 @@ const columns: GridColDef[] = [
   {
     field: "full_name",
     headerName: "Nome",
-    width: 250,
+    flex: 1,
+    minWidth: 250,
     renderCell: (params) => {
       const franqueado = params.row;
       const initials = franqueado.full_name
@@ -113,7 +114,8 @@ const columns: GridColDef[] = [
   {
     field: "receives_prolabore",
     headerName: "Pró-labore",
-    width: 140,
+    flex: 0.6,
+    minWidth: 140,
     renderCell: (params) => {
       const receives = params.value;
       const prolaboreValue = params.row.prolabore_value;
@@ -137,7 +139,8 @@ const columns: GridColDef[] = [
   {
     field: "availability",
     headerName: "Disponibilidade",
-    width: 150,
+    flex: 0.8,
+    minWidth: 150,
     renderCell: (params) => (
       <Typography variant="body2">
         {params.value || "-"}
