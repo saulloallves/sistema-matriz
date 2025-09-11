@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   Box, 
   Typography, 
@@ -7,10 +7,23 @@ import {
   Menu, 
   MenuItem,
   Avatar,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardContent
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { 
+  MoreHorizontal, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  Users, 
+  UserCheck, 
+  Crown, 
+  Building, 
+  DollarSign, 
+  Clock 
+} from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
 import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
@@ -131,6 +144,160 @@ export default function FranqueadosPage() {
     setViewModalOpen(false);
     setSelectedFranqueado(null);
   };
+
+  const statsCards = useMemo(() => {
+    const totalFranqueados = data.length;
+    const franqueadosAtivos = data.filter(f => f.is_in_contract).length;
+    const franqueadosPrincipais = data.filter(f => f.owner_type === 'principal').length;
+    const franqueadosSocios = data.filter(f => f.owner_type === 'socio').length;
+    const franqueadosComProlabore = data.filter(f => f.receives_prolabore).length;
+    const franqueadosIntegrais = data.filter(f => f.availability === 'integral').length;
+
+    const cardData = [
+      {
+        title: "Total de Franqueados",
+        value: totalFranqueados,
+        icon: "Users",
+        color: "primary.main",
+        bgColor: "primary.light",
+        iconBg: "primary.main"
+      },
+      {
+        title: "Com Contrato",
+        value: franqueadosAtivos,
+        icon: "UserCheck",
+        color: "success.main",
+        bgColor: "success.light",
+        iconBg: "success.main"
+      },
+      {
+        title: "Principais",
+        value: franqueadosPrincipais,
+        icon: "Crown",
+        color: "warning.main",
+        bgColor: "warning.light",
+        iconBg: "warning.main"
+      },
+      {
+        title: "Sócios",
+        value: franqueadosSocios,
+        icon: "Building",
+        color: "info.main",
+        bgColor: "info.light",
+        iconBg: "info.main"
+      },
+      {
+        title: "Com Pró-labore",
+        value: franqueadosComProlabore,
+        icon: "DollarSign",
+        color: "error.main",
+        bgColor: "error.light",
+        iconBg: "error.main"
+      },
+      {
+        title: "Dedicação Integral",
+        value: franqueadosIntegrais,
+        icon: "Clock",
+        color: "secondary.main",
+        bgColor: "secondary.light",
+        iconBg: "secondary.main"
+      }
+    ];
+
+    return (
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(3, 1fr)', 
+        gap: 3, 
+        mb: 3 
+      }}>
+        {cardData.map((card, index) => {
+          const renderIcon = () => {
+            switch(card.icon) {
+              case "Users":
+                return <Users size={24} />;
+              case "UserCheck":
+                return <UserCheck size={24} />;
+              case "Crown":
+                return <Crown size={24} />;
+              case "Building":
+                return <Building size={24} />;
+              case "DollarSign":
+                return <DollarSign size={24} />;
+              case "Clock":
+                return <Clock size={24} />;
+              default:
+                return <Users size={24} />;
+            }
+          };
+          
+          return (
+            <Card 
+              key={index}
+              sx={{ 
+                height: '100px',
+                background: 'background.paper',
+                border: `1px solid ${card.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 4px 20px ${card.color}15`,
+                  border: `1px solid ${card.color}40`
+                }
+              }}
+            >
+              <CardContent sx={{ 
+                p: 3, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 3,
+                height: '100%'
+              }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '12px',
+                    backgroundColor: `${card.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    color: card.color
+                  }}
+                >
+                  {renderIcon()}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: card.color, 
+                      fontWeight: 700,
+                      mb: 0.5,
+                      fontSize: '1.75rem'
+                    }}
+                  >
+                    {card.value}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 500,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {card.title}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    );
+  }, [data]);
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
@@ -352,6 +519,7 @@ export default function FranqueadosPage() {
         title="Franqueados"
         description="Gerencie todos os franqueados do sistema"
         loading={loading}
+        customCards={statsCards}
       />
 
       <FranqueadoViewModal
