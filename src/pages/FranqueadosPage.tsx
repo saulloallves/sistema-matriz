@@ -190,10 +190,15 @@ export default function FranqueadosPage() {
           return type;
         };
         
+        const getChipColor = (type: string) => {
+          if (type === 'socio') return 'primary';
+          return 'secondary';
+        };
+        
         return (
           <Chip
             label={formatOwnerType(params.value)}
-            color="secondary"
+            color={getChipColor(params.value)}
             size="small"
           />
         );
