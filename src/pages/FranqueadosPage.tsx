@@ -115,6 +115,7 @@ export default function FranqueadosPage() {
     setSelectedFranqueado(null);
   };
 
+
   const columns: GridColDef[] = [
     {
       field: "full_name",
