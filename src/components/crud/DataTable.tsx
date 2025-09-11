@@ -94,16 +94,14 @@ export function DataTable({
           </Card>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <TextField
             fullWidth
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment> }}
-            sx={{ maxWidth: 400 }}
           />
-          <Button variant="outlined" startIcon={<Filter size={16} />}>Filtros</Button>
         </Box>
       </Box>
 
