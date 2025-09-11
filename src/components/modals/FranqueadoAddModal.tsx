@@ -106,6 +106,7 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
   const has_other_activities = watch('has_other_activities');
 
   const onSubmit = async (data: FranqueadoFormData) => {
+    console.log("Form submitted with data:", data);
     try {
       setLoading(true);
 
