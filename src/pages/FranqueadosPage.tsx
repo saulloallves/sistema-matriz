@@ -248,9 +248,17 @@ export default function FranqueadosPage() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <Typography variant="body2" textAlign="center">
-          {params.value || "-"}
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: '100%',
+          py: 1
+        }}>
+          <Typography variant="body2" textAlign="center">
+            {params.value || "-"}
+          </Typography>
+        </Box>
       ),
     },
     {
