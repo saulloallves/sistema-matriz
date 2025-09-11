@@ -150,11 +150,21 @@ export default function FranqueadosPage() {
           .slice(0, 2);
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            height: '100%',
+            py: 1
+          }}>
             <Avatar sx={{ width: 32, height: 32 }}>
               {initials}
             </Avatar>
-            <Box>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}>
               <Typography variant="body2" fontWeight="medium">
                 {franqueado.full_name}
               </Typography>
