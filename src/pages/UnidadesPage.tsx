@@ -89,7 +89,15 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     flex: 3,
     minWidth: 200,
     renderCell: (params) => (
-      <Typography variant="body2" fontWeight="medium">
+      <Typography 
+        variant="body2" 
+        fontWeight="medium"
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          height: '100%' 
+        }}
+      >
         {params.value}
       </Typography>
     ),
