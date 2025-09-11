@@ -185,8 +185,8 @@ export default function FranqueadosPage() {
       headerAlign: "center",
       renderCell: (params) => {
         const formatOwnerType = (type: string) => {
-          if (type === 'integral') return 'Integral';
           if (type === 'principal') return 'Principal';
+          if (type === 'socio') return 'Sócio';
           return type;
         };
         
