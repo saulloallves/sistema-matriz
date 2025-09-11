@@ -218,7 +218,7 @@ export type Database = {
           purchases_active: boolean | null
           sales_active: boolean | null
           state: string | null
-          store_imp_phase: string
+          store_imp_phase: string | null
           store_model: string
           store_phase: string
           uf: string | null
@@ -260,7 +260,7 @@ export type Database = {
           purchases_active?: boolean | null
           sales_active?: boolean | null
           state?: string | null
-          store_imp_phase: string
+          store_imp_phase?: string | null
           store_model: string
           store_phase?: string
           uf?: string | null
@@ -302,7 +302,7 @@ export type Database = {
           purchases_active?: boolean | null
           sales_active?: boolean | null
           state?: string | null
-          store_imp_phase?: string
+          store_imp_phase?: string | null
           store_model?: string
           store_phase?: string
           uf?: string | null
