@@ -295,6 +295,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               label="CEP"
               value={formData.postal_code}
               onChange={(e) => handleInputChange('postal_code', e.target.value)}
+              helperText="Digite o CEP para preencher automaticamente os campos de endereço"
             />
           </Stack>
 
