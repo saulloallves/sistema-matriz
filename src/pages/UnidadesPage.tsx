@@ -43,7 +43,13 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (unidade: Unida
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 0.5 }}>
+    <Box sx={{ 
+      display: 'flex', 
+      gap: 0.5, 
+      alignItems: 'center', 
+      height: '100%',
+      justifyContent: 'center'
+    }}>
       <IconButton onClick={handleClick} size="small" color="primary">
         <MoreHorizontal size={20} />
       </IconButton>
