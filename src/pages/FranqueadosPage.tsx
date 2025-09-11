@@ -13,13 +13,14 @@ import { GridColDef } from '@mui/x-data-grid';
 import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
+import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Franqueado = Tables<"franqueados">;
 
-const ActionCell = ({ row, onView }: { row: any; onView: (franqueado: Franqueado) => void }) => {
+const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Franqueado) => void; onEdit: (franqueado: Franqueado) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -32,6 +33,11 @@ const ActionCell = ({ row, onView }: { row: any; onView: (franqueado: Franqueado
 
   const handleView = () => {
     onView(row);
+    handleClose();
+  };
+
+  const handleEdit = () => {
+    onEdit(row);
     handleClose();
   };
 
@@ -49,7 +55,7 @@ const ActionCell = ({ row, onView }: { row: any; onView: (franqueado: Franqueado
           <Eye size={18} style={{ marginRight: 8 }} />
           Visualizar
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleEdit}>
           <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
@@ -67,6 +73,7 @@ export default function FranqueadosPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFranqueado, setSelectedFranqueado] = useState<Franqueado | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
     loadFranqueados();
@@ -98,7 +105,8 @@ export default function FranqueadosPage() {
   };
 
   const handleEdit = (franqueado: Franqueado) => {
-    toast("Funcionalidade de editar em desenvolvimento");
+    setSelectedFranqueado(franqueado);
+    setEditModalOpen(true);
   };
 
   const handleDelete = (franqueado: Franqueado) => {
@@ -112,6 +120,11 @@ export default function FranqueadosPage() {
 
   const handleCloseViewModal = () => {
     setViewModalOpen(false);
+    setSelectedFranqueado(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
     setSelectedFranqueado(null);
   };
 
@@ -229,7 +242,7 @@ export default function FranqueadosPage() {
       width: 120,
       sortable: false,
       filterable: false,
-      renderCell: (params) => <ActionCell row={params.row} onView={handleView} />,
+      renderCell: (params) => <ActionCell row={params.row} onView={handleView} onEdit={handleEdit} />,
     },
   ];
 
@@ -259,6 +272,13 @@ export default function FranqueadosPage() {
         open={viewModalOpen}
         onClose={handleCloseViewModal}
         franqueado={selectedFranqueado}
+      />
+
+      <FranqueadoEditModal
+        open={editModalOpen}
+        onClose={handleCloseEditModal}
+        franqueado={selectedFranqueado}
+        onUpdate={loadFranqueados}
       />
     </>
   );
