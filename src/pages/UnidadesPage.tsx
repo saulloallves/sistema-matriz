@@ -73,7 +73,7 @@ const columns: GridColDef[] = [
   {
     field: "group_name",
     headerName: "Nome",
-    flex: 1,
+    flex: 3,
     minWidth: 200,
     renderCell: (params) => (
       <Typography variant="body2" fontWeight="medium">
@@ -84,7 +84,8 @@ const columns: GridColDef[] = [
   {
     field: "store_model",
     headerName: "Modelo",
-    width: 150,
+    flex: 1.5,
+    minWidth: 150,
     renderCell: (params) => {
       const colorMap: Record<string, string> = {
         junior: "default",
@@ -106,7 +107,8 @@ const columns: GridColDef[] = [
   {
     field: "store_phase",
     headerName: "Fase",
-    width: 130,
+    flex: 1.2,
+    minWidth: 130,
     renderCell: (params) => (
       <Chip
         label={params.value === "operacao" ? "Operação" : "Implantação"}
@@ -118,7 +120,7 @@ const columns: GridColDef[] = [
   {
     field: "city",
     headerName: "Cidade",
-    flex: 0.8,
+    flex: 2,
     minWidth: 150,
   },
   {
@@ -134,7 +136,7 @@ const columns: GridColDef[] = [
   {
     field: "phone",
     headerName: "Telefone",
-    flex: 0.6,
+    flex: 2,
     minWidth: 140,
   },
   {

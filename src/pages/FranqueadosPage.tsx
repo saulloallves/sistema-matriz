@@ -60,7 +60,7 @@ const columns: GridColDef[] = [
   {
     field: "full_name",
     headerName: "Nome",
-    flex: 1,
+    flex: 3,
     minWidth: 250,
     renderCell: (params) => {
       const franqueado = params.row;
@@ -90,7 +90,8 @@ const columns: GridColDef[] = [
   {
     field: "owner_type",
     headerName: "Tipo",
-    width: 120,
+    flex: 1,
+    minWidth: 120,
     renderCell: (params) => (
       <Chip
         label={params.value}
@@ -102,7 +103,8 @@ const columns: GridColDef[] = [
   {
     field: "is_in_contract",
     headerName: "Contrato",
-    width: 120,
+    flex: 1,
+    minWidth: 120,
     renderCell: (params) => (
       <Chip
         label={params.value ? "Ativo" : "Inativo"}
@@ -114,7 +116,7 @@ const columns: GridColDef[] = [
   {
     field: "receives_prolabore",
     headerName: "Pró-labore",
-    flex: 0.6,
+    flex: 1.5,
     minWidth: 140,
     renderCell: (params) => {
       const receives = params.value;
@@ -139,7 +141,7 @@ const columns: GridColDef[] = [
   {
     field: "availability",
     headerName: "Disponibilidade",
-    flex: 0.8,
+    flex: 1.8,
     minWidth: 150,
     renderCell: (params) => (
       <Typography variant="body2">
@@ -150,7 +152,8 @@ const columns: GridColDef[] = [
   {
     field: "created_at",
     headerName: "Cadastro",
-    width: 120,
+    flex: 1,
+    minWidth: 120,
     renderCell: (params) => {
       const date = new Date(params.value);
       return (
