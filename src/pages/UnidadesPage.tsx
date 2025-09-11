@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   Box, 
   Typography, 
@@ -7,10 +7,23 @@ import {
   Menu, 
   MenuItem,
   Avatar,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardContent
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { 
+  MoreHorizontal, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  Building2, 
+  Play, 
+  Construction, 
+  Crown, 
+  Zap, 
+  TrendingUp 
+} from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { UnidadeEditModal } from "@/components/modals/UnidadeEditModal";
@@ -227,6 +240,134 @@ export default function UnidadesPage() {
     }
   };
 
+  const statsCards = useMemo(() => {
+    const totalUnidades = data.length;
+    const unidadesOperacao = data.filter(u => u.store_phase === 'operacao').length;
+    const unidadesImplantacao = data.filter(u => u.store_phase === 'implantacao').length;
+    const unidadesPadrao = data.filter(u => u.store_model === 'padrao').length;
+    const unidadesMegaStore = data.filter(u => u.store_model === 'mega_store').length;
+    const unidadesAtivas = data.filter(u => u.sales_active || u.purchases_active).length;
+
+    const cardData = [
+      {
+        title: "Total de Unidades",
+        value: totalUnidades,
+        icon: Building2,
+        color: "primary.main",
+        bgColor: "primary.light",
+        iconBg: "primary.main"
+      },
+      {
+        title: "Em Operação",
+        value: unidadesOperacao,
+        icon: Play,
+        color: "success.main",
+        bgColor: "success.light",
+        iconBg: "success.main"
+      },
+      {
+        title: "Em Implantação",
+        value: unidadesImplantacao,
+        icon: Construction,
+        color: "warning.main",
+        bgColor: "warning.light",
+        iconBg: "warning.main"
+      },
+      {
+        title: "Modelo Padrão",
+        value: unidadesPadrao,
+        icon: Crown,
+        color: "info.main",
+        bgColor: "info.light",
+        iconBg: "info.main"
+      },
+      {
+        title: "Mega Store",
+        value: unidadesMegaStore,
+        icon: Zap,
+        color: "error.main",
+        bgColor: "error.light",
+        iconBg: "error.main"
+      },
+      {
+        title: "Unidades Ativas",
+        value: unidadesAtivas,
+        icon: TrendingUp,
+        color: "secondary.main",
+        bgColor: "secondary.light",
+        iconBg: "secondary.main"
+      }
+    ];
+
+    return (
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: 3, 
+        mb: 3 
+      }}>
+        {cardData.map((card, index) => {
+          const IconComponent = card.icon;
+          return (
+            <Card 
+              key={index}
+              sx={{ 
+                height: '100%',
+                background: `linear-gradient(135deg, ${card.bgColor}15, ${card.bgColor}08)`,
+                border: `1px solid ${card.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 25px ${card.color}20`,
+                  border: `1px solid ${card.color}40`
+                }
+              }}
+            >
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${card.iconBg}, ${card.color})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                    boxShadow: `0 4px 20px ${card.color}30`
+                  }}
+                >
+                  <IconComponent size={24} color="white" />
+                </Box>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    color: card.color, 
+                    fontWeight: 700,
+                    mb: 0.5,
+                    fontSize: '2rem'
+                  }}
+                >
+                  {card.value}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    fontWeight: 500,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  {card.title}
+                </Typography>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    );
+  }, [data]);
+
   const handleView = (unidade: Unidade) => {
     setSelectedUnidade(unidade);
     setViewModalOpen(true);
@@ -267,6 +408,7 @@ export default function UnidadesPage() {
         title="Unidades"
         description="Gerencie todas as unidades do sistema"
         loading={loading}
+        customCards={statsCards}
       />
       
       <UnidadeViewModal

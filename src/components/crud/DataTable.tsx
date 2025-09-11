@@ -32,6 +32,7 @@ interface DataTableProps {
   title?: string;
   description?: string;
   loading?: boolean;
+  customCards?: React.ReactNode;
 }
 
 export function DataTable({
@@ -44,6 +45,7 @@ export function DataTable({
   title,
   description,
   loading = false,
+  customCards,
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -73,26 +75,28 @@ export function DataTable({
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Card sx={{ flex: 1 }}>
-            <CardContent sx={{ py: 2 }}>
-              <Typography variant="h5">{data.length}</Typography>
-              <Typography color="text.secondary" variant="body2">Total de registros</Typography>
-            </CardContent>
-          </Card>
-          <Card sx={{ flex: 1 }}>
-            <CardContent sx={{ py: 2 }}>
-              <Typography variant="h5">{filteredData.length}</Typography>
-              <Typography color="text.secondary" variant="body2">Registros filtrados</Typography>
-            </CardContent>
-          </Card>
-          <Card sx={{ flex: 1 }}>
-            <CardContent sx={{ py: 2 }}>
-              <Typography variant="h5">{Math.ceil(filteredData.length / paginationModel.pageSize)}</Typography>
-              <Typography color="text.secondary" variant="body2">Total de páginas</Typography>
-            </CardContent>
-          </Card>
-        </Box>
+        {customCards || (
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Card sx={{ flex: 1 }}>
+              <CardContent sx={{ py: 2 }}>
+                <Typography variant="h5">{data.length}</Typography>
+                <Typography color="text.secondary" variant="body2">Total de registros</Typography>
+              </CardContent>
+            </Card>
+            <Card sx={{ flex: 1 }}>
+              <CardContent sx={{ py: 2 }}>
+                <Typography variant="h5">{filteredData.length}</Typography>
+                <Typography color="text.secondary" variant="body2">Registros filtrados</Typography>
+              </CardContent>
+            </Card>
+            <Card sx={{ flex: 1 }}>
+              <CardContent sx={{ py: 2 }}>
+                <Typography variant="h5">{Math.ceil(filteredData.length / paginationModel.pageSize)}</Typography>
+                <Typography color="text.secondary" variant="body2">Total de páginas</Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
         <Box sx={{ mb: 2 }}>
           <TextField
