@@ -130,6 +130,11 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         setCnpjError(error);
       }
       
+      // Se mudar a fase da loja para "operacao", limpar a fase de implantação
+      if (field === 'store_phase' && value !== 'implantacao') {
+        newData.store_imp_phase = '';
+      }
+      
       return newData;
     });
 
@@ -183,7 +188,7 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         group_name: formData.group_name,
         store_model: formData.store_model,
         store_phase: formData.store_phase,
-        store_imp_phase: formData.store_imp_phase || null,
+        store_imp_phase: formData.store_phase === 'implantacao' ? formData.store_imp_phase : null,
         address: formData.address || null,
         number_address: formData.number_address || null,
         address_complement: formData.address_complement || null,
@@ -352,10 +357,10 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
           </Stack>
           
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={formData.store_phase !== 'implantacao'}>
               <InputLabel>Fase de Implantação</InputLabel>
               <Select
-                value={formData.store_imp_phase}
+                value={formData.store_phase === 'implantacao' ? formData.store_imp_phase : ''}
                 label="Fase de Implantação"
                 onChange={(e) => handleInputChange('store_imp_phase', e.target.value)}
               >
