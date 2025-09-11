@@ -14,6 +14,7 @@ import { MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { UnidadeEditModal } from "@/components/modals/UnidadeEditModal";
+import { UnidadeAddModal } from "@/components/modals/UnidadeAddModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
@@ -166,6 +167,7 @@ export default function UnidadesPage() {
   const [loading, setLoading] = useState(true);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedUnidade, setSelectedUnidade] = useState<Unidade | null>(null);
 
   useEffect(() => {
@@ -208,7 +210,7 @@ export default function UnidadesPage() {
   };
 
   const handleAdd = () => {
-    toast("Funcionalidade de adicionar em desenvolvimento");
+    setAddModalOpen(true);
   };
 
   const columns = createColumns(handleView, handleEdit);
@@ -246,6 +248,12 @@ export default function UnidadesPage() {
         onClose={() => setEditModalOpen(false)}
         unidade={selectedUnidade}
         onUpdate={loadUnidades}
+      />
+      
+      <UnidadeAddModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onAdd={loadUnidades}
       />
     </>
   );
