@@ -252,7 +252,7 @@ export default function UnidadesPage() {
       {
         title: "Total de Unidades",
         value: totalUnidades,
-        icon: Building2,
+        icon: "Building2",
         color: "primary.main",
         bgColor: "primary.light",
         iconBg: "primary.main"
@@ -260,7 +260,7 @@ export default function UnidadesPage() {
       {
         title: "Em Operação",
         value: unidadesOperacao,
-        icon: Play,
+        icon: "Play",
         color: "success.main",
         bgColor: "success.light",
         iconBg: "success.main"
@@ -268,7 +268,7 @@ export default function UnidadesPage() {
       {
         title: "Em Implantação",
         value: unidadesImplantacao,
-        icon: Construction,
+        icon: "Construction",
         color: "warning.main",
         bgColor: "warning.light",
         iconBg: "warning.main"
@@ -276,7 +276,7 @@ export default function UnidadesPage() {
       {
         title: "Modelo Padrão",
         value: unidadesPadrao,
-        icon: Crown,
+        icon: "Crown",
         color: "info.main",
         bgColor: "info.light",
         iconBg: "info.main"
@@ -284,7 +284,7 @@ export default function UnidadesPage() {
       {
         title: "Mega Store",
         value: unidadesMegaStore,
-        icon: Zap,
+        icon: "Zap",
         color: "error.main",
         bgColor: "error.light",
         iconBg: "error.main"
@@ -292,7 +292,7 @@ export default function UnidadesPage() {
       {
         title: "Unidades Ativas",
         value: unidadesAtivas,
-        icon: TrendingUp,
+        icon: "TrendingUp",
         color: "secondary.main",
         bgColor: "secondary.light",
         iconBg: "secondary.main"
@@ -307,7 +307,25 @@ export default function UnidadesPage() {
         mb: 3 
       }}>
         {cardData.map((card, index) => {
-          const IconComponent = card.icon;
+          const renderIcon = () => {
+            switch(card.icon) {
+              case "Building2":
+                return <Building2 size={24} color="white" />;
+              case "Play":
+                return <Play size={24} color="white" />;
+              case "Construction":
+                return <Construction size={24} color="white" />;
+              case "Crown":
+                return <Crown size={24} color="white" />;
+              case "Zap":
+                return <Zap size={24} color="white" />;
+              case "TrendingUp":
+                return <TrendingUp size={24} color="white" />;
+              default:
+                return <Building2 size={24} color="white" />;
+            }
+          };
+          
           return (
             <Card 
               key={index}
@@ -337,7 +355,7 @@ export default function UnidadesPage() {
                     boxShadow: `0 4px 20px ${card.color}30`
                   }}
                 >
-                  <IconComponent size={24} color="white" />
+                  {renderIcon()}
                 </Box>
                 <Typography 
                   variant="h3" 
