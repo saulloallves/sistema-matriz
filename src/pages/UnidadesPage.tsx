@@ -133,6 +133,8 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     headerName: "Modelo",
     flex: 1.5,
     minWidth: 150,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: (params) => {
       const colorMap: Record<string, string> = {
         junior: "default",
