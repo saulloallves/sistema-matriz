@@ -13,9 +13,11 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  CircularProgress
 } from '@mui/material';
 import { UserPlus, Settings, Shield, Mail } from 'lucide-react';
+import { useUserManagement } from '@/hooks/useUserManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -41,6 +43,83 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
 };
 
 const CriacaoUsuarioTab = () => {
+  const { createUser, isCreating, reset } = useUserManagement();
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone_number: '',
+    notes: ''
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = 'Nome completo é obrigatório';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email inválido';
+    }
+
+    if (!formData.phone_number.trim()) {
+      newErrors.phone_number = 'Telefone é obrigatório';
+    } else if (!/^\d{10,11}$/.test(formData.phone_number.replace(/\D/g, ''))) {
+      newErrors.phone_number = 'Telefone deve ter 10 ou 11 dígitos';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    // Limpar telefone (apenas números)
+    const cleanPhone = formData.phone_number.replace(/\D/g, '');
+    
+    createUser({
+      ...formData,
+      phone_number: cleanPhone,
+      notes: formData.notes.trim() || undefined
+    });
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      full_name: '',
+      email: '',
+      phone_number: '',
+      notes: ''
+    });
+    setErrors({});
+    reset();
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Limpar erro do campo quando o usuário começar a digitar
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 10) {
+      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    }
+    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  };
+
   return (
     <Card>
       <CardContent>
@@ -50,17 +129,23 @@ const CriacaoUsuarioTab = () => {
             Criar Novo Usuário
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Crie um novo usuário para acessar o sistema
+            Crie um novo usuário para acessar o sistema. A senha será gerada automaticamente e enviada via WhatsApp e Email.
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
             <TextField
               fullWidth
               label="Nome Completo"
               variant="outlined"
               placeholder="Digite o nome completo"
+              value={formData.full_name}
+              onChange={(e) => handleInputChange('full_name', e.target.value)}
+              error={!!errors.full_name}
+              helperText={errors.full_name}
+              disabled={isCreating}
+              required
             />
             
             <TextField
@@ -69,46 +154,32 @@ const CriacaoUsuarioTab = () => {
               type="email"
               variant="outlined"
               placeholder="Digite o email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email}
+              disabled={isCreating}
+              required
             />
 
             <TextField
               fullWidth
-              label="Senha"
-              type="password"
+              label="Telefone (WhatsApp)"
               variant="outlined"
-              placeholder="Digite a senha"
+              placeholder="(11) 99999-9999"
+              value={formatPhone(formData.phone_number)}
+              onChange={(e) => handleInputChange('phone_number', e.target.value)}
+              error={!!errors.phone_number}
+              helperText={errors.phone_number || 'Usado para enviar as credenciais via WhatsApp'}
+              disabled={isCreating}
+              required
             />
 
-            <TextField
-              fullWidth
-              label="Confirmar Senha"
-              type="password"
-              variant="outlined"
-              placeholder="Confirme a senha"
-            />
-
-            <FormControl fullWidth>
-              <InputLabel>Nível de Acesso</InputLabel>
-              <Select
-                label="Nível de Acesso"
-                defaultValue=""
-              >
-                <MenuItem value="admin">Administrador</MenuItem>
-                <MenuItem value="usuario">Usuário</MenuItem>
-                <MenuItem value="visualizador">Visualizador</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                defaultValue="ativo"
-              >
-                <MenuItem value="ativo">Ativo</MenuItem>
-                <MenuItem value="inativo">Inativo</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 2, backgroundColor: 'info.light', borderRadius: 1 }}>
+              <Typography variant="body2" color="info.dark">
+                <strong>Senha:</strong> Será gerada automaticamente e enviada via WhatsApp e Email
+              </Typography>
+            </Box>
           </Box>
 
           <TextField
@@ -118,14 +189,28 @@ const CriacaoUsuarioTab = () => {
             rows={3}
             variant="outlined"
             placeholder="Observações sobre o usuário (opcional)"
+            value={formData.notes}
+            onChange={(e) => handleInputChange('notes', e.target.value)}
+            disabled={isCreating}
           />
 
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button variant="outlined" size="large">
+            <Button 
+              variant="outlined" 
+              size="large" 
+              onClick={handleCancel}
+              disabled={isCreating}
+            >
               Cancelar
             </Button>
-            <Button variant="contained" size="large" startIcon={<UserPlus size={18} />}>
-              Criar Usuário
+            <Button 
+              type="submit"
+              variant="contained" 
+              size="large" 
+              startIcon={isCreating ? <CircularProgress size={18} /> : <UserPlus size={18} />}
+              disabled={isCreating}
+            >
+              {isCreating ? 'Criando Usuário...' : 'Criar Usuário'}
             </Button>
           </Box>
         </Box>
