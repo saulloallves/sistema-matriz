@@ -277,13 +277,20 @@ const GerenciamentoUsuariosTab = () => {
       renderCell: (params) => (
         <Box
           sx={{
-            px: 2,
+            px: 1.5,
             py: 0.5,
-            borderRadius: 1,
-            backgroundColor: params.value === 'ativo' ? 'success.light' : 'error.light',
-            color: params.value === 'ativo' ? 'success.dark' : 'error.dark',
-            fontWeight: 500,
-            fontSize: '0.875rem'
+            borderRadius: '12px',
+            backgroundColor: params.value === 'ativo' ? '#e8f5e8' : '#ffebee',
+            color: params.value === 'ativo' ? '#2e7d32' : '#c62828',
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            border: `1px solid ${params.value === 'ativo' ? '#4caf50' : '#f44336'}`,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '60px'
           }}
         >
           {params.value === 'ativo' ? 'Ativo' : 'Inativo'}
