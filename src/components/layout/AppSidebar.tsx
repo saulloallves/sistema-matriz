@@ -4,22 +4,24 @@ import {
   Box,
   Tooltip,
   IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  Divider,
 } from '@mui/material';
 import {
   LayoutDashboard,
   Store,
-  User,
+  User as UserIcon,
   Users,
   MessageCircle,
   Calendar,
-  Settings,
-  HelpCircle,
 } from 'lucide-react';
 
 const menuItems = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { text: 'Unidades', icon: Store, path: '/unidades' },
-  { text: 'Franqueados', icon: User, path: '/franqueados' },
+  { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
   { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
@@ -27,11 +29,20 @@ const menuItems = [
 
 const AppSidebar = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
   const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
+
+  const handleUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box
@@ -43,19 +54,21 @@ const AppSidebar = () => {
         borderRadius: '10px',
         padding: '16px 0',
         boxShadow: '0 0 40px rgba(0,0,0,0.03)',
-        height: 'calc(100vh - 64px)',
+        height: 'calc(100vh - 32px)',
         width: '88px',
         zIndex: 1200,
         border: '1px solid rgba(0,0,0,0.05)',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <Box
-        component="nav"
-        sx={{
-          position: 'relative',
-          height: '100%',
-        }}
-      >
+        <Box
+          component="nav"
+          sx={{
+            position: 'relative',
+            flex: 1,
+          }}
+        >
         <Box
           component="ul"
           sx={{
@@ -155,6 +168,135 @@ const AppSidebar = () => {
             );
           })}
         </Box>
+      </Box>
+
+      {/* User Menu Section */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center',
+        paddingBottom: 2,
+        paddingTop: 1,
+      }}>
+        <Divider sx={{ 
+          width: '56px', 
+          marginBottom: 2,
+          backgroundColor: 'rgba(0,0,0,0.1)' 
+        }} />
+      </Box>
+      
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center',
+        paddingBottom: 1,
+      }}>
+        <Tooltip 
+          title="Perfil do usuário" 
+          placement="right"
+          arrow
+          slotProps={{
+            tooltip: {
+              sx: {
+                backgroundColor: '#406ff3',
+                color: '#fff',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                borderRadius: '17.5px',
+                padding: '12px 16px',
+                marginLeft: '16px !important',
+              }
+            },
+            arrow: {
+              sx: {
+                color: '#406ff3',
+              }
+            }
+          }}
+        >
+          <IconButton
+            onClick={handleUserMenu}
+            sx={{ 
+              padding: 0,
+              '&:hover': {
+                backgroundColor: 'transparent',
+              }
+            }}
+          >
+            <Avatar 
+              sx={{ 
+                width: 40, 
+                height: 40, 
+                bgcolor: '#406ff3',
+                borderRadius: '10px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                }
+              }}
+            >
+              <UserIcon size={18} />
+            </Avatar>
+          </IconButton>
+        </Tooltip>
+        
+        <Menu
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'left',
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleCloseUserMenu}
+          PaperProps={{
+            sx: {
+              borderRadius: '10px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.05)',
+              ml: 2,
+            }
+          }}
+        >
+          <MenuItem 
+            onClick={handleCloseUserMenu}
+            sx={{
+              borderRadius: '6px',
+              margin: '4px 8px',
+              '&:hover': {
+                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+              }
+            }}
+          >
+            Perfil
+          </MenuItem>
+          <MenuItem 
+            onClick={handleCloseUserMenu}
+            sx={{
+              borderRadius: '6px',
+              margin: '4px 8px',
+              '&:hover': {
+                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+              }
+            }}
+          >
+            Configurações
+          </MenuItem>
+          <MenuItem 
+            onClick={handleCloseUserMenu}
+            sx={{
+              borderRadius: '6px',
+              margin: '4px 8px',
+              '&:hover': {
+                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+              }
+            }}
+          >
+            Sair
+          </MenuItem>
+        </Menu>
       </Box>
     </Box>
   );

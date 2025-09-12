@@ -1,7 +1,6 @@
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import { ReactNode } from 'react';
 import AppSidebar from './AppSidebar';
-import Header from './Header';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,22 +15,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       position: 'relative'
     }}>
       <AppSidebar />
-      <Box sx={{ 
+      <Box component="main" sx={{ 
         flexGrow: 1, 
-        display: 'flex', 
-        flexDirection: 'column',
+        p: 3, 
         marginLeft: '120px', // Espaço para a sidebar flutuante
+        backgroundColor: 'transparent'
       }}>
-        <Header />
-        <Box component="main" sx={{ 
-          flexGrow: 1, 
-          p: 3, 
-          backgroundColor: 'transparent'
-        }}>
-          <Container maxWidth="xl" disableGutters>
-            {children}
-          </Container>
-        </Box>
+        {children}
       </Box>
     </Box>
   );
