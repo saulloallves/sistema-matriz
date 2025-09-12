@@ -215,7 +215,8 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
   {
     field: "is_active",
     headerName: "Status",
-    width: 100,
+    width: 80,
+    headerAlign: 'center',
     renderCell: (params) => (
       <Chip
         label={params.value ? "Ativo" : "Inativo"}
