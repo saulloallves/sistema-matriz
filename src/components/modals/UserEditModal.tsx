@@ -122,7 +122,7 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
           {user && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary">
-                <strong>Email:</strong> {user.user_id} (não editável)
+                <strong>Email:</strong> {user.email || 'Email não disponível'} (não editável)
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 <strong>Criado em:</strong> {new Date(user.created_at).toLocaleDateString('pt-BR')}
