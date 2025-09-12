@@ -148,23 +148,36 @@ serve(async (req) => {
 
     console.log('Usuário criado com sucesso:', newUser.user?.id);
 
-    // Criar profile na tabela profiles
-    const { error: profileError } = await supabase
+    // Verificar se o profile já existe antes de criar
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .insert({
-        user_id: newUser.user!.id,
-        full_name: full_name,
-        phone_number: phone_number,
-        notes: notes || null,
-        created_by: currentUserId,
-        status: 'ativo'
-      });
+      .select('id')
+      .eq('user_id', newUser.user!.id)
+      .single();
 
-    if (profileError) {
-      console.error('Erro ao criar profile:', profileError);
-      // Tentar deletar o usuário criado em caso de erro
-      await supabase.auth.admin.deleteUser(newUser.user!.id);
-      throw new Error(`Erro ao criar profile: ${profileError.message}`);
+    if (existingProfile) {
+      console.log('Profile já existe para este usuário');
+    } else {
+      // Criar profile na tabela profiles apenas se não existir
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: newUser.user!.id,
+          full_name: full_name,
+          phone_number: phone_number,
+          notes: notes || null,
+          created_by: currentUserId,
+          status: 'ativo'
+        });
+
+      if (profileError) {
+        console.error('Erro ao criar profile:', profileError);
+        // Tentar deletar o usuário criado em caso de erro
+        await supabase.auth.admin.deleteUser(newUser.user!.id);
+        throw new Error(`Erro ao criar profile: ${profileError.message}`);
+      }
+
+      console.log('Profile criado com sucesso');
     }
 
     console.log('Profile criado com sucesso');
