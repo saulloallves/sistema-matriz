@@ -97,7 +97,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
   {
     field: "group_code",
     headerName: "Código",
-    width: 120,
+    width: 90,
     headerAlign: 'center',
     align: 'center',
     renderCell: (params) => (
@@ -222,7 +222,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
   {
     field: "actions",
     headerName: "Ações",
-    width: 120,
+    width: 80,
     sortable: false,
     filterable: false,
     renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onDelete={onDelete} />,
