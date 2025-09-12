@@ -45,24 +45,25 @@ export const useUsers = () => {
     }
   });
 
-  const inactivateUserMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: async ({ id, newStatus }: { id: string; newStatus: 'ativo' | 'inativo' }) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ status: 'inativo' })
+        .update({ status: newStatus })
         .eq('id', id);
 
       if (error) {
         throw new Error(error.message);
       }
     },
-    onSuccess: () => {
-      toast.success('Usuário inativado com sucesso!');
+    onSuccess: (_, { newStatus }) => {
+      const action = newStatus === 'ativo' ? 'ativado' : 'inativado';
+      toast.success(`Usuário ${action} com sucesso!`);
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: Error) => {
-      console.error('Erro ao inativar usuário:', error);
-      toast.error(error.message || 'Erro ao inativar usuário');
+      console.error('Erro ao alterar status do usuário:', error);
+      toast.error(error.message || 'Erro ao alterar status do usuário');
     }
   });
 
@@ -72,8 +73,8 @@ export const useUsers = () => {
     error: usersQuery.error,
     updateUser: updateUserMutation.mutate,
     isUpdating: updateUserMutation.isPending,
-    inactivateUser: inactivateUserMutation.mutate,
-    isInactivating: inactivateUserMutation.isPending,
+    toggleUserStatus: toggleUserStatusMutation.mutate,
+    isTogglingStatus: toggleUserStatusMutation.isPending,
     refetch: usersQuery.refetch
   };
 };

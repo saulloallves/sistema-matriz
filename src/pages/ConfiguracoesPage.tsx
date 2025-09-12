@@ -17,7 +17,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -50,7 +50,7 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
 
 
 const GerenciamentoUsuariosTab = () => {
-  const { users, isLoading, updateUser, isUpdating, inactivateUser, isInactivating } = useUsers();
+  const { users, isLoading, updateUser, isUpdating, toggleUserStatus, isTogglingStatus } = useUsers();
   const { createUser, isCreating, reset } = useUserManagement();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -147,9 +147,12 @@ const GerenciamentoUsuariosTab = () => {
     handleEditClose();
   };
 
-  const handleInactivate = (user: User) => {
-    if (window.confirm(`Tem certeza que deseja inativar o usuário ${user.full_name}?`)) {
-      inactivateUser(user.id);
+  const handleToggleStatus = (user: User) => {
+    const newStatus = user.status === 'ativo' ? 'inativo' : 'ativo';
+    const action = newStatus === 'ativo' ? 'ativar' : 'inativar';
+    
+    if (window.confirm(`Tem certeza que deseja ${action} o usuário ${user.full_name}?`)) {
+      toggleUserStatus({ id: user.id, newStatus });
     }
   };
 
@@ -218,7 +221,7 @@ const GerenciamentoUsuariosTab = () => {
             color="primary"
             startIcon={<Edit size={16} />}
             onClick={() => handleEdit(params.row)}
-            disabled={isUpdating || isInactivating}
+            disabled={isUpdating || isTogglingStatus}
             sx={{ minWidth: 'auto', px: 1 }}
           >
             Editar
@@ -226,13 +229,13 @@ const GerenciamentoUsuariosTab = () => {
           <Button
             size="small"
             variant="outlined"
-            color="warning"
-            startIcon={<UserX size={16} />}
-            onClick={() => handleInactivate(params.row)}
-            disabled={isUpdating || isInactivating}
+            color={params.row.status === 'ativo' ? 'warning' : 'success'}
+            startIcon={params.row.status === 'ativo' ? <UserX size={16} /> : <UserCheck size={16} />}
+            onClick={() => handleToggleStatus(params.row)}
+            disabled={isUpdating || isTogglingStatus}
             sx={{ minWidth: 'auto', px: 1 }}
           >
-            Inativar
+            {params.row.status === 'ativo' ? 'Inativar' : 'Ativar'}
           </Button>
         </Box>
       )
