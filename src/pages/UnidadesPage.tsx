@@ -129,6 +129,40 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     ),
   },
   {
+    field: "phone",
+    headerName: "Telefone",
+    flex: 2,
+    minWidth: 140,
+  },
+  {
+    field: "city",
+    headerName: "Cidade",
+    flex: 2,
+    minWidth: 150,
+  },
+  {
+    field: "uf",
+    headerName: "UF",
+    width: 60,
+    headerAlign: 'center',
+    align: 'center',
+    renderCell: (params) => (
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          fontFamily: 'monospace',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          textAlign: 'center'
+        }}
+      >
+        {params.value}
+      </Typography>
+    ),
+  },
+  {
     field: "store_model",
     headerName: "Modelo",
     flex: 1.5,
@@ -177,40 +211,6 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
         size="small"
       />
     ),
-  },
-  {
-    field: "city",
-    headerName: "Cidade",
-    flex: 2,
-    minWidth: 150,
-  },
-  {
-    field: "uf",
-    headerName: "UF",
-    width: 60,
-    headerAlign: 'center',
-    align: 'center',
-    renderCell: (params) => (
-      <Typography 
-        variant="body2" 
-        sx={{ 
-          fontFamily: 'monospace',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {params.value}
-      </Typography>
-    ),
-  },
-  {
-    field: "phone",
-    headerName: "Telefone",
-    flex: 2,
-    minWidth: 140,
   },
   {
     field: "is_active",
