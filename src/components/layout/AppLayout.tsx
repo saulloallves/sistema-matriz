@@ -25,12 +25,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Header />
         <Box component="main" sx={{ 
           flexGrow: 1, 
-          p: 3, 
+          padding: '24px 16px', 
           backgroundColor: 'transparent'
         }}>
-          <Container maxWidth="xl" disableGutters>
-            {children}
-          </Container>
+          {children}
         </Box>
       </Box>
     </Box>
