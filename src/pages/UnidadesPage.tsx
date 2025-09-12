@@ -168,6 +168,8 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     headerName: "Fase",
     flex: 1.2,
     minWidth: 130,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: (params) => (
       <Chip
         label={params.value === "operacao" ? "Operação" : "Implantação"}
