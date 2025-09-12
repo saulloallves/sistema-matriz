@@ -137,6 +137,7 @@ serve(async (req) => {
       user_metadata: {
         full_name: full_name,
         phone_number: phone_number,
+        notes: notes,
         created_by: currentUserId
       }
     });
