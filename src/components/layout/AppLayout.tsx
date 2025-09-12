@@ -19,7 +19,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         flexGrow: 1, 
         p: 3, 
         marginLeft: '120px', // Espaço para a sidebar flutuante
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        width: 'calc(100vw - 120px)', // Limita a largura total
+        maxWidth: 'calc(100vw - 120px)',
+        overflow: 'hidden', // Evita overflow
       }}>
         {children}
       </Box>

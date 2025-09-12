@@ -320,9 +320,14 @@ export default function UnidadesPage() {
     return (
       <Box sx={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(3, 1fr)', 
+        gridTemplateColumns: { 
+          xs: '1fr', 
+          sm: 'repeat(2, 1fr)', 
+          md: 'repeat(3, 1fr)' 
+        }, 
         gap: 3, 
-        mb: 3 
+        mb: 3,
+        width: '100%'
       }}>
         {cardData.map((card, index) => {
           const renderIcon = () => {

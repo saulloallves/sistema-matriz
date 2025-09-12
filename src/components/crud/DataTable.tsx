@@ -70,7 +70,13 @@ export function DataTable({
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      width: '100%',
+      overflow: 'hidden'
+    }}>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box>
@@ -117,7 +123,13 @@ export function DataTable({
         </Box>
       </Box>
 
-      <Card sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ 
+        flexGrow: 1, 
+        display: 'flex', 
+        flexDirection: 'column',
+        width: '100%',
+        overflow: 'hidden'
+      }}>
         <DataGrid
           rows={filteredData}
           columns={finalColumns}
@@ -128,7 +140,17 @@ export function DataTable({
           loading={loading}
           slots={{ toolbar: GridToolbar }}
           getRowId={(row) => row.id || Math.random()}
-          sx={{ border: 0 }}
+          sx={{ 
+            border: 0,
+            width: '100%',
+            overflow: 'hidden',
+            '& .MuiDataGrid-root': {
+              overflow: 'hidden'
+            },
+            '& .MuiDataGrid-main': {
+              overflow: 'hidden'
+            }
+          }}
           disableRowSelectionOnClick
         />
       </Card>
