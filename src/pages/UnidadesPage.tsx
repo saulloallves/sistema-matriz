@@ -506,6 +506,7 @@ export default function UnidadesPage() {
         onDelete={handleDelete}
         searchPlaceholder="Pesquisar unidades..."
         title="Unidades"
+        titleIcon={<Building2 size={32} color="#1976d2" />}
         description="Gerencie todas as unidades do sistema"
         loading={loading}
         customCards={statsCards}

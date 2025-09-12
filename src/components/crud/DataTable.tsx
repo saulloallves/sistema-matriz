@@ -31,6 +31,7 @@ interface DataTableProps {
   onDelete?: (row: any) => void;
   searchPlaceholder?: string;
   title?: string;
+  titleIcon?: React.ReactNode;
   description?: string;
   loading?: boolean;
   customCards?: React.ReactNode;
@@ -44,6 +45,7 @@ export function DataTable({
   onDelete,
   searchPlaceholder = "Pesquisar...",
   title,
+  titleIcon,
   description,
   loading = false,
   customCards,
@@ -80,7 +82,12 @@ export function DataTable({
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box>
-            {title && <Typography variant="h4" component="h1" gutterBottom>{title}</Typography>}
+            {title && (
+              <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2, fontWeight: 600 }}>
+                {titleIcon}
+                {title}
+              </Typography>
+            )}
             {description && <Typography variant="body1" color="text.secondary">{description}</Typography>}
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
