@@ -98,6 +98,8 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     field: "group_code",
     headerName: "Código",
     width: 120,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: (params) => (
       <Chip
         label={params.value}
