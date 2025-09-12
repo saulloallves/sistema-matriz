@@ -94,7 +94,7 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Fr
 export default function FranqueadosPage() {
   const { 
     franqueados, 
-    isLoading, 
+    isLoading: dataLoading, 
     getFranqueadoDetails, 
     deleteFranqueado,
     isDeleting 
@@ -150,13 +150,27 @@ export default function FranqueadosPage() {
     setSelectedFranqueado(null);
   };
 
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setSelectedFranqueado(null);
+  };
+
+  const handleCloseAddModal = () => {
+    setAddModalOpen(false);
+  };
+
   const statsCards = useMemo(() => {
+    // Ensure franqueados is defined and is an array before filtering
+    if (!franqueados || !Array.isArray(franqueados) || franqueados.length === 0) {
+      return null;
+    }
+
     const totalFranqueados = franqueados.length;
-    const franqueadosAtivos = franqueados.filter(f => f.is_in_contract).length;
-    const franqueadosPrincipais = franqueados.filter(f => f.owner_type === 'principal').length;
-    const franqueadosSocios = franqueados.filter(f => f.owner_type === 'socio').length;
-    const franqueadosComProlabore = franqueados.filter(f => f.receives_prolabore).length;
-    const franqueadosIntegrais = franqueados.filter(f => f.availability === 'integral').length;
+    const franqueadosAtivos = franqueados.filter(f => f?.is_in_contract).length;
+    const franqueadosPrincipais = franqueados.filter(f => f?.owner_type === 'principal').length;
+    const franqueadosSocios = franqueados.filter(f => f?.owner_type === 'socio').length;
+    const franqueadosComProlabore = franqueados.filter(f => f?.receives_prolabore).length;
+    const franqueadosIntegrais = franqueados.filter(f => f?.availability === 'integral').length;
 
     const cardData = [
       {
@@ -319,16 +333,6 @@ export default function FranqueadosPage() {
     );
   }, [franqueados]);
 
-  const handleCloseEditModal = () => {
-    setEditModalOpen(false);
-    setSelectedFranqueado(null);
-  };
-
-  const handleCloseAddModal = () => {
-    setAddModalOpen(false);
-  };
-
-
   const columns: GridColDef[] = [
     {
       field: "full_name",
@@ -338,10 +342,10 @@ export default function FranqueadosPage() {
       renderCell: (params) => {
         const franqueado = params.row;
         const initials = franqueado.full_name
-          .split(" ")
-          .map((n: string) => n[0])
-          .join("")
-          .slice(0, 2);
+          ?.split(" ")
+          ?.map((n: string) => n[0])
+          ?.join("")
+          ?.slice(0, 2) || "??";
 
         return (
           <Box sx={{ 
@@ -520,7 +524,7 @@ export default function FranqueadosPage() {
   ];
 
   // Show loading state for both data and role
-  if (isLoading || roleLoading) {
+  if (dataLoading || roleLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />
@@ -548,7 +552,7 @@ export default function FranqueadosPage() {
       
       <DataTable
         columns={columns}
-        data={franqueados}
+        data={franqueados || []}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -556,8 +560,8 @@ export default function FranqueadosPage() {
         title="Franqueados"
         titleIcon={<Users size={32} color="#1976d2" />}
         description="Gerencie todos os franqueados do sistema"
-        loading={isLoading || isDeleting}
-        customCards={statsCards}
+        loading={dataLoading || isDeleting}
+        customCards={statsCards || undefined}
       />
 
       <FranqueadoViewModal
