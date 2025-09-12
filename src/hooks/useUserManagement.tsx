@@ -33,6 +33,11 @@ export const useUserManagement = () => {
         throw new Error(error.message || 'Erro ao criar usuário');
       }
 
+      // Se a edge function retornou um erro no próprio data
+      if (data && !data.success && data.error) {
+        throw new Error(data.error);
+      }
+
       return data;
     },
     onSuccess: (data) => {
