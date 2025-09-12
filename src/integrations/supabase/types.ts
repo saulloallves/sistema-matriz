@@ -60,6 +60,7 @@ export type Database = {
           referrer_unit_code: string | null
           system_term_accepted: boolean
           updated_at: string | null
+          user_id: string | null
           was_entrepreneur: boolean | null
           was_referred: boolean | null
           web_password: string
@@ -91,6 +92,7 @@ export type Database = {
           referrer_unit_code?: string | null
           system_term_accepted?: boolean
           updated_at?: string | null
+          user_id?: string | null
           was_entrepreneur?: boolean | null
           was_referred?: boolean | null
           web_password: string
@@ -122,6 +124,7 @@ export type Database = {
           referrer_unit_code?: string | null
           system_term_accepted?: boolean
           updated_at?: string | null
+          user_id?: string | null
           was_entrepreneur?: boolean | null
           was_referred?: boolean | null
           web_password?: string
@@ -381,6 +384,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_franqueados_com_unidades: {
@@ -458,6 +482,10 @@ export type Database = {
       }
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_users_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -473,8 +501,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "franqueado" | "user"
       store_imp_phase_enum:
         | "integracao"
         | "treinamento"
@@ -625,6 +661,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "franqueado", "user"],
       store_imp_phase_enum: [
         "integracao",
         "treinamento",
