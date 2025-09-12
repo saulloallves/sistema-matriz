@@ -33,14 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Verificar se o usuário está ativo após fazer login
-          setTimeout(async () => {
-            await checkUserStatus(session.user.id);
-          }, 0);
-        }
-        
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -48,14 +41,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        // Verificar se o usuário está ativo na sessão existente
-        setTimeout(async () => {
-          await checkUserStatus(session.user.id);
-        }, 0);
-      }
-      
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -64,31 +50,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkUserStatus = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('status')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        console.error('Erro ao verificar status do usuário:', error);
-        return;
-      }
-
-      if (profile?.status === 'inativo') {
-        toast.error('Sua conta foi desativada. Entre em contato com o administrador.');
-        await supabase.auth.signOut();
-      }
-    } catch (error) {
-      console.error('Erro ao verificar status do usuário:', error);
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // Primeiro, fazer login para obter o user_id
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -99,7 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error };
       }
 
-      // Verificar imediatamente se o usuário está ativo
+      // IMEDIATAMENTE após o login, verificar se o usuário está ativo
       if (data.user) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -109,14 +75,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         if (profileError) {
           console.error('Erro ao verificar status do usuário:', profileError);
-          toast.error('Erro ao verificar permissões do usuário');
+          // Se não conseguiu verificar o status, deslogar por segurança
           await supabase.auth.signOut();
+          toast.error('Erro ao verificar permissões do usuário');
           return { error: profileError };
         }
 
         if (profile?.status === 'inativo') {
-          toast.error('Sua conta foi desativada. Entre em contato com o administrador.');
+          // Se usuário está inativo, deslogar imediatamente antes de retornar
           await supabase.auth.signOut();
+          toast.error('Sua conta foi desativada. Entre em contato com o administrador.');
           return { error: { message: 'Conta desativada' } };
         }
       }
@@ -125,6 +93,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return { error: null };
     } catch (error: any) {
       toast.error('Erro inesperado durante o login');
+      // Em caso de erro, garantir logout
+      await supabase.auth.signOut();
       return { error };
     } finally {
       setLoading(false);
