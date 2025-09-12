@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Box,
   Tooltip,
@@ -32,6 +33,7 @@ const AppSidebar = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
   const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
@@ -285,12 +287,16 @@ const AppSidebar = () => {
             Configurações
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseUserMenu}
+            onClick={async () => {
+              handleCloseUserMenu();
+              await signOut();
+            }}
             sx={{
               borderRadius: '6px',
               margin: '4px 8px',
+              color: '#d32f2f',
               '&:hover': {
-                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                backgroundColor: 'rgba(211, 47, 47, 0.1)',
               }
             }}
           >
