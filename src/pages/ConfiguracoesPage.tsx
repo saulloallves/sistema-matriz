@@ -211,7 +211,7 @@ const GerenciamentoUsuariosTab = () => {
       headerAlign: 'center',
       sortable: false,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Button
             size="small"
             variant="outlined"
