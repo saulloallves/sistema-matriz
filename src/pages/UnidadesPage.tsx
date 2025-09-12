@@ -291,9 +291,9 @@ export default function UnidadesPage() {
         title: "Total de Unidades",
         value: totalUnidades,
         icon: "Building2",
-        color: "primary.main",
-        bgColor: "primary.light",
-        iconBg: "primary.main"
+        color: "success.main",
+        bgColor: "success.light",
+        iconBg: "success.main"
       },
       {
         title: "Em Operação",
