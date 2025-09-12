@@ -11,10 +11,7 @@ export const useUsers = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          email:user_id(email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
