@@ -439,7 +439,7 @@ export default function UnidadesPage() {
                     top: 0,
                     bottom: 0,
                     width: 4,
-                    backgroundColor: card.color,
+                    backgroundColor: index === 1 ? '#ff9923' : card.color,
                     borderRadius: '0 12px 12px 0',
                     opacity: 0.8
                   }}
