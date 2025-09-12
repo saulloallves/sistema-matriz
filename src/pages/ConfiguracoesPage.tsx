@@ -17,7 +17,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users, Edit, Trash2 } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -174,6 +174,21 @@ const GerenciamentoUsuariosTab = () => {
       }
     },
     {
+      field: 'email',
+      headerName: 'E-mail',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'created_at',
+      headerName: 'Criado em',
+      width: 120,
+      valueFormatter: (value) => {
+        if (!value) return '';
+        return new Date(value).toLocaleDateString('pt-BR');
+      }
+    },
+    {
       field: 'status',
       headerName: 'Status',
       width: 120,
@@ -189,28 +204,37 @@ const GerenciamentoUsuariosTab = () => {
       )
     },
     {
-      field: 'created_at',
-      headerName: 'Criado em',
+      field: 'actions',
+      headerName: 'Ações',
       width: 120,
-      valueFormatter: (value) => {
-        if (!value) return '';
-        return new Date(value).toLocaleDateString('pt-BR');
-      }
-    },
-    {
-      field: 'notes',
-      headerName: 'Observações',
-      flex: 1,
-      minWidth: 200,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
       renderCell: (params) => (
-        <Typography variant="body2" sx={{ 
-          overflow: 'hidden', 
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          maxWidth: '100%'
-        }}>
-          {params.value || '-'}
-        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            color="primary"
+            startIcon={<Edit size={16} />}
+            onClick={() => handleEdit(params.row)}
+            disabled={isUpdating || isDeleting}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            Editar
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            startIcon={<Trash2 size={16} />}
+            onClick={() => handleDelete(params.row)}
+            disabled={isUpdating || isDeleting}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            Excluir
+          </Button>
+        </Box>
       )
     }
   ];
@@ -225,8 +249,6 @@ const GerenciamentoUsuariosTab = () => {
         data={users}
         columns={columns}
         loading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
       />
 
       {/* Seção de Criação de Usuário */}
