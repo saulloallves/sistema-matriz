@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { 
   Box, 
   Typography, 
@@ -9,7 +9,8 @@ import {
   Avatar,
   CircularProgress,
   Card,
-  CardContent
+  CardContent,
+  Alert
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { 
@@ -22,13 +23,14 @@ import {
   Crown, 
   Building, 
   DollarSign, 
-  Clock 
+  Clock,
+  Shield
 } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
 import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
 import { FranqueadoAddModal } from "@/components/modals/FranqueadoAddModal";
-import { supabase } from "@/integrations/supabase/client";
+import { useFranqueados, useUserRole } from "@/hooks/useFranqueados";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
@@ -90,54 +92,57 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Fr
 };
 
 export default function FranqueadosPage() {
-  const [data, setData] = useState<Franqueado[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    franqueados, 
+    isLoading, 
+    getFranqueadoDetails, 
+    deleteFranqueado,
+    isDeleting 
+  } = useFranqueados();
+  const { isAdmin, isFranqueado, userRole, isLoading: roleLoading } = useUserRole();
+  
   const [selectedFranqueado, setSelectedFranqueado] = useState<Franqueado | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    loadFranqueados();
-  }, []);
-
-  const loadFranqueados = async () => {
-    try {
-      setLoading(true);
-      const { data: franqueados, error } = await supabase
-        .from("franqueados")
-        .select("*")
-        .order("full_name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      setData(franqueados || []);
-    } catch (error) {
-      console.error("Erro ao carregar franqueados:", error);
-      toast.error("Erro ao carregar franqueados");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAdd = () => {
+    if (!isAdmin()) {
+      toast.error("Apenas administradores podem adicionar franqueados");
+      return;
+    }
     setAddModalOpen(true);
   };
 
-  const handleEdit = (franqueado: Franqueado) => {
-    setSelectedFranqueado(franqueado);
-    setEditModalOpen(true);
+  const handleEdit = async (franqueado: any) => {
+    try {
+      const fullData = await getFranqueadoDetails(franqueado.id);
+      setSelectedFranqueado(fullData);
+      setEditModalOpen(true);
+    } catch (error) {
+      toast.error("Erro ao carregar dados do franqueado");
+    }
   };
 
-  const handleDelete = (franqueado: Franqueado) => {
-    toast("Funcionalidade de excluir em desenvolvimento");
+  const handleDelete = (franqueado: any) => {
+    if (!isAdmin()) {
+      toast.error("Apenas administradores podem excluir franqueados");
+      return;
+    }
+    
+    if (confirm("Tem certeza que deseja excluir este franqueado?")) {
+      deleteFranqueado(franqueado.id);
+    }
   };
 
-  const handleView = (franqueado: Franqueado) => {
-    setSelectedFranqueado(franqueado);
-    setViewModalOpen(true);
+  const handleView = async (franqueado: any) => {
+    try {
+      const fullData = await getFranqueadoDetails(franqueado.id);
+      setSelectedFranqueado(fullData);
+      setViewModalOpen(true);
+    } catch (error) {
+      toast.error("Erro ao carregar dados do franqueado");
+    }
   };
 
   const handleCloseViewModal = () => {
@@ -146,12 +151,12 @@ export default function FranqueadosPage() {
   };
 
   const statsCards = useMemo(() => {
-    const totalFranqueados = data.length;
-    const franqueadosAtivos = data.filter(f => f.is_in_contract).length;
-    const franqueadosPrincipais = data.filter(f => f.owner_type === 'principal').length;
-    const franqueadosSocios = data.filter(f => f.owner_type === 'socio').length;
-    const franqueadosComProlabore = data.filter(f => f.receives_prolabore).length;
-    const franqueadosIntegrais = data.filter(f => f.availability === 'integral').length;
+    const totalFranqueados = franqueados.length;
+    const franqueadosAtivos = franqueados.filter(f => f.is_in_contract).length;
+    const franqueadosPrincipais = franqueados.filter(f => f.owner_type === 'principal').length;
+    const franqueadosSocios = franqueados.filter(f => f.owner_type === 'socio').length;
+    const franqueadosComProlabore = franqueados.filter(f => f.receives_prolabore).length;
+    const franqueadosIntegrais = franqueados.filter(f => f.availability === 'integral').length;
 
     const cardData = [
       {
@@ -312,7 +317,7 @@ export default function FranqueadosPage() {
         })}
       </Box>
     );
-  }, [data]);
+  }, [franqueados]);
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
@@ -358,7 +363,7 @@ export default function FranqueadosPage() {
                 {franqueado.full_name}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {franqueado.contact}
+                {franqueado.contact_masked || franqueado.contact}
               </Typography>
             </Box>
           </Box>
@@ -514,7 +519,8 @@ export default function FranqueadosPage() {
     },
   ];
 
-  if (loading) {
+  // Show loading state for both data and role
+  if (isLoading || roleLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />
@@ -522,11 +528,27 @@ export default function FranqueadosPage() {
     );
   }
 
+  // Show security warning for non-admin users
+  const showSecurityAlert = !isAdmin() && userRole;
+
   return (
     <>
+      {showSecurityAlert && (
+        <Alert 
+          severity="info" 
+          icon={<Shield />}
+          sx={{ mb: 2 }}
+        >
+          {isFranqueado() 
+            ? "Você está visualizando dados com acesso restrito. Alguns campos sensíveis estão mascarados por segurança."
+            : "Acesso limitado: Você não tem permissão para visualizar todos os dados dos franqueados."
+          }
+        </Alert>
+      )}
+      
       <DataTable
         columns={columns}
-        data={data}
+        data={franqueados}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -534,7 +556,7 @@ export default function FranqueadosPage() {
         title="Franqueados"
         titleIcon={<Users size={32} color="#1976d2" />}
         description="Gerencie todos os franqueados do sistema"
-        loading={loading}
+        loading={isLoading || isDeleting}
         customCards={statsCards}
       />
 
@@ -548,13 +570,13 @@ export default function FranqueadosPage() {
         open={editModalOpen}
         onClose={handleCloseEditModal}
         franqueado={selectedFranqueado}
-        onUpdate={loadFranqueados}
+        onUpdate={() => {}} // Handled by React Query cache invalidation
       />
 
       <FranqueadoAddModal
         open={addModalOpen}
         onClose={handleCloseAddModal}
-        onUpdate={loadFranqueados}
+        onUpdate={() => {}} // Handled by React Query cache invalidation
       />
     </>
   );

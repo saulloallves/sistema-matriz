@@ -131,6 +131,68 @@ export type Database = {
         }
         Relationships: []
       }
+      franqueados_audit_log: {
+        Row: {
+          accessed_fields: string[] | null
+          action: string
+          created_at: string | null
+          franqueado_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accessed_fields?: string[] | null
+          action: string
+          created_at?: string | null
+          franqueado_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accessed_fields?: string[] | null
+          action?: string
+          created_at?: string | null
+          franqueado_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "franqueados_audit_log_franqueado_id_fkey"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "franqueados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "franqueados_audit_log_franqueado_id_fkey"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "v_franqueados_com_unidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "franqueados_audit_log_franqueado_id_fkey"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "v_franqueados_unidades_detalhes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "franqueados_audit_log_franqueado_id_fkey"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "v_my_franqueado_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       franqueados_unidades: {
         Row: {
           created_at: string
@@ -173,6 +235,13 @@ export type Database = {
             columns: ["franqueado_id"]
             isOneToOne: false
             referencedRelation: "v_franqueados_unidades_detalhes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "franqueados_unidades_franqueado_id_fkey"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "v_my_franqueado_data"
             referencedColumns: ["id"]
           },
           {
@@ -480,11 +549,124 @@ export type Database = {
         }
         Relationships: []
       }
+      v_my_franqueado_data: {
+        Row: {
+          address: string | null
+          availability: string | null
+          birth_date: string | null
+          confidentiality_term_accepted: boolean | null
+          contact: string | null
+          cpf_rnm: string | null
+          created_at: string | null
+          discovery_source: string | null
+          education: string | null
+          full_name: string | null
+          has_other_activities: boolean | null
+          id: string | null
+          is_in_contract: boolean | null
+          lgpd_term_accepted: boolean | null
+          nationality: string | null
+          other_activities_description: string | null
+          owner_type: string | null
+          previous_profession: string | null
+          previous_salary_range: string | null
+          profile_image: string | null
+          prolabore_value: number | null
+          receives_prolabore: boolean | null
+          referrer_name: string | null
+          referrer_unit_code: string | null
+          system_term_accepted: boolean | null
+          updated_at: string | null
+          was_entrepreneur: boolean | null
+          was_referred: boolean | null
+        }
+        Insert: {
+          address?: string | null
+          availability?: string | null
+          birth_date?: string | null
+          confidentiality_term_accepted?: boolean | null
+          contact?: string | null
+          cpf_rnm?: string | null
+          created_at?: string | null
+          discovery_source?: string | null
+          education?: string | null
+          full_name?: string | null
+          has_other_activities?: boolean | null
+          id?: string | null
+          is_in_contract?: boolean | null
+          lgpd_term_accepted?: boolean | null
+          nationality?: string | null
+          other_activities_description?: string | null
+          owner_type?: string | null
+          previous_profession?: string | null
+          previous_salary_range?: string | null
+          profile_image?: string | null
+          prolabore_value?: number | null
+          receives_prolabore?: boolean | null
+          referrer_name?: string | null
+          referrer_unit_code?: string | null
+          system_term_accepted?: boolean | null
+          updated_at?: string | null
+          was_entrepreneur?: boolean | null
+          was_referred?: boolean | null
+        }
+        Update: {
+          address?: string | null
+          availability?: string | null
+          birth_date?: string | null
+          confidentiality_term_accepted?: boolean | null
+          contact?: string | null
+          cpf_rnm?: string | null
+          created_at?: string | null
+          discovery_source?: string | null
+          education?: string | null
+          full_name?: string | null
+          has_other_activities?: boolean | null
+          id?: string | null
+          is_in_contract?: boolean | null
+          lgpd_term_accepted?: boolean | null
+          nationality?: string | null
+          other_activities_description?: string | null
+          owner_type?: string | null
+          previous_profession?: string | null
+          previous_salary_range?: string | null
+          profile_image?: string | null
+          prolabore_value?: number | null
+          receives_prolabore?: boolean | null
+          referrer_name?: string | null
+          referrer_unit_code?: string | null
+          system_term_accepted?: boolean | null
+          updated_at?: string | null
+          was_entrepreneur?: boolean | null
+          was_referred?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      can_access_sensitive_data: {
+        Args: { _franqueado_id?: string }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_franqueados_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address_masked: string
+          availability: string
+          contact_masked: string
+          cpf_rnm_masked: string
+          created_at: string
+          full_name: string
+          id: string
+          is_in_contract: boolean
+          owner_type: string
+          prolabore_value: number
+          receives_prolabore: boolean
+        }[]
       }
       get_users_with_emails: {
         Args: Record<PropertyKey, never>
@@ -507,6 +689,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_franqueado_access: {
+        Args: {
+          _accessed_fields?: string[]
+          _action: string
+          _franqueado_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
