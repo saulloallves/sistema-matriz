@@ -197,7 +197,9 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
           fontFamily: 'monospace',
           display: 'flex',
           alignItems: 'center',
-          height: '100%'
+          justifyContent: 'center',
+          height: '100%',
+          textAlign: 'center'
         }}
       >
         {params.value}
