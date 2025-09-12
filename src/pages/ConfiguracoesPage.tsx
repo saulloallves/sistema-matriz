@@ -206,7 +206,7 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'actions',
       headerName: 'Ações',
-      width: 120,
+      width: 180,
       align: 'center',
       headerAlign: 'center',
       sortable: false,
