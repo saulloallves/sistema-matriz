@@ -230,6 +230,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     field: "actions",
     headerName: "Ações",
     width: 80,
+    headerAlign: 'center',
     sortable: false,
     filterable: false,
     renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onDelete={onDelete} />,
