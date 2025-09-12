@@ -48,8 +48,14 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
   );
 };
 
-const CriacaoUsuarioTab = () => {
+
+const GerenciamentoUsuariosTab = () => {
+  const { users, isLoading, updateUser, isUpdating, deleteUser, isDeleting } = useUsers();
   const { createUser, isCreating, reset } = useUserManagement();
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  
+  // Estados do formulário de criação
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -125,110 +131,6 @@ const CriacaoUsuarioTab = () => {
     }
     return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
-
-  return (
-    <Card>
-      <CardContent>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <UserPlus size={20} />
-            Criar Novo Usuário
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Crie um novo usuário para acessar o sistema. A senha será gerada automaticamente e enviada via WhatsApp e Email.
-          </Typography>
-        </Box>
-
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-            <TextField
-              fullWidth
-              label="Nome Completo"
-              variant="outlined"
-              placeholder="Digite o nome completo"
-              value={formData.full_name}
-              onChange={(e) => handleInputChange('full_name', e.target.value)}
-              error={!!errors.full_name}
-              helperText={errors.full_name}
-              disabled={isCreating}
-              required
-            />
-            
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              variant="outlined"
-              placeholder="Digite o email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              error={!!errors.email}
-              helperText={errors.email}
-              disabled={isCreating}
-              required
-            />
-
-            <TextField
-              fullWidth
-              label="Telefone (WhatsApp)"
-              variant="outlined"
-              placeholder="(11) 99999-9999"
-              value={formatPhone(formData.phone_number)}
-              onChange={(e) => handleInputChange('phone_number', e.target.value)}
-              error={!!errors.phone_number}
-              helperText={errors.phone_number || 'Usado para enviar as credenciais via WhatsApp'}
-              disabled={isCreating}
-              required
-            />
-
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 2, backgroundColor: 'info.light', borderRadius: 1 }}>
-              <Typography variant="body2" color="info.dark">
-                <strong>Senha:</strong> Será gerada automaticamente e enviada via WhatsApp e Email
-              </Typography>
-            </Box>
-          </Box>
-
-          <TextField
-            fullWidth
-            label="Observações"
-            multiline
-            rows={3}
-            variant="outlined"
-            placeholder="Observações sobre o usuário (opcional)"
-            value={formData.notes}
-            onChange={(e) => handleInputChange('notes', e.target.value)}
-            disabled={isCreating}
-          />
-
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button 
-              variant="outlined" 
-              size="large" 
-              onClick={handleCancel}
-              disabled={isCreating}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              type="submit"
-              variant="contained" 
-              size="large" 
-              startIcon={isCreating ? <CircularProgress size={18} /> : <UserPlus size={18} />}
-              disabled={isCreating}
-            >
-              {isCreating ? 'Criando Usuário...' : 'Criar Usuário'}
-            </Button>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-};
-
-const GerenciamentoUsuariosTab = () => {
-  const { users, isLoading, updateUser, isUpdating, deleteUser, isDeleting } = useUsers();
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
@@ -314,17 +216,115 @@ const GerenciamentoUsuariosTab = () => {
   ];
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Seção de Listagem de Usuários */}
       <DataTable
-        title="Gerenciamento de Usuários"
+        title="Usuários do Sistema"
         titleIcon={<Users size={20} />}
-        description="Visualize e gerencie todos os usuários do sistema"
+        description="Visualize e gerencie todos os usuários cadastrados"
         data={users}
         columns={columns}
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
+
+      {/* Seção de Criação de Usuário */}
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <UserPlus size={20} />
+              Criar Novo Usuário
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Crie um novo usuário para acessar o sistema. A senha será gerada automaticamente e enviada via WhatsApp e Email.
+            </Typography>
+          </Box>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+              <TextField
+                fullWidth
+                label="Nome Completo"
+                variant="outlined"
+                placeholder="Digite o nome completo"
+                value={formData.full_name}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                error={!!errors.full_name}
+                helperText={errors.full_name}
+                disabled={isCreating}
+                required
+              />
+              
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                variant="outlined"
+                placeholder="Digite o email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                error={!!errors.email}
+                helperText={errors.email}
+                disabled={isCreating}
+                required
+              />
+
+              <TextField
+                fullWidth
+                label="Telefone (WhatsApp)"
+                variant="outlined"
+                placeholder="(11) 99999-9999"
+                value={formatPhone(formData.phone_number)}
+                onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                error={!!errors.phone_number}
+                helperText={errors.phone_number || 'Usado para enviar as credenciais via WhatsApp'}
+                disabled={isCreating}
+                required
+              />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', p: 2, backgroundColor: 'info.light', borderRadius: 1 }}>
+                <Typography variant="body2" color="info.dark">
+                  <strong>Senha:</strong> Será gerada automaticamente e enviada via WhatsApp e Email
+                </Typography>
+              </Box>
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Observações"
+              multiline
+              rows={3}
+              variant="outlined"
+              placeholder="Observações sobre o usuário (opcional)"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              disabled={isCreating}
+            />
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Button 
+                variant="outlined" 
+                size="large" 
+                onClick={handleCancel}
+                disabled={isCreating}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit"
+                variant="contained" 
+                size="large" 
+                startIcon={isCreating ? <CircularProgress size={18} /> : <UserPlus size={18} />}
+                disabled={isCreating}
+              >
+                {isCreating ? 'Criando Usuário...' : 'Criar Usuário'}
+              </Button>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
 
       <UserEditModal
         open={editModalOpen}
@@ -333,7 +333,7 @@ const GerenciamentoUsuariosTab = () => {
         onSave={handleEditSave}
         isLoading={isUpdating}
       />
-    </>
+    </Box>
   );
 };
 
@@ -367,12 +367,6 @@ const ConfiguracoesPage = () => {
             sx={{ px: 2 }}
           >
             <Tab 
-              icon={<UserPlus size={18} />} 
-              label="Criar Usuário" 
-              iconPosition="start"
-              sx={{ textTransform: 'none', fontWeight: 500 }}
-            />
-            <Tab 
               icon={<Users size={18} />} 
               label="Gerenciar Usuários" 
               iconPosition="start"
@@ -405,14 +399,10 @@ const ConfiguracoesPage = () => {
         {/* Tab Panels */}
         <Box sx={{ p: 3 }}>
           <TabPanel value={tabValue} index={0}>
-            <CriacaoUsuarioTab />
-          </TabPanel>
-          
-          <TabPanel value={tabValue} index={1}>
             <GerenciamentoUsuariosTab />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={1}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -425,7 +415,7 @@ const ConfiguracoesPage = () => {
             </Card>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={2}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -438,7 +428,7 @@ const ConfiguracoesPage = () => {
             </Card>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={3}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
