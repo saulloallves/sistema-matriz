@@ -398,12 +398,12 @@ export default function UnidadesPage() {
                     width: 56,
                     height: 56,
                     borderRadius: '12px',
-                    backgroundColor: `${card.color}15`,
+                    backgroundColor: index === 1 ? '#ff992315' : `${card.color}15`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    color: card.color
+                    color: index === 1 ? '#ff9923' : card.color
                   }}
                 >
                   {renderIcon()}
@@ -412,7 +412,7 @@ export default function UnidadesPage() {
                   <Typography 
                     variant="h4" 
                     sx={{ 
-                      color: card.color, 
+                      color: index === 1 ? '#ff9923' : card.color, 
                       fontWeight: 700,
                       mb: 0.5,
                       fontSize: '1.75rem'
