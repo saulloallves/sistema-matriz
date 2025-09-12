@@ -458,7 +458,21 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_users_with_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          created_by: string
+          email: string
+          full_name: string
+          id: string
+          notes: string
+          phone_number: string
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       store_imp_phase_enum:
