@@ -188,6 +188,8 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     field: "uf",
     headerName: "UF",
     width: 80,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: (params) => (
       <Typography 
         variant="body2" 
