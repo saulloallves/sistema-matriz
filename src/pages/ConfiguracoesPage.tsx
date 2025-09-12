@@ -14,7 +14,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
+  Chip
 } from '@mui/material';
 import { UserPlus, Settings, Shield, Mail, Users } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
@@ -274,27 +275,15 @@ const GerenciamentoUsuariosTab = () => {
       field: 'status',
       headerName: 'Status',
       width: 120,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => (
-        <Box
-          sx={{
-            px: 1.5,
-            py: 0.5,
-            borderRadius: '12px',
-            backgroundColor: params.value === 'ativo' ? '#e8f5e8' : '#ffebee',
-            color: params.value === 'ativo' ? '#2e7d32' : '#c62828',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            border: `1px solid ${params.value === 'ativo' ? '#4caf50' : '#f44336'}`,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: '60px'
-          }}
-        >
-          {params.value === 'ativo' ? 'Ativo' : 'Inativo'}
-        </Box>
+        <Chip
+          label={params.value === 'ativo' ? 'Ativo' : 'Inativo'}
+          color={params.value === 'ativo' ? 'success' : 'default'}
+          size="small"
+          variant={params.value === 'ativo' ? 'filled' : 'outlined'}
+        />
       )
     },
     {
