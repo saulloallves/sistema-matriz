@@ -37,56 +37,52 @@ function generateRandomPassword(length: number = 8): string {
   return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
-async function sendWhatsAppMessage(phone: string, name: string, password: string) {
+const sendWhatsApp = async (phone: string, message: string): Promise<boolean> => {
   try {
-    const message = `Olá ${name}! 🔐
-
-Sua nova senha de acesso foi gerada:
-
-*Senha:* ${password}
-
-⚠️ Por segurança, recomendamos que você altere sua senha após o primeiro login.
-
-Entre no sistema em: https://sua-plataforma.com
-
-Qualquer dúvida, estamos à disposição!`;
-
-    const response = await fetch('https://api.z-api.io/instances/your-instance/token/your-token/send-text', {
+    const response = await fetch('https://qrdewkryvpwvdxygtxve.supabase.co/functions/v1/zapi-send-text', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc'
       },
       body: JSON.stringify({
-        phone: `55${phone}`,
+        phone: phone,
         message: message
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`WhatsApp API error: ${response.status}`);
-    }
-
-    console.log('WhatsApp enviado com sucesso para:', phone);
-    return true;
+    return response.ok;
   } catch (error) {
     console.error('Erro ao enviar WhatsApp:', error);
     return false;
   }
-}
+};
 
-async function sendEmailNotification(email: string, name: string, password: string) {
+const sendEmail = async (email: string, subject: string, html: string): Promise<boolean> => {
   try {
-    // Aqui você implementaria o envio de email
-    // Por exemplo, usando Resend, SendGrid, ou outro serviço
-    console.log(`Email seria enviado para: ${email} com a senha: ${password}`);
-    
-    // Simulação de envio bem-sucedido
-    return true;
+    const response = await fetch('https://qrdewkryvpwvdxygtxve.supabase.co/functions/v1/brevo-send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc'
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: subject,
+        html: html,
+        from: "sistema@crescieperdi.com.br",
+        fromName: "Sistema de Gestão"
+      })
+    });
+
+    return response.ok;
   } catch (error) {
     console.error('Erro ao enviar email:', error);
     return false;
   }
-}
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -142,38 +138,72 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Senha atualizada com sucesso no Auth');
 
+    // Preparar mensagens
+    const whatsappMessage = `Olá ${full_name}! 🔐
+
+Sua nova senha de acesso foi gerada:
+
+*Senha:* ${newPassword}
+
+⚠️ Por segurança, recomendamos que você altere sua senha após o primeiro login.
+
+Qualquer dúvida, estamos à disposição!`;
+
+    const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">
+          🔐 Nova Senha de Acesso
+        </h1>
+      </div>
+      
+      <div style="padding: 40px 30px;">
+        <h2 style="color: #333; margin-bottom: 20px;">Olá, ${full_name}!</h2>
+        
+        <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+          Uma nova senha foi gerada para sua conta no sistema. Use as credenciais abaixo para fazer login:
+        </p>
+        
+        <div style="background: #f8f9ff; border: 2px solid #667eea; padding: 25px; border-radius: 12px; margin: 25px 0;">
+          <p style="margin: 0 0 15px 0; color: #333;"><strong>Nova Senha:</strong></p>
+          <p style="font-family: 'Courier New', monospace; font-size: 18px; color: #667eea; font-weight: bold; margin: 0; letter-spacing: 2px;">
+            ${newPassword}
+          </p>
+        </div>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; color: #856404;">
+            <strong>⚠️ Importante:</strong> Por segurança, recomendamos que você altere sua senha após o primeiro login.
+          </p>
+        </div>
+        
+        <p style="color: #666; margin-top: 25px;">
+          Se você tiver alguma dúvida ou precisar de ajuda, entre em contato com o suporte.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+        <p style="color: #999; font-size: 14px; text-align: center; margin: 0;">
+          Sistema de Gestão - Reset de Senha
+        </p>
+      </div>
+    </div>`;
+
     // Enviar notificações
-    const promises = [];
+    console.log('Enviando notificações...');
     
-    // WhatsApp
-    promises.push(sendWhatsAppMessage(phone_number, full_name, newPassword));
-    
-    // Email (se disponível)
-    if (email) {
-      promises.push(sendEmailNotification(email, full_name, newPassword));
-    }
+    const [whatsappSuccess, emailSuccess] = await Promise.all([
+      sendWhatsApp(phone_number, whatsappMessage),
+      email ? sendEmail(email, 'Nova Senha de Acesso - Sistema de Gestão', emailHtml) : Promise.resolve(false)
+    ]);
 
-    const results = await Promise.allSettled(promises);
-    
-    let whatsappSent = false;
-    let emailSent = false;
-
-    if (results[0].status === 'fulfilled') {
-      whatsappSent = results[0].value;
-    }
-
-    if (results[1] && results[1].status === 'fulfilled') {
-      emailSent = results[1].value;
-    }
-
-    console.log('Resultados do envio:', { whatsappSent, emailSent });
+    console.log('Resultados das notificações:', { whatsappSuccess, emailSuccess });
 
     return new Response(JSON.stringify({
       success: true,
       message: 'Senha resetada com sucesso!',
       notifications: {
-        whatsapp: whatsappSent,
-        email: emailSent
+        whatsapp: whatsappSuccess,
+        email: emailSuccess
       }
     }), {
       status: 200,
