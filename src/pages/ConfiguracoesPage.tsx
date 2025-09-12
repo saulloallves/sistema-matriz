@@ -157,13 +157,13 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'full_name',
       headerName: 'Nome Completo',
-      flex: 1,
-      minWidth: 200,
+      width: 180,
+      minWidth: 150,
     },
     {
       field: 'phone_number',
       headerName: 'Telefone',
-      width: 150,
+      width: 130,
       valueFormatter: (value) => {
         if (!value) return '';
         const numbers = String(value).replace(/\D/g, '');
@@ -191,7 +191,7 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'status',
       headerName: 'Status',
-      width: 120,
+      width: 100,
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => (
