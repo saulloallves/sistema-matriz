@@ -152,7 +152,7 @@ serve(async (req) => {
           error: 'Este email já está cadastrado no sistema. Por favor, use um email diferente.',
           error_code: 'email_exists'
         }), {
-          status: 400,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -244,7 +244,7 @@ Mantenha suas credenciais em local seguro.`;
       success: false,
       error: error.message 
     }), {
-      status: 400,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
