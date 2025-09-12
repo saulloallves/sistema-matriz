@@ -207,8 +207,15 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     renderCell: (params) => (
       <Chip
         label={params.value === "operacao" ? "Operação" : "Implantação"}
-        color={params.value === "operacao" ? "success" : "warning"}
+        color={params.value === "operacao" ? undefined : "warning"}
         size="small"
+        sx={params.value === "operacao" ? {
+          backgroundColor: "#ff9923",
+          color: "white",
+          '& .MuiChip-label': {
+            color: "white"
+          }
+        } : {}}
       />
     ),
   },
