@@ -14,9 +14,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
-  Chip
+  CircularProgress
 } from '@mui/material';
+import { Chip } from '@mui/material';
 import { UserPlus, Settings, Shield, Mail, Users } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
