@@ -16,8 +16,13 @@ import {
   MenuItem,
   CircularProgress
 } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
+import { useUsers } from '@/hooks/useUsers';
+import { User } from '@/types/user';
+import { DataTable } from '@/components/crud/DataTable';
+import UserEditModal from '@/components/modals/UserEditModal';
+import { GridColDef } from '@mui/x-data-grid';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -219,6 +224,123 @@ const CriacaoUsuarioTab = () => {
   );
 };
 
+const GerenciamentoUsuariosTab = () => {
+  const { users, isLoading, updateUser, isUpdating, deleteUser, isDeleting } = useUsers();
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+    setEditModalOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setEditModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleEditSave = (id: string, updates: Partial<User>) => {
+    updateUser({ id, updates });
+    handleEditClose();
+  };
+
+  const handleDelete = (user: User) => {
+    if (window.confirm(`Tem certeza que deseja excluir o usuário ${user.full_name}?`)) {
+      deleteUser(user.id);
+    }
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: 'full_name',
+      headerName: 'Nome Completo',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'phone_number',
+      headerName: 'Telefone',
+      width: 150,
+      valueFormatter: (value) => {
+        if (!value) return '';
+        const numbers = String(value).replace(/\D/g, '');
+        if (numbers.length <= 10) {
+          return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      }
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 120,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            px: 2,
+            py: 0.5,
+            borderRadius: 1,
+            backgroundColor: params.value === 'ativo' ? 'success.light' : 'error.light',
+            color: params.value === 'ativo' ? 'success.dark' : 'error.dark',
+            fontWeight: 500,
+            fontSize: '0.875rem'
+          }}
+        >
+          {params.value === 'ativo' ? 'Ativo' : 'Inativo'}
+        </Box>
+      )
+    },
+    {
+      field: 'created_at',
+      headerName: 'Criado em',
+      width: 120,
+      valueFormatter: (value) => {
+        if (!value) return '';
+        return new Date(value).toLocaleDateString('pt-BR');
+      }
+    },
+    {
+      field: 'notes',
+      headerName: 'Observações',
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ 
+          overflow: 'hidden', 
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: '100%'
+        }}>
+          {params.value || '-'}
+        </Typography>
+      )
+    }
+  ];
+
+  return (
+    <>
+      <DataTable
+        title="Gerenciamento de Usuários"
+        titleIcon={<Users size={20} />}
+        description="Visualize e gerencie todos os usuários do sistema"
+        data={users}
+        columns={columns}
+        loading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <UserEditModal
+        open={editModalOpen}
+        onClose={handleEditClose}
+        user={selectedUser}
+        onSave={handleEditSave}
+        isLoading={isUpdating}
+      />
+    </>
+  );
+};
+
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
 
@@ -255,6 +377,12 @@ const ConfiguracoesPage = () => {
               sx={{ textTransform: 'none', fontWeight: 500 }}
             />
             <Tab 
+              icon={<Users size={18} />} 
+              label="Gerenciar Usuários" 
+              iconPosition="start"
+              sx={{ textTransform: 'none', fontWeight: 500 }}
+            />
+            <Tab 
               icon={<Shield size={18} />} 
               label="Permissões" 
               iconPosition="start"
@@ -285,6 +413,10 @@ const ConfiguracoesPage = () => {
           </TabPanel>
           
           <TabPanel value={tabValue} index={1}>
+            <GerenciamentoUsuariosTab />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -297,7 +429,7 @@ const ConfiguracoesPage = () => {
             </Card>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={3}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -310,7 +442,7 @@ const ConfiguracoesPage = () => {
             </Card>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
