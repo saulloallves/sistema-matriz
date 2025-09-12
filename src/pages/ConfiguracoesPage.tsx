@@ -160,13 +160,14 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'full_name',
       headerName: 'Nome Completo',
-      width: 180,
-      minWidth: 150,
+      flex: 1,
+      minWidth: 180,
     },
     {
       field: 'phone_number',
       headerName: 'Telefone',
-      width: 130,
+      flex: 0.6,
+      minWidth: 140,
       valueFormatter: (value) => {
         if (!value) return '';
         const numbers = String(value).replace(/\D/g, '');
@@ -179,13 +180,14 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'email',
       headerName: 'E-mail',
-      width: 200,
-      minWidth: 150,
+      flex: 1.2,
+      minWidth: 200,
     },
     {
       field: 'created_at',
       headerName: 'Criado em',
-      width: 120,
+      flex: 0.5,
+      minWidth: 120,
       valueFormatter: (value) => {
         if (!value) return '';
         return new Date(value).toLocaleDateString('pt-BR');
@@ -194,7 +196,8 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'status',
       headerName: 'Status',
-      width: 100,
+      flex: 0.4,
+      minWidth: 100,
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => (
@@ -209,7 +212,8 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'actions',
       headerName: 'Ações',
-      width: 180,
+      flex: 0.8,
+      minWidth: 180,
       align: 'center',
       headerAlign: 'center',
       sortable: false,

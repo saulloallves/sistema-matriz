@@ -156,6 +156,15 @@ export function DataTable({
             },
             '& .MuiDataGrid-main': {
               overflow: 'hidden'
+            },
+            '& .MuiDataGrid-columnsContainer': {
+              width: '100% !important'
+            },
+            '& .MuiDataGrid-virtualScroller': {
+              width: '100% !important'
+            },
+            '& .MuiDataGrid-columnHeaders': {
+              width: '100% !important'
             }
           }}
           disableRowSelectionOnClick
