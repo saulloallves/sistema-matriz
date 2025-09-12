@@ -17,7 +17,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users, Edit, Trash2 } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -50,7 +50,7 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
 
 
 const GerenciamentoUsuariosTab = () => {
-  const { users, isLoading, updateUser, isUpdating, deleteUser, isDeleting } = useUsers();
+  const { users, isLoading, updateUser, isUpdating, inactivateUser, isInactivating } = useUsers();
   const { createUser, isCreating, reset } = useUserManagement();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -147,9 +147,9 @@ const GerenciamentoUsuariosTab = () => {
     handleEditClose();
   };
 
-  const handleDelete = (user: User) => {
-    if (window.confirm(`Tem certeza que deseja excluir o usuário ${user.full_name}?`)) {
-      deleteUser(user.id);
+  const handleInactivate = (user: User) => {
+    if (window.confirm(`Tem certeza que deseja inativar o usuário ${user.full_name}?`)) {
+      inactivateUser(user.id);
     }
   };
 
@@ -218,7 +218,7 @@ const GerenciamentoUsuariosTab = () => {
             color="primary"
             startIcon={<Edit size={16} />}
             onClick={() => handleEdit(params.row)}
-            disabled={isUpdating || isDeleting}
+            disabled={isUpdating || isInactivating}
             sx={{ minWidth: 'auto', px: 1 }}
           >
             Editar
@@ -226,13 +226,13 @@ const GerenciamentoUsuariosTab = () => {
           <Button
             size="small"
             variant="outlined"
-            color="error"
-            startIcon={<Trash2 size={16} />}
-            onClick={() => handleDelete(params.row)}
-            disabled={isUpdating || isDeleting}
+            color="warning"
+            startIcon={<UserX size={16} />}
+            onClick={() => handleInactivate(params.row)}
+            disabled={isUpdating || isInactivating}
             sx={{ minWidth: 'auto', px: 1 }}
           >
-            Excluir
+            Inativar
           </Button>
         </Box>
       )

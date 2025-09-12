@@ -45,11 +45,11 @@ export const useUsers = () => {
     }
   });
 
-  const deleteUserMutation = useMutation({
+  const inactivateUserMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('profiles')
-        .delete()
+        .update({ status: 'inativo' })
         .eq('id', id);
 
       if (error) {
@@ -57,12 +57,12 @@ export const useUsers = () => {
       }
     },
     onSuccess: () => {
-      toast.success('Usuário excluído com sucesso!');
+      toast.success('Usuário inativado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: Error) => {
-      console.error('Erro ao excluir usuário:', error);
-      toast.error(error.message || 'Erro ao excluir usuário');
+      console.error('Erro ao inativar usuário:', error);
+      toast.error(error.message || 'Erro ao inativar usuário');
     }
   });
 
@@ -72,8 +72,8 @@ export const useUsers = () => {
     error: usersQuery.error,
     updateUser: updateUserMutation.mutate,
     isUpdating: updateUserMutation.isPending,
-    deleteUser: deleteUserMutation.mutate,
-    isDeleting: deleteUserMutation.isPending,
+    inactivateUser: inactivateUserMutation.mutate,
+    isInactivating: inactivateUserMutation.isPending,
     refetch: usersQuery.refetch
   };
 };
