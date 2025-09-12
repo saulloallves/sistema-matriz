@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import {
   Box,
   Tooltip,
@@ -36,6 +37,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const { data: profile } = useUserProfile();
 
   const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
   const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
@@ -274,7 +276,7 @@ const AppSidebar = () => {
               }
             }}
           >
-            {user?.email?.split('@')[0] || 'Usuário'}
+            {profile?.full_name || 'Usuário'}
           </MenuItem>
           <MenuItem 
             onClick={handleCloseUserMenu}
