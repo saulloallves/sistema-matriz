@@ -13,10 +13,14 @@ import {
   MenuItem,
   CircularProgress,
   Box,
-  Typography
+  Typography,
+  Tooltip,
+  IconButton
 } from '@mui/material';
-import { Edit2, X } from 'lucide-react';
+import { Edit2, X, KeyRound } from 'lucide-react';
 import { User } from '@/types/user';
+import { supabase } from '@/integrations/supabase/client';
+import toast from 'react-hot-toast';
 
 interface UserEditModalProps {
   open: boolean;
@@ -34,6 +38,7 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
     notes: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -98,6 +103,31 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
     return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
 
+  const handleResetPassword = async () => {
+    if (!user) return;
+
+    setIsResettingPassword(true);
+    try {
+      const { error } = await supabase.functions.invoke('reset-user-password', {
+        body: { 
+          user_id: user.user_id,
+          full_name: user.full_name,
+          phone_number: user.phone_number,
+          email: user.email
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Nova senha gerada e enviada via WhatsApp e Email!');
+    } catch (error: any) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error(error.message || 'Erro ao resetar senha do usuário');
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const handleClose = () => {
     setErrors({});
     onClose();
@@ -156,17 +186,37 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
               required
             />
 
-            <FormControl fullWidth disabled={isLoading}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={formData.status}
-                label="Status"
-                onChange={(e) => handleInputChange('status', e.target.value)}
-              >
-                <MenuItem value="ativo">Ativo</MenuItem>
-                <MenuItem value="inativo">Inativo</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              <FormControl fullWidth disabled={isLoading}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={formData.status}
+                  label="Status"
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                >
+                  <MenuItem value="ativo">Ativo</MenuItem>
+                  <MenuItem value="inativo">Inativo</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <Tooltip title="Gerar nova senha e enviar via WhatsApp e Email">
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  onClick={handleResetPassword}
+                  disabled={isLoading || isResettingPassword}
+                  startIcon={isResettingPassword ? <CircularProgress size={16} /> : <KeyRound size={16} />}
+                  sx={{ 
+                    minWidth: 'auto', 
+                    px: 2,
+                    height: '56px', // Match TextField height
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {isResettingPassword ? 'Gerando...' : 'Reset Senha'}
+                </Button>
+              </Tooltip>
+            </Box>
 
             <Box /> {/* Empty space */}
           </Box>
