@@ -10,9 +10,7 @@ export const useUsers = () => {
     queryKey: ['users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_users_with_emails');
 
       if (error) {
         throw new Error(error.message);
