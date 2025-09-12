@@ -24,10 +24,10 @@ const menuItems = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { text: 'Unidades', icon: Store, path: '/unidades' },
   { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
-  { text: 'Configurações', icon: Settings, path: '/configuracoes' },
   { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
+  { text: 'Configurações', icon: Settings, path: '/configuracoes' },
 ];
 
 const AppSidebar = () => {
