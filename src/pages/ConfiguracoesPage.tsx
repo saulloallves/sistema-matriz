@@ -176,8 +176,8 @@ const GerenciamentoUsuariosTab = () => {
     {
       field: 'email',
       headerName: 'E-mail',
-      flex: 1,
-      minWidth: 200,
+      width: 200,
+      minWidth: 150,
     },
     {
       field: 'created_at',
