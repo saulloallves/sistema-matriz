@@ -279,18 +279,6 @@ const AppSidebar = () => {
             {profile?.full_name || 'Usuário'}
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseUserMenu}
-            sx={{
-              borderRadius: '6px',
-              margin: '4px 8px',
-              '&:hover': {
-                backgroundColor: 'rgba(64, 111, 243, 0.1)',
-              }
-            }}
-          >
-            Configurações
-          </MenuItem>
-          <MenuItem 
             onClick={async () => {
               handleCloseUserMenu();
               await signOut();
