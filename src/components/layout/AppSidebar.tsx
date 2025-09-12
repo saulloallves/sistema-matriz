@@ -267,12 +267,12 @@ const AppSidebar = () => {
           }}
         >
           <MenuItem 
-            onClick={handleCloseUserMenu}
             sx={{
               borderRadius: '6px',
               margin: '4px 8px',
+              cursor: 'default',
               '&:hover': {
-                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                backgroundColor: 'transparent',
               }
             }}
           >
