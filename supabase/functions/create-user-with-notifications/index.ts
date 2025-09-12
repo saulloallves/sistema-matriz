@@ -103,15 +103,29 @@ serve(async (req) => {
 
     // Obter ID do usuário que está criando
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header:', authHeader ? 'presente' : 'ausente');
+    
     if (!authHeader) {
       throw new Error('Token de autorização necessário');
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser(token);
+    console.log('Token extraído, tamanho:', token.length);
+    
+    // Usar cliente com anon key para validar o token JWT
+    const supabaseClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    
+    const { data: { user: currentUser }, error: authError } = await supabaseClient.auth.getUser(token);
+    console.log('Resultado auth:', { user: !!currentUser, error: authError?.message });
     
     if (authError || !currentUser) {
-      throw new Error('Token inválido ou expirado');
+      console.error('Erro de autenticação:', authError);
+      throw new Error(`Token inválido ou expirado: ${authError?.message || 'usuário não encontrado'}`);
     }
 
     // Criar usuário no auth com service role
