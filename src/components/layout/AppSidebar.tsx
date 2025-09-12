@@ -35,7 +35,7 @@ const AppSidebar = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
   const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
@@ -274,7 +274,7 @@ const AppSidebar = () => {
               }
             }}
           >
-            Perfil
+            {user?.email?.split('@')[0] || 'Usuário'}
           </MenuItem>
           <MenuItem 
             onClick={handleCloseUserMenu}
