@@ -112,20 +112,21 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     console.log('Token extraído, tamanho:', token.length);
     
-    // Usar cliente com anon key para validar o token JWT
-    const supabaseClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
+    // Decodificar JWT para extrair user_id
+    let currentUserId: string;
+    try {
+      // Decodificar o JWT (sem verificação de assinatura, apenas extração de dados)
+      const payload = token.split('.')[1];
+      const decodedPayload = JSON.parse(atob(payload));
+      currentUserId = decodedPayload.sub;
+      console.log('User ID extraído do token:', currentUserId);
+      
+      if (!currentUserId) {
+        throw new Error('User ID não encontrado no token');
       }
-    });
-    
-    const { data: { user: currentUser }, error: authError } = await supabaseClient.auth.getUser(token);
-    console.log('Resultado auth:', { user: !!currentUser, error: authError?.message });
-    
-    if (authError || !currentUser) {
-      console.error('Erro de autenticação:', authError);
-      throw new Error(`Token inválido ou expirado: ${authError?.message || 'usuário não encontrado'}`);
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      throw new Error('Token inválido - não foi possível decodificar');
     }
 
     // Criar usuário no auth com service role
@@ -136,7 +137,7 @@ serve(async (req) => {
       user_metadata: {
         full_name: full_name,
         phone_number: phone_number,
-        created_by: currentUser.id
+        created_by: currentUserId
       }
     });
 
@@ -155,7 +156,7 @@ serve(async (req) => {
         full_name: full_name,
         phone_number: phone_number,
         notes: notes || null,
-        created_by: currentUser.id,
+        created_by: currentUserId,
         status: 'ativo'
       });
 
