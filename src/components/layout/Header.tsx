@@ -1,8 +1,6 @@
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Box,
+  Typography,
   IconButton,
   Avatar,
   Menu,
@@ -23,50 +21,100 @@ const Header = () => {
   };
 
   return (
-    <AppBar
-      position="static"
-      elevation={1}
+    <Box
+      component="header"
       sx={{
-        backgroundColor: '#fff',
-        color: '#333',
-        borderBottom: '1px solid #e0e0e0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1100,
+        background: '#fff',
+        borderRadius: '0 0 10px 10px',
+        boxShadow: '0 2px 20px rgba(0,0,0,0.04)',
+        border: '1px solid rgba(0,0,0,0.05)',
+        borderTop: 'none',
+        margin: '0 16px',
+        marginTop: 0,
       }}
     >
-      <Toolbar>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 24px',
+        }}
+      >
         <Typography
           variant="h6"
-          component="div"
-          sx={{ flexGrow: 1, color: '#333' }}
+          component="h1"
+          sx={{ 
+            color: '#333',
+            fontWeight: 600,
+            fontSize: '1.25rem',
+          }}
         >
           Sistema de Gerenciamento
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton
-            size="large"
-            color="inherit"
-            sx={{ color: '#666' }}
+            size="medium"
+            sx={{ 
+              color: '#6a778e',
+              width: 40,
+              height: 40,
+              borderRadius: '10px',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                color: '#406ff3',
+              }
+            }}
           >
-            <Bell size={20} />
+            <Bell size={18} />
           </IconButton>
           
           <IconButton
-            size="large"
-            color="inherit"
-            sx={{ color: '#666' }}
+            size="medium"
+            sx={{ 
+              color: '#6a778e',
+              width: 40,
+              height: 40,
+              borderRadius: '10px',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                color: '#406ff3',
+              }
+            }}
           >
-            <Settings size={20} />
+            <Settings size={18} />
           </IconButton>
           
           <IconButton
-            size="large"
             onClick={handleMenu}
-            color="inherit"
-            sx={{ color: '#666' }}
+            sx={{ 
+              padding: 0,
+              marginLeft: 1,
+              '&:hover': {
+                backgroundColor: 'transparent',
+              }
+            }}
           >
-             <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
-               <User size={16} />
-             </Avatar>
+            <Avatar 
+              sx={{ 
+                width: 40, 
+                height: 40, 
+                bgcolor: '#406ff3',
+                borderRadius: '10px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                }
+              }}
+            >
+              <User size={18} />
+            </Avatar>
           </IconButton>
           
           <Menu
@@ -82,14 +130,55 @@ const Header = () => {
             }}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            PaperProps={{
+              sx: {
+                borderRadius: '10px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(0,0,0,0.05)',
+                mt: 1,
+              }
+            }}
           >
-            <MenuItem onClick={handleClose}>Perfil</MenuItem>
-            <MenuItem onClick={handleClose}>Configurações</MenuItem>
-            <MenuItem onClick={handleClose}>Sair</MenuItem>
+            <MenuItem 
+              onClick={handleClose}
+              sx={{
+                borderRadius: '6px',
+                margin: '4px 8px',
+                '&:hover': {
+                  backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                }
+              }}
+            >
+              Perfil
+            </MenuItem>
+            <MenuItem 
+              onClick={handleClose}
+              sx={{
+                borderRadius: '6px',
+                margin: '4px 8px',
+                '&:hover': {
+                  backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                }
+              }}
+            >
+              Configurações
+            </MenuItem>
+            <MenuItem 
+              onClick={handleClose}
+              sx={{
+                borderRadius: '6px',
+                margin: '4px 8px',
+                '&:hover': {
+                  backgroundColor: 'rgba(64, 111, 243, 0.1)',
+                }
+              }}
+            >
+              Sair
+            </MenuItem>
           </Menu>
         </Box>
-      </Toolbar>
-    </AppBar>
+      </Box>
+    </Box>
   );
 };
 
