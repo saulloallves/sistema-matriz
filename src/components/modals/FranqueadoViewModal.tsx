@@ -204,7 +204,6 @@ export const FranqueadoViewModal = ({ open, onClose, franqueado }: FranqueadoVie
               color={(franqueado as any).is_active_system ? "success" : "error"}
             />
             <InfoItem label="Password do Sistema" value={(franqueado as any).systems_password} />
-            <InfoItem label="Senha Web" value="●●●●●●●●" />
             <InfoItem label="ID do Usuário" value={(franqueado as any).user_id} />
             <InfoItem label="ID da Role" value={(franqueado as any).role_id} />
             

@@ -58,7 +58,6 @@ const franqueadoSchema = z.object({
   other_activities_description: z.string().optional(),
   prolabore_value: z.number().optional(),
   profile_image: z.string().optional(),
-  web_password: z.string().min(1, "Senha é obrigatória"),
   is_in_contract: z.boolean(),
   receives_prolabore: z.boolean(),
   has_other_activities: z.boolean(),
@@ -108,7 +107,6 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       other_activities_description: '',
       prolabore_value: 0,
       profile_image: '',
-      web_password: '',
       is_in_contract: false,
       receives_prolabore: false,
       has_other_activities: false,
@@ -152,7 +150,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         other_activities_description: franqueado.other_activities_description || '',
         prolabore_value: franqueado.prolabore_value || 0,
         profile_image: franqueado.profile_image || '',
-        web_password: franqueado.web_password || '',
+        
         is_in_contract: franqueado.is_in_contract || false,
         receives_prolabore: franqueado.receives_prolabore || false,
         has_other_activities: franqueado.has_other_activities || false,
@@ -199,7 +197,6 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           other_activities_description: data.other_activities_description || null,
           prolabore_value: data.receives_prolabore ? data.prolabore_value : null,
           profile_image: data.profile_image || null,
-          web_password: data.web_password,
           is_in_contract: data.is_in_contract,
           receives_prolabore: data.receives_prolabore,
           has_other_activities: data.has_other_activities,
@@ -719,22 +716,6 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                       helperText={errors.profile_image?.message}
                     />
                   )}
-                />
-
-                 <Controller
-                   name="web_password"
-                   control={control}
-                   render={({ field }) => (
-                     <TextField
-                       {...field}
-                       label="Senha do Sistema"
-                       type="password"
-                       fullWidth
-                       required
-                       error={!!errors.web_password}
-                       helperText={errors.web_password?.message}
-                     />
-                   )}
                  />
 
                  <Controller
