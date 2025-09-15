@@ -33,10 +33,17 @@ interface FranqueadoEditModalProps {
 
 const franqueadoSchema = z.object({
   full_name: z.string().min(1, "Nome completo é obrigatório"),
-  cpf_rnm: z.string().optional(),
+  cpf_rnm: z.string().min(1, "CPF/RNM é obrigatório"),
   nationality: z.string().optional(),
   birth_date: z.string().optional(),
   address: z.string().optional(),
+  number_address: z.string().optional(),
+  address_complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  uf: z.string().optional(),
+  postal_code: z.string().optional(),
   owner_type: z.enum(['principal', 'socio'], {
     required_error: "Tipo de proprietário é obrigatório"
   }),
@@ -59,7 +66,8 @@ const franqueadoSchema = z.object({
   was_referred: z.boolean(),
   lgpd_term_accepted: z.boolean(),
   confidentiality_term_accepted: z.boolean(),
-  system_term_accepted: z.boolean()
+  system_term_accepted: z.boolean(),
+  is_active_system: z.boolean()
 });
 
 type FranqueadoFormData = z.infer<typeof franqueadoSchema>;
@@ -81,6 +89,13 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       nationality: '',
       birth_date: '',
       address: '',
+      number_address: '',
+      address_complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+      uf: '',
+      postal_code: '',
       owner_type: 'principal',
       contact: '',
       availability: '',
@@ -101,7 +116,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       was_referred: false,
       lgpd_term_accepted: false,
       confidentiality_term_accepted: false,
-      system_term_accepted: false
+      system_term_accepted: false,
+      is_active_system: true
     }
   });
 
@@ -117,6 +133,13 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         nationality: franqueado.nationality || '',
         birth_date: franqueado.birth_date || '',
         address: franqueado.address || '',
+        number_address: (franqueado as any).number_address || '',
+        address_complement: (franqueado as any).address_complement || '',
+        neighborhood: (franqueado as any).neighborhood || '',
+        city: (franqueado as any).city || '',
+        state: (franqueado as any).state || '',
+        uf: (franqueado as any).uf || '',
+        postal_code: (franqueado as any).postal_code || '',
         owner_type: franqueado.owner_type as 'principal' | 'socio',
         contact: franqueado.contact || '',
         availability: franqueado.availability || '',
@@ -137,7 +160,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         was_referred: franqueado.was_referred || false,
         lgpd_term_accepted: franqueado.lgpd_term_accepted || false,
         confidentiality_term_accepted: franqueado.confidentiality_term_accepted || false,
-        system_term_accepted: franqueado.system_term_accepted || false
+        system_term_accepted: franqueado.system_term_accepted || false,
+        is_active_system: (franqueado as any).is_active_system || true
       });
     }
   }, [franqueado, open, reset]);
@@ -156,6 +180,13 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           nationality: data.nationality || null,
           birth_date: data.birth_date || null,
           address: data.address || null,
+          number_address: data.number_address || null,
+          address_complement: data.address_complement || null,
+          neighborhood: data.neighborhood || null,
+          city: data.city || null,
+          state: data.state || null,
+          uf: data.uf || null,
+          postal_code: data.postal_code || null,
           owner_type: data.owner_type,
           contact: data.contact,
           availability: data.availability || null,
@@ -177,6 +208,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           lgpd_term_accepted: data.lgpd_term_accepted,
           confidentiality_term_accepted: data.confidentiality_term_accepted,
           system_term_accepted: data.system_term_accepted,
+          is_active_system: data.is_active_system,
           updated_at: new Date().toISOString()
         })
         .eq("id", franqueado.id);
@@ -307,15 +339,118 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Endereço"
+                      label="Endereço (Logradouro)"
                       fullWidth
-                      multiline
-                      rows={2}
                       error={!!errors.address}
                       helperText={errors.address?.message}
                     />
                   )}
                 />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Controller
+                    name="number_address"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Número"
+                        sx={{ flex: 1 }}
+                        error={!!errors.number_address}
+                        helperText={errors.number_address?.message}
+                      />
+                    )}
+                  />
+                  
+                  <Controller
+                    name="address_complement"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Complemento"
+                        sx={{ flex: 1 }}
+                        error={!!errors.address_complement}
+                        helperText={errors.address_complement?.message}
+                      />
+                    )}
+                  />
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Controller
+                    name="neighborhood"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Bairro"
+                        sx={{ flex: 1 }}
+                        error={!!errors.neighborhood}
+                        helperText={errors.neighborhood?.message}
+                      />
+                    )}
+                  />
+                  
+                  <Controller
+                    name="city"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Cidade"
+                        sx={{ flex: 1 }}
+                        error={!!errors.city}
+                        helperText={errors.city?.message}
+                      />
+                    )}
+                  />
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Controller
+                    name="state"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Estado"
+                        sx={{ flex: 1 }}
+                        error={!!errors.state}
+                        helperText={errors.state?.message}
+                      />
+                    )}
+                  />
+                  
+                  <Controller
+                    name="uf"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="UF"
+                        sx={{ flex: 1 }}
+                        inputProps={{ maxLength: 2 }}
+                        error={!!errors.uf}
+                        helperText={errors.uf?.message}
+                      />
+                    )}
+                  />
+                  
+                  <Controller
+                    name="postal_code"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="CEP"
+                        sx={{ flex: 1 }}
+                        error={!!errors.postal_code}
+                        helperText={errors.postal_code?.message}
+                      />
+                    )}
+                  />
+                </Box>
               </Box>
             </Box>
 
@@ -586,22 +721,38 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                   )}
                 />
 
-                <Controller
-                  name="web_password"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Senha do Sistema"
-                      type="password"
-                      fullWidth
-                      required
-                      error={!!errors.web_password}
-                      helperText={errors.web_password?.message}
-                    />
-                  )}
-                />
-              </Box>
+                 <Controller
+                   name="web_password"
+                   control={control}
+                   render={({ field }) => (
+                     <TextField
+                       {...field}
+                       label="Senha do Sistema"
+                       type="password"
+                       fullWidth
+                       required
+                       error={!!errors.web_password}
+                       helperText={errors.web_password?.message}
+                     />
+                   )}
+                 />
+
+                 <Controller
+                   name="is_active_system"
+                   control={control}
+                   render={({ field }) => (
+                     <FormControlLabel
+                       control={
+                         <Switch
+                           checked={field.value}
+                           onChange={field.onChange}
+                         />
+                       }
+                       label="Sistema Ativo"
+                     />
+                   )}
+                 />
+               </Box>
             </Box>
 
             {/* Referência */}

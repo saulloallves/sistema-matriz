@@ -172,13 +172,41 @@ export const FranqueadoViewModal = ({ open, onClose, franqueado }: FranqueadoVie
             <InfoItem label="CPF/RNM" value={franqueado.cpf_rnm} />
             <InfoItem label="Nacionalidade" value={franqueado.nationality} />
             <InfoItem label="Data de Nascimento" value={franqueado.birth_date ? formatDateOnly(franqueado.birth_date) : null} />
-            <InfoItem label="Endereço" value={franqueado.address} fullWidth />
             
             <ChipItem 
               label="Tipo de Proprietário" 
               value={franqueado.owner_type}
               color="primary"
             />
+            
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Endereço Completo
+            </Typography>
+            
+            <InfoItem label="Endereço" value={franqueado.address} />
+            <InfoItem label="Número" value={(franqueado as any).number_address} />
+            <InfoItem label="Complemento" value={(franqueado as any).address_complement} />
+            <InfoItem label="Bairro" value={(franqueado as any).neighborhood} />
+            <InfoItem label="Cidade" value={(franqueado as any).city} />
+            <InfoItem label="Estado" value={(franqueado as any).state} />
+            <InfoItem label="UF" value={(franqueado as any).uf} />
+            <InfoItem label="CEP" value={(franqueado as any).postal_code} />
+            
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Sistema e Acesso
+            </Typography>
+            
+            <ChipItem 
+              label="Sistema Ativo" 
+              value={(franqueado as any).is_active_system ? "Ativo" : "Inativo"}
+              color={(franqueado as any).is_active_system ? "success" : "error"}
+            />
+            <InfoItem label="Password do Sistema" value={(franqueado as any).systems_password} />
+            <InfoItem label="Senha Web" value="●●●●●●●●" />
+            <InfoItem label="ID do Usuário" value={(franqueado as any).user_id} />
+            <InfoItem label="ID da Role" value={(franqueado as any).role_id} />
             
             <Divider sx={{ my: 2 }} />
             <Typography variant="h6" gutterBottom>
