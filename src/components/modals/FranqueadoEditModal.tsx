@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -12,12 +12,13 @@ import {
   FormControlLabel,
   MenuItem,
   InputAdornment,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Save, User } from 'lucide-react';
+import { X, Save, User, MapPin } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
@@ -73,12 +74,14 @@ type FranqueadoFormData = z.infer<typeof franqueadoSchema>;
 
 export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: FranqueadoEditModalProps) {
   const [loading, setLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
 
   const {
     control,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors }
   } = useForm<FranqueadoFormData>({
     resolver: zodResolver(franqueadoSchema),
@@ -122,6 +125,48 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
   const receives_prolabore = watch('receives_prolabore');
   const was_referred = watch('was_referred');
   const has_other_activities = watch('has_other_activities');
+  const postal_code = watch('postal_code');
+
+  // API CEP integration
+  const fetchAddressByCep = useCallback(async (cep: string) => {
+    if (!cep || cep.length !== 8) return;
+    
+    try {
+      setCepLoading(true);
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        toast.error('CEP não encontrado');
+        return;
+      }
+      
+      // Preencher automaticamente os campos de endereço
+      setValue('address', data.logradouro || '');
+      setValue('neighborhood', data.bairro || '');
+      setValue('city', data.localidade || '');
+      setValue('state', data.localidade || '');
+      setValue('uf', data.uf || '');
+      
+      toast.success('Endereço preenchido automaticamente!');
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar informações do CEP');
+    } finally {
+      setCepLoading(false);
+    }
+  }, [setValue]);
+
+  // Debounce CEP lookup
+  useEffect(() => {
+    if (postal_code && postal_code.length === 8) {
+      const timer = setTimeout(() => {
+        fetchAddressByCep(postal_code);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [postal_code, fetchAddressByCep]);
 
   useEffect(() => {
     if (franqueado && open) {
@@ -442,8 +487,28 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                         {...field}
                         label="CEP"
                         sx={{ flex: 1 }}
+                        placeholder="00000000"
+                        inputProps={{ 
+                          maxLength: 8,
+                          pattern: '[0-9]*'
+                        }}
+                        InputProps={{
+                          endAdornment: cepLoading ? (
+                            <InputAdornment position="end">
+                              <CircularProgress size={20} />
+                            </InputAdornment>
+                          ) : (
+                            <InputAdornment position="end">
+                              <MapPin size={20} />
+                            </InputAdornment>
+                          )
+                        }}
                         error={!!errors.postal_code}
-                        helperText={errors.postal_code?.message}
+                        helperText={errors.postal_code?.message || 'Digite apenas números'}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          field.onChange(value);
+                        }}
                       />
                     )}
                   />
