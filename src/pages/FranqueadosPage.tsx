@@ -167,8 +167,8 @@ export default function FranqueadosPage() {
 
     const totalFranqueados = franqueados.length;
     const franqueadosAtivos = franqueados.filter(f => f?.is_in_contract).length;
-    const franqueadosPrincipais = franqueados.filter(f => f?.owner_type === 'principal').length;
-    const franqueadosSocios = franqueados.filter(f => f?.owner_type === 'socio').length;
+    const franqueadosPrincipais = franqueados.filter(f => f?.owner_type === 'Principal').length;
+    const franqueadosSocios = franqueados.filter(f => f?.owner_type === 'Sócio').length;
     const franqueadosComProlabore = franqueados.filter(f => f?.receives_prolabore).length;
     const franqueadosIntegrais = franqueados.filter(f => f?.availability === 'integral').length;
 
