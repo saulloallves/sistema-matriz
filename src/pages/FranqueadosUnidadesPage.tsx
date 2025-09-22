@@ -90,18 +90,24 @@ const FranqueadosUnidadesPage = () => {
       headerName: 'Franqueado',
       width: 280,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2, 
+          height: '100%',
+          py: 1
+        }}>
           <Avatar 
             src={params.row.franqueado_profile_image || undefined}
             sx={{ width: 40, height: 40 }}
           >
             {getInitials(params.row.franqueado_full_name)}
           </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight="medium">
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2 }}>
               {params.row.franqueado_full_name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
               {params.row.franqueado_contact_masked}
             </Typography>
           </Box>
@@ -113,11 +119,17 @@ const FranqueadosUnidadesPage = () => {
       headerName: 'Unidade',
       width: 300,
       renderCell: (params) => (
-        <Box>
-          <Typography variant="body2" fontWeight="medium">
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center',
+          height: '100%',
+          py: 1
+        }}>
+          <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2 }}>
             {params.row.unidade_group_code} - {params.row.unidade_group_name}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
             {params.row.unidade_city}, {params.row.unidade_state}
           </Typography>
         </Box>
