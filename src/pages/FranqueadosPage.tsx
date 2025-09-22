@@ -36,7 +36,7 @@ import toast from 'react-hot-toast';
 
 type Franqueado = Tables<"franqueados">;
 
-const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Franqueado) => void; onEdit: (franqueado: Franqueado) => void }) => {
+const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (franqueado: Franqueado) => void; onEdit: (franqueado: Franqueado) => void; onDelete: (franqueado: Franqueado) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -54,6 +54,11 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Fr
 
   const handleEdit = () => {
     onEdit(row);
+    handleClose();
+  };
+
+  const handleDeleteClick = () => {
+    onDelete(row);
     handleClose();
   };
 
@@ -82,7 +87,7 @@ const ActionCell = ({ row, onView, onEdit }: { row: any; onView: (franqueado: Fr
           <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleDeleteClick}>
           <Trash2 size={18} style={{ marginRight: 8 }} />
           Excluir
         </MenuItem>
@@ -130,7 +135,7 @@ export default function FranqueadosPage() {
       return;
     }
     
-    if (confirm("Tem certeza que deseja excluir este franqueado?")) {
+    if (confirm(`Tem certeza que deseja excluir o franqueado "${franqueado.full_name}"? Esta ação também removerá todos os vínculos com unidades e não pode ser desfeita.`)) {
       deleteFranqueado(franqueado.id);
     }
   };
@@ -523,7 +528,7 @@ export default function FranqueadosPage() {
       filterable: false,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => <ActionCell row={params.row} onView={handleView} onEdit={handleEdit} />,
+      renderCell: (params) => <ActionCell row={params.row} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />,
     },
   ];
 

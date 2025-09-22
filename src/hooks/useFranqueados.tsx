@@ -95,6 +95,17 @@ export const useFranqueados = () => {
 
   const deleteFranqueadoMutation = useMutation({
     mutationFn: async (id: string) => {
+      // First delete relationships in franqueados_unidades
+      const { error: vinculosError } = await supabase
+        .from('franqueados_unidades')
+        .delete()
+        .eq('franqueado_id', id);
+
+      if (vinculosError) {
+        throw new Error(`Erro ao excluir vínculos: ${vinculosError.message}`);
+      }
+
+      // Then delete the franqueado
       const { error } = await supabase
         .from('franqueados')
         .delete()
@@ -112,8 +123,9 @@ export const useFranqueados = () => {
       });
     },
     onSuccess: () => {
-      toast.success('Franqueado excluído com sucesso!');
+      toast.success('Franqueado e seus vínculos excluídos com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['franqueados'] });
+      queryClient.invalidateQueries({ queryKey: ['franqueados-unidades'] });
     },
     onError: (error: Error) => {
       console.error('Erro ao excluir franqueado:', error);
