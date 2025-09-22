@@ -409,7 +409,13 @@ const FranqueadosUnidadesPage = () => {
           label={params.row.franqueado_owner_type} 
           size="small" 
           variant="outlined"
-          color={params.row.franqueado_owner_type === 'Sócio' ? 'secondary' : 'primary'}
+          color={
+            params.row.franqueado_owner_type === 'Sócio' 
+              ? 'secondary' 
+              : params.row.franqueado_owner_type === 'Principal' 
+                ? 'info' 
+                : 'primary'
+          }
         />
       ),
     },
