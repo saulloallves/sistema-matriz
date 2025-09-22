@@ -392,8 +392,9 @@ export default function FranqueadosPage() {
         };
         
         const getChipColor = (type: string) => {
-          if (type === 'socio') return 'primary';
-          return 'secondary';
+          if (type === 'Principal') return 'primary';
+          if (type === 'Sócio') return 'secondary';
+          return 'default';
         };
         
         return (
