@@ -1251,15 +1251,15 @@ export type Database = {
       get_franqueados_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
-          address_masked: string
           availability: string
+          contact: string
           contact_masked: string
-          cpf_rnm_masked: string
           created_at: string
           full_name: string
           id: string
           is_in_contract: boolean
           owner_type: string
+          profile_image: string
           prolabore_value: number
           receives_prolabore: boolean
         }[]
