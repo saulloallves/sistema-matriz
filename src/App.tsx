@@ -12,6 +12,7 @@ import UnidadesPage from "./pages/UnidadesPage";
 import FranqueadosPage from "./pages/FranqueadosPage";
 import FranqueadosUnidadesPage from "./pages/FranqueadosUnidadesPage";
 import ConfiguracoesPage from "./pages/ConfiguracoesPage";
+import GruposWhatsAppPage from "./pages/GruposWhatsAppPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Box, Typography } from '@mui/material';
@@ -45,11 +46,7 @@ const App = () => (
                     <Route path="/franqueados" element={<FranqueadosPage />} />
                     <Route path="/franqueados-unidades" element={<FranqueadosUnidadesPage />} />
                     <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-                    <Route path="/grupos-whatsapp" element={
-                      <Box sx={{ p: 3, textAlign: 'center' }}>
-                        <Typography color="text.secondary">Página em desenvolvimento</Typography>
-                      </Box>
-                    } />
+                    <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
                     <Route path="/evento-seguidores" element={
                       <Box sx={{ p: 3, textAlign: 'center' }}>
                         <Typography color="text.secondary">Página em desenvolvimento</Typography>
