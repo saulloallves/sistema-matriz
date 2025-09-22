@@ -1264,6 +1264,31 @@ export type Database = {
           receives_prolabore: boolean
         }[]
       }
+      get_franqueados_unidades_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          franqueado_contact: string
+          franqueado_contact_masked: string
+          franqueado_full_name: string
+          franqueado_id: string
+          franqueado_is_in_contract: boolean
+          franqueado_owner_type: string
+          franqueado_profile_image: string
+          id: number
+          unidade_city: string
+          unidade_cnpj: string
+          unidade_fantasy_name: string
+          unidade_group_code: number
+          unidade_group_name: string
+          unidade_id: string
+          unidade_is_active: boolean
+          unidade_state: string
+          unidade_store_model: string
+          unidade_store_phase: string
+          updated_at: string
+        }[]
+      }
       get_users_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1291,6 +1316,14 @@ export type Database = {
           _accessed_fields?: string[]
           _action: string
           _franqueado_id: string
+        }
+        Returns: undefined
+      }
+      log_vinculo_access: {
+        Args: {
+          _accessed_fields?: string[]
+          _action: string
+          _vinculo_id: number
         }
         Returns: undefined
       }
