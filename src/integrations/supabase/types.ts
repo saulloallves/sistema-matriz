@@ -665,6 +665,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_franqueados_unidades_franqueado_id"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "franqueados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_franqueados_unidades_franqueado_id"
+            columns: ["franqueado_id"]
+            isOneToOne: false
+            referencedRelation: "v_franqueados_unidades_detalhes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_franqueados_unidades_unidade_id"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "franqueados_unidades_franqueado_id_fkey"
             columns: ["franqueado_id"]
             isOneToOne: false
