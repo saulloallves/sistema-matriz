@@ -330,7 +330,7 @@ export const FranqueadoViewModal = ({ open, onClose, franqueado }: FranqueadoVie
               Acesso ao Sistema
             </Typography>
             
-            <InfoItem label="Possui Senha de Acesso" value={franqueado.web_password ? "Sim" : "Não"} />
+            <InfoItem label="Possui Senha de Acesso" value={franqueado.systems_password ? "Sim" : "Não"} />
             <InfoItem label="URL da Imagem de Perfil" value={franqueado.profile_image} fullWidth />
           </Box>
         </TabPanel>

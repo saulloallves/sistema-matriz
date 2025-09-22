@@ -355,7 +355,10 @@ export default function FranqueadosPage() {
             height: '100%',
             py: 1
           }}>
-            <Avatar sx={{ width: 32, height: 32 }}>
+            <Avatar 
+              src={franqueado.profile_image || undefined}
+              sx={{ width: 32, height: 32 }}
+            >
               {initials}
             </Avatar>
             <Box sx={{ 
