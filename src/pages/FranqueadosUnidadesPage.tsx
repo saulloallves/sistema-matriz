@@ -175,8 +175,8 @@ const FranqueadosUnidadesPage = () => {
     const vinculosAtivos = vinculos.filter(v => v?.unidade_is_active).length;
     const franqueadosVinculados = new Set(vinculos.map(v => v.franqueado_id)).size;
     const unidadesVinculadas = new Set(vinculos.map(v => v.unidade_id)).size;
-    const vinculosOperacao = vinculos.filter(v => v?.unidade_store_phase === 'operacao').length;
-    const vinculosComContrato = vinculos.filter(v => v?.franqueado_is_in_contract).length;
+    const franqueadosPrincipais = vinculos.filter(v => v?.franqueado_owner_type === 'Principal').length;
+    const franqueadosSocios = vinculos.filter(v => v?.franqueado_owner_type === 'Sócio').length;
 
     const cardData = [
       {
@@ -212,20 +212,20 @@ const FranqueadosUnidadesPage = () => {
         iconBg: "warning.main"
       },
       {
-        title: "Em Operação",
-        value: vinculosOperacao,
-        icon: "TrendingUp",
+        title: "Franqueados Principais",
+        value: franqueadosPrincipais,
+        icon: "Shield",
+        color: "info.main",
+        bgColor: "info.light",
+        iconBg: "info.main"
+      },
+      {
+        title: "Franqueados Sócios",
+        value: franqueadosSocios,
+        icon: "Users",
         color: "secondary.main",
         bgColor: "secondary.light",
         iconBg: "secondary.main"
-      },
-      {
-        title: "Com Contrato",
-        value: vinculosComContrato,
-        icon: "Users",
-        color: "error.main",
-        bgColor: "error.light",
-        iconBg: "error.main"
       }
     ];
 
@@ -247,6 +247,8 @@ const FranqueadosUnidadesPage = () => {
                 return <Users size={24} />;
               case "Store":
                 return <Store size={24} />;
+              case "Shield":
+                return <Shield size={24} />;
               default:
                 return <LinkIcon size={24} />;
             }
