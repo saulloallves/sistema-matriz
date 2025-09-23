@@ -26,7 +26,8 @@ import {
   MapPin, 
   Phone, 
   Car, 
-  Clock 
+  Clock,
+  Instagram 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
@@ -82,7 +83,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     operation_fri: '',
     operation_sat: '',
     operation_sun: '',
-    operation_hol: ''
+    operation_hol: '',
+    user_instagram: '',
+    id_unidade: '',
+    password_instagram: '',
+    bearer: ''
   });
   const [loading, setLoading] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
@@ -129,7 +134,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         operation_fri: unidade.operation_fri || '',
         operation_sat: unidade.operation_sat || '',
         operation_sun: unidade.operation_sun || '',
-        operation_hol: unidade.operation_hol || ''
+        operation_hol: unidade.operation_hol || '',
+        user_instagram: (unidade as any).user_instagram || '',
+        id_unidade: (unidade as any).id_unidade || '',
+        password_instagram: (unidade as any).password_instagram || '',
+        bearer: (unidade as any).bearer || ''
       });
       // Reset group code validation states
       setGroupCodeLoading(false);
@@ -363,7 +372,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         drive_folder_id: formData.drive_folder_id,
         drive_folder_link: formData.drive_folder_link,
         docs_folder_id: formData.docs_folder_id,
-        docs_folder_link: formData.docs_folder_link
+        docs_folder_link: formData.docs_folder_link,
+        user_instagram: formData.user_instagram || null,
+        id_unidade: formData.id_unidade || null,
+        password_instagram: formData.password_instagram || null,
+        bearer: formData.bearer || null
       };
 
       const { error } = await supabase
@@ -683,6 +696,49 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             value={formData.instagram_profile}
             onChange={(e) => handleInputChange('instagram_profile', e.target.value)}
           />
+
+          <Divider />
+          
+          <Box display="flex" alignItems="center" gap={1}>
+            <Instagram size={20} />
+            <Typography variant="h6">Moderação Instagram</Typography>
+          </Box>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Usuário Instagram"
+              value={formData.user_instagram}
+              onChange={(e) => handleInputChange('user_instagram', e.target.value)}
+              placeholder="@usuario_instagram"
+              helperText="Usuário para moderação (opcional)"
+            />
+            <TextField
+              fullWidth
+              label="ID da Unidade"
+              value={formData.id_unidade}
+              onChange={(e) => handleInputChange('id_unidade', e.target.value)}
+              helperText="Identificador da unidade no sistema"
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              type="password"
+              label="Senha Instagram"
+              value={formData.password_instagram}
+              onChange={(e) => handleInputChange('password_instagram', e.target.value)}
+              helperText="Senha para acesso ao Instagram"
+            />
+            <TextField
+              fullWidth
+              type="password"
+              label="Bearer Token"
+              value={formData.bearer}
+              onChange={(e) => handleInputChange('bearer', e.target.value)}
+              helperText="Token de autenticação para APIs"
+            />
+          </Stack>
 
           <Divider />
           

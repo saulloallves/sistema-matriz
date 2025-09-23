@@ -19,6 +19,7 @@ import {
   Clock,
   Link,
   MapPin,
+  Instagram,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Tables } from '@/integrations/supabase/types';
@@ -164,7 +165,8 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
             <Tab icon={<ContactPhone size={16} />} label="Contato & Endereço" {...a11yProps(1)} />
             <Tab icon={<Clock size={16} />} label="Horários" {...a11yProps(2)} />
             <Tab icon={<Link size={16} />} label="Integrações" {...a11yProps(3)} />
-            <Tab icon={<MapPin size={16} />} label="Operações" {...a11yProps(4)} />
+            <Tab icon={<Instagram size={16} />} label="Moderação Instagram" {...a11yProps(4)} />
+            <Tab icon={<MapPin size={16} />} label="Operações" {...a11yProps(5)} />
           </Tabs>
         </Box>
 
@@ -275,8 +277,30 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
           </Box>
         </TabPanel>
 
-        {/* Operações */}
+        {/* Moderação Instagram */}
         <TabPanel value={tabValue} index={4}>
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Instagram size={20} />
+              Moderação do Instagram
+            </Typography>
+            
+            <InfoItem label="Usuário Instagram" value={(unidade as any).user_instagram} />
+            <InfoItem label="ID da Unidade" value={(unidade as any).id_unidade} />
+            
+            <InfoItem 
+              label="Senha Instagram" 
+              value={(unidade as any).password_instagram ? '********' : '-'} 
+            />
+            <InfoItem 
+              label="Bearer Token" 
+              value={(unidade as any).bearer ? `${'*'.repeat(Math.max(0, ((unidade as any).bearer?.length || 0) - 8))}${(unidade as any).bearer?.slice(-8) || ''}` : '-'} 
+            />
+          </Box>
+        </TabPanel>
+
+        {/* Operações */}
+        <TabPanel value={tabValue} index={5}>
           <Box>
             <Typography variant="h6" gutterBottom>
               Status Operacional
