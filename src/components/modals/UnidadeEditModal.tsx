@@ -46,6 +46,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   onUpdate
 }) => {
   const [formData, setFormData] = useState({
+    group_code: '',
     group_name: '',
     store_model: '',
     store_phase: '',
@@ -85,10 +86,14 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [groupCodeLoading, setGroupCodeLoading] = useState(false);
+  const [groupCodeError, setGroupCodeError] = useState<string | null>(null);
+  const [groupCodeValid, setGroupCodeValid] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (unidade) {
       setFormData({
+        group_code: unidade.group_code?.toString() || '',
         group_name: unidade.group_name || '',
         store_model: unidade.store_model || '',
         store_phase: unidade.store_phase || '',
@@ -126,6 +131,10 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         operation_sun: unidade.operation_sun || '',
         operation_hol: unidade.operation_hol || ''
       });
+      // Reset group code validation states
+      setGroupCodeLoading(false);
+      setGroupCodeError(null);
+      setGroupCodeValid(null);
     }
   }, [unidade]);
 
@@ -158,6 +167,82 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     }
   };
 
+  const checkGroupCodeExists = async (code: string) => {
+    try {
+      const numericCode = Number(code);
+      
+      // Verificar se existe outro registro com o mesmo código (excluindo a unidade atual)
+      const { data, error } = await supabase
+        .from('unidades')
+        .select('id, group_name')
+        .eq('group_code', numericCode)
+        .neq('id', unidade.id);
+
+      if (error) {
+        console.error('Erro ao verificar código:', error);
+        return { exists: false, unitName: null };
+      }
+
+      return {
+        exists: data && data.length > 0,
+        unitName: data && data.length > 0 ? data[0].group_name : null
+      };
+    } catch (error) {
+      console.error('Erro ao verificar código:', error);
+      return { exists: false, unitName: null };
+    }
+  };
+
+  // Hook para debounce da validação do código
+  useEffect(() => {
+    const validateGroupCode = async () => {
+      const code = formData.group_code.trim();
+      
+      // Reset states se o campo estiver vazio
+      if (!code) {
+        setGroupCodeLoading(false);
+        setGroupCodeError(null);
+        setGroupCodeValid(null);
+        return;
+      }
+
+      // Validar se tem 4 dígitos
+      if (code.length !== 4 || !/^\d{4}$/.test(code)) {
+        setGroupCodeLoading(false);
+        setGroupCodeError('O código deve ter exatamente 4 dígitos numéricos');
+        setGroupCodeValid(false);
+        return;
+      }
+
+      // Se o código é o mesmo da unidade atual, não validar
+      if (Number(code) === unidade.group_code) {
+        setGroupCodeLoading(false);
+        setGroupCodeError(null);
+        setGroupCodeValid(null);
+        return;
+      }
+
+      setGroupCodeLoading(true);
+      setGroupCodeError(null);
+      setGroupCodeValid(null);
+
+      const result = await checkGroupCodeExists(code);
+      
+      setGroupCodeLoading(false);
+      
+      if (result.exists) {
+        setGroupCodeError(`Código já utilizado pela Unidade ${result.unitName}`);
+        setGroupCodeValid(false);
+      } else {
+        setGroupCodeError(null);
+        setGroupCodeValid(true);
+      }
+    };
+
+    const timeoutId = setTimeout(validateGroupCode, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.group_code, unidade.group_code, unidade.id]);
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
@@ -173,6 +258,13 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         const error = getCnpjValidationError(value);
         setCnpjError(error);
       }
+
+      // Se o campo for group_code, limitar a 4 dígitos numéricos
+      if (field === 'group_code') {
+        // Permitir apenas números e limitar a 4 dígitos
+        const numericValue = value.replace(/\D/g, '').slice(0, 4);
+        newData.group_code = numericValue;
+      }
       
       return newData;
     });
@@ -187,6 +279,21 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   };
 
   const validateForm = () => {
+    // Validar código da unidade
+    if (groupCodeError || groupCodeLoading) {
+      if (groupCodeError) toast.error(groupCodeError);
+      return false;
+    }
+
+    // Validar se o código foi alterado e é válido
+    const currentCode = formData.group_code.trim();
+    if (currentCode && currentCode !== unidade.group_code?.toString()) {
+      if (!groupCodeValid) {
+        toast.error('Aguarde a validação do código da unidade ou corrija o erro');
+        return false;
+      }
+    }
+
     // Validar CNPJ se preenchido
     if (formData.cnpj && cnpjError) {
       toast.error(cnpjError);
@@ -217,6 +324,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     try {
       // Mapear apenas os campos que existem na tabela unidades
       const updateData = {
+        group_code: formData.group_code ? Number(formData.group_code) : unidade.group_code,
         group_name: formData.group_name,
         store_model: formData.store_model,
         store_phase: formData.store_phase,
@@ -273,6 +381,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         toast.error('Erro de validação: Se "Possui Estacionamento Parceiro" estiver marcado, é obrigatório informar o endereço. Se não estiver marcado, o endereço deve ficar vazio.');
       } else if (error.message?.includes('violates check constraint')) {
         toast.error('Erro de validação: Verifique se todos os campos obrigatórios estão preenchidos corretamente.');
+      } else if (error.message?.includes('duplicate key') || error.message?.includes('unique constraint')) {
+        toast.error('Este código de unidade já está sendo utilizado. Por favor, escolha outro código.');
       } else {
         toast.error('Erro ao atualizar unidade: ' + error.message);
       }
@@ -301,10 +411,44 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
+              label="Código da Unidade"
+              value={formData.group_code}
+              onChange={(e) => handleInputChange('group_code', e.target.value)}
+              error={!!groupCodeError}
+              helperText={
+                groupCodeLoading 
+                  ? 'Verificando disponibilidade...' 
+                  : groupCodeError 
+                    ? groupCodeError 
+                    : groupCodeValid 
+                      ? 'Código disponível ✓' 
+                      : 'Digite um código de 4 dígitos'
+              }
+              inputProps={{ 
+                maxLength: 4,
+                pattern: '[0-9]*'
+              }}
+              sx={{
+                '& .MuiFormHelperText-root': {
+                  color: groupCodeLoading 
+                    ? 'info.main' 
+                    : groupCodeError 
+                      ? 'error.main' 
+                      : groupCodeValid 
+                        ? 'success.main' 
+                        : 'text.secondary'
+                }
+              }}
+            />
+            <TextField
+              fullWidth
               label="Nome da Unidade"
               value={formData.group_name}
               onChange={(e) => handleInputChange('group_name', e.target.value)}
             />
+          </Stack>
+          
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormControl fullWidth>
               <InputLabel>Modelo da Loja</InputLabel>
               <Select
@@ -667,7 +811,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         <Button 
           onClick={handleSave} 
           variant="contained" 
-          disabled={loading}
+          disabled={loading || groupCodeLoading || !!groupCodeError}
         >
           {loading ? 'Salvando...' : 'Salvar'}
         </Button>
