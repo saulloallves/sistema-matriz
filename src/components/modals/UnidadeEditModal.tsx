@@ -91,7 +91,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   const [groupCodeValid, setGroupCodeValid] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (unidade) {
+    if (unidade && unidade.id) {
       setFormData({
         group_code: unidade.group_code?.toString() || '',
         group_name: unidade.group_name || '',
@@ -176,7 +176,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         .from('unidades')
         .select('id, group_name')
         .eq('group_code', numericCode)
-        .neq('id', unidade.id);
+        .neq('id', unidade?.id || '');
 
       if (error) {
         console.error('Erro ao verificar código:', error);
@@ -195,6 +195,9 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
   // Hook para debounce da validação do código
   useEffect(() => {
+    // Só executar se unidade existir
+    if (!unidade?.id) return;
+    
     const validateGroupCode = async () => {
       const code = formData.group_code.trim();
       
@@ -215,7 +218,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       }
 
       // Se o código é o mesmo da unidade atual, não validar
-      if (Number(code) === unidade.group_code) {
+      if (Number(code) === unidade?.group_code) {
         setGroupCodeLoading(false);
         setGroupCodeError(null);
         setGroupCodeValid(null);
@@ -241,7 +244,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
     const timeoutId = setTimeout(validateGroupCode, 500);
     return () => clearTimeout(timeoutId);
-  }, [formData.group_code, unidade.group_code, unidade.id]);
+  }, [formData.group_code, unidade?.group_code, unidade?.id]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
@@ -287,7 +290,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
     // Validar se o código foi alterado e é válido
     const currentCode = formData.group_code.trim();
-    if (currentCode && currentCode !== unidade.group_code?.toString()) {
+    if (currentCode && currentCode !== unidade?.group_code?.toString()) {
       if (!groupCodeValid) {
         toast.error('Aguarde a validação do código da unidade ou corrija o erro');
         return false;
@@ -324,7 +327,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     try {
       // Mapear apenas os campos que existem na tabela unidades
       const updateData = {
-        group_code: formData.group_code ? Number(formData.group_code) : unidade.group_code,
+        group_code: formData.group_code ? Number(formData.group_code) : unidade?.group_code,
         group_name: formData.group_name,
         store_model: formData.store_model,
         store_phase: formData.store_phase,
@@ -366,7 +369,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       const { error } = await supabase
         .from('unidades')
         .update(updateData)
-        .eq('id', unidade.id);
+        .eq('id', unidade?.id);
 
       if (error) throw error;
 
@@ -390,6 +393,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       setLoading(false);
     }
   };
+
+  // Se unidade não existir, não renderizar o modal
+  if (!unidade) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -663,8 +671,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             />
             <TextField
               fullWidth
-              label="Email"
-              type="email"
+              label="E-mail"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
             />
@@ -683,7 +690,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             <Car size={20} />
             <Typography variant="h6">Estacionamento</Typography>
           </Box>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
             <FormControlLabel
               control={
                 <Switch
@@ -703,8 +710,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               />
             )}
           </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          
+          <Stack spacing={2}>
             <FormControlLabel
               control={
                 <Switch
@@ -714,27 +721,24 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               }
               label="Possui Estacionamento Parceiro"
             />
+            {formData.has_partner_parking && (
+              <TextField
+                fullWidth
+                label="Endereço do Estacionamento Parceiro"
+                value={formData.partner_parking_address}
+                onChange={(e) => handleInputChange('partner_parking_address', e.target.value)}
+                required
+              />
+            )}
           </Stack>
-
-          {formData.has_partner_parking && (
-            <TextField
-              fullWidth
-              required
-              label="Endereço do Estacionamento Parceiro"
-              value={formData.partner_parking_address}
-              onChange={(e) => handleInputChange('partner_parking_address', e.target.value)}
-              helperText="Campo obrigatório quando 'Possui Estacionamento Parceiro' estiver marcado"
-              error={formData.has_partner_parking && !formData.partner_parking_address?.trim()}
-            />
-          )}
 
           <Divider />
           
           <Box display="flex" alignItems="center" gap={1}>
             <Clock size={20} />
-            <Typography variant="h6">Horários de Funcionamento</Typography>
+            <Typography variant="h6">Horário de Funcionamento</Typography>
           </Box>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <Stack spacing={2}>
             <TextField
               fullWidth
               label="Segunda-feira"
@@ -749,9 +753,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               onChange={(e) => handleInputChange('operation_tue', e.target.value)}
               placeholder="ex: 08:00 - 18:00"
             />
-          </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Quarta-feira"
@@ -766,9 +767,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               onChange={(e) => handleInputChange('operation_thu', e.target.value)}
               placeholder="ex: 08:00 - 18:00"
             />
-          </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Sexta-feira"
@@ -783,9 +781,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               onChange={(e) => handleInputChange('operation_sat', e.target.value)}
               placeholder="ex: 08:00 - 18:00"
             />
-          </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               label="Domingo"
