@@ -821,62 +821,70 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
             <Typography variant="h6">Horário de Funcionamento</Typography>
           </Box>
           <Stack spacing={2}>
-            <TextField
-              fullWidth
-              label="Segunda-feira"
-              value={formData.operation_mon}
-              onChange={(e) => handleInputChange('operation_mon', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Terça-feira"
-              value={formData.operation_tue}
-              onChange={(e) => handleInputChange('operation_tue', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Quarta-feira"
-              value={formData.operation_wed}
-              onChange={(e) => handleInputChange('operation_wed', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Quinta-feira"
-              value={formData.operation_thu}
-              onChange={(e) => handleInputChange('operation_thu', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Sexta-feira"
-              value={formData.operation_fri}
-              onChange={(e) => handleInputChange('operation_fri', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Sábado"
-              value={formData.operation_sat}
-              onChange={(e) => handleInputChange('operation_sat', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Domingo"
-              value={formData.operation_sun}
-              onChange={(e) => handleInputChange('operation_sun', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
-            <TextField
-              fullWidth
-              label="Feriados"
-              value={formData.operation_hol}
-              onChange={(e) => handleInputChange('operation_hol', e.target.value)}
-              placeholder="ex: 08:00 - 18:00"
-            />
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Segunda-feira"
+                value={formData.operation_mon}
+                onChange={(e) => handleInputChange('operation_mon', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+              <TextField
+                fullWidth
+                label="Terça-feira"
+                value={formData.operation_tue}
+                onChange={(e) => handleInputChange('operation_tue', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+            </Stack>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Quarta-feira"
+                value={formData.operation_wed}
+                onChange={(e) => handleInputChange('operation_wed', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+              <TextField
+                fullWidth
+                label="Quinta-feira"
+                value={formData.operation_thu}
+                onChange={(e) => handleInputChange('operation_thu', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+            </Stack>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Sexta-feira"
+                value={formData.operation_fri}
+                onChange={(e) => handleInputChange('operation_fri', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+              <TextField
+                fullWidth
+                label="Sábado"
+                value={formData.operation_sat}
+                onChange={(e) => handleInputChange('operation_sat', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+            </Stack>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Domingo"
+                value={formData.operation_sun}
+                onChange={(e) => handleInputChange('operation_sun', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+              <TextField
+                fullWidth
+                label="Feriados"
+                value={formData.operation_hol}
+                onChange={(e) => handleInputChange('operation_hol', e.target.value)}
+                placeholder="ex: 08:00 - 18:00"
+              />
+            </Stack>
           </Stack>
         </Stack>
       </DialogContent>
