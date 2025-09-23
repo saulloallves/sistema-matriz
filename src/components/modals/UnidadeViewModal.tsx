@@ -20,6 +20,8 @@ import {
   Link,
   MapPin,
   Instagram,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Tables } from '@/integrations/supabase/types';
@@ -65,14 +67,27 @@ function a11yProps(index: number) {
   };
 }
 
-const InfoItem = ({ label, value, fullWidth = false }: { label: string; value: any; fullWidth?: boolean }) => (
+const InfoItem = ({ label, value, fullWidth = false, onToggleVisibility, showValue = true }: { 
+  label: string; 
+  value: any; 
+  fullWidth?: boolean; 
+  onToggleVisibility?: () => void; 
+  showValue?: boolean;
+}) => (
   <Box sx={{ mb: 2, ...(fullWidth ? {} : { width: '48%', display: 'inline-block', mr: '2%' }) }}>
     <Typography variant="caption" color="text.secondary" fontWeight="medium">
       {label}
     </Typography>
-    <Typography variant="body2" sx={{ mt: 0.5 }}>
-      {value || '-'}
-    </Typography>
+    <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography variant="body2" sx={{ flex: 1 }}>
+        {value || '-'}
+      </Typography>
+      {onToggleVisibility && (
+        <IconButton size="small" onClick={onToggleVisibility}>
+          {showValue ? <EyeOff size={16} /> : <Eye size={16} />}
+        </IconButton>
+      )}
+    </Box>
   </Box>
 );
 
@@ -93,6 +108,8 @@ const ChipItem = ({ label, value, color = "default" }: { label: string; value: a
 
 export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalProps) => {
   const [tabValue, setTabValue] = useState(0);
+  const [showInstagramPassword, setShowInstagramPassword] = useState(false);
+  const [showBearerToken, setShowBearerToken] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -290,11 +307,15 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
             
             <InfoItem 
               label="Senha Instagram" 
-              value={(unidade as any).password_instagram ? '********' : '-'} 
+              value={showInstagramPassword ? ((unidade as any).password_instagram || '-') : ((unidade as any).password_instagram ? '********' : '-')}
+              onToggleVisibility={() => setShowInstagramPassword(!showInstagramPassword)}
+              showValue={showInstagramPassword}
             />
             <InfoItem 
               label="Bearer Token" 
-              value={(unidade as any).bearer ? `${'*'.repeat(Math.max(0, ((unidade as any).bearer?.length || 0) - 8))}${(unidade as any).bearer?.slice(-8) || ''}` : '-'} 
+              value={showBearerToken ? ((unidade as any).bearer || '-') : ((unidade as any).bearer ? `${'*'.repeat(Math.max(0, ((unidade as any).bearer?.length || 0) - 8))}${(unidade as any).bearer?.slice(-8) || ''}` : '-')}
+              onToggleVisibility={() => setShowBearerToken(!showBearerToken)}
+              showValue={showBearerToken}
             />
           </Box>
         </TabPanel>
