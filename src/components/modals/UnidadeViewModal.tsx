@@ -115,6 +115,18 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
     return colorMap[model] || "default";
   };
 
+  const getImpPhaseLabel = (phase: string | null) => {
+    const phaseMap: Record<string, string> = {
+      integracao: "Integração",
+      treinamento: "Treinamento",
+      procura_ponto: "Procura de Ponto",
+      estruturacao: "Estruturação",
+      compras: "Compras",
+      inauguracao: "Inauguração"
+    };
+    return phaseMap[phase || ""] || phase || "-";
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -174,7 +186,11 @@ export const UnidadeViewModal = ({ open, onClose, unidade }: UnidadeViewModalPro
               color={unidade.store_phase === "operacao" ? "success" : "warning"}
             />
             
-            <InfoItem label="Fase de Implantação" value={unidade.store_imp_phase} fullWidth />
+            <InfoItem 
+              label="Fase de Implantação" 
+              value={getImpPhaseLabel(unidade.store_imp_phase)} 
+              fullWidth 
+            />
             
             <Divider sx={{ my: 2 }} />
             <Typography variant="h6" gutterBottom>

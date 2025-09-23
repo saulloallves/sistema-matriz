@@ -341,9 +341,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
                 label="Fase de Implantação"
                 onChange={(e) => handleInputChange('store_imp_phase', e.target.value)}
               >
-                <MenuItem value="pre_abertura">Pré-abertura</MenuItem>
-                <MenuItem value="implantacao">Implantação</MenuItem>
-                <MenuItem value="pos_abertura">Pós-abertura</MenuItem>
+                <MenuItem value="integracao">Integração</MenuItem>
+                <MenuItem value="treinamento">Treinamento</MenuItem>
+                <MenuItem value="procura_ponto">Procura de Ponto</MenuItem>
+                <MenuItem value="estruturacao">Estruturação</MenuItem>
+                <MenuItem value="compras">Compras</MenuItem>
+                <MenuItem value="inauguracao">Inauguração</MenuItem>
               </Select>
             </FormControl>
           </Stack>
