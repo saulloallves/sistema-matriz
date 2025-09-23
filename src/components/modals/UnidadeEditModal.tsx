@@ -27,7 +27,9 @@ import {
   Phone, 
   Car, 
   Clock,
-  Instagram 
+  Instagram,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
@@ -94,6 +96,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   const [groupCodeLoading, setGroupCodeLoading] = useState(false);
   const [groupCodeError, setGroupCodeError] = useState<string | null>(null);
   const [groupCodeValid, setGroupCodeValid] = useState<boolean | null>(null);
+  const [showInstagramPassword, setShowInstagramPassword] = useState(false);
+  const [showBearerToken, setShowBearerToken] = useState(false);
 
   useEffect(() => {
     if (unidade && unidade.id) {
@@ -724,19 +728,41 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              type="password"
+              type={showInstagramPassword ? "text" : "password"}
               label="Senha Instagram"
               value={formData.password_instagram}
               onChange={(e) => handleInputChange('password_instagram', e.target.value)}
               helperText="Senha para acesso ao Instagram"
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    onClick={() => setShowInstagramPassword(!showInstagramPassword)}
+                    edge="end"
+                    size="small"
+                  >
+                    {showInstagramPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </IconButton>
+                )
+              }}
             />
             <TextField
               fullWidth
-              type="password"
+              type={showBearerToken ? "text" : "password"}
               label="Bearer Token"
               value={formData.bearer}
               onChange={(e) => handleInputChange('bearer', e.target.value)}
               helperText="Token de autenticação para APIs"
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    onClick={() => setShowBearerToken(!showBearerToken)}
+                    edge="end"
+                    size="small"
+                  >
+                    {showBearerToken ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </IconButton>
+                )
+              }}
             />
           </Stack>
 
