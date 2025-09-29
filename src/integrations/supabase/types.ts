@@ -895,6 +895,7 @@ export type Database = {
           address: string | null
           address_complement: string | null
           ai_agent_id: string | null
+          bearer: string | null
           city: string | null
           cnpj: string | null
           created_at: string
@@ -909,6 +910,7 @@ export type Database = {
           has_parking: boolean | null
           has_partner_parking: boolean | null
           id: string
+          id_unidade: string | null
           instagram_profile: string | null
           is_active: boolean
           neighborhood: string | null
@@ -924,6 +926,7 @@ export type Database = {
           operation_wed: string | null
           parking_spots: number | null
           partner_parking_address: string | null
+          password_instagram: string | null
           phone: string | null
           postal_code: string | null
           purchases_active: boolean | null
@@ -934,11 +937,13 @@ export type Database = {
           store_phase: string
           uf: string | null
           updated_at: string
+          user_instagram: string | null
         }
         Insert: {
           address?: string | null
           address_complement?: string | null
           ai_agent_id?: string | null
+          bearer?: string | null
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -953,6 +958,7 @@ export type Database = {
           has_parking?: boolean | null
           has_partner_parking?: boolean | null
           id?: string
+          id_unidade?: string | null
           instagram_profile?: string | null
           is_active?: boolean
           neighborhood?: string | null
@@ -968,6 +974,7 @@ export type Database = {
           operation_wed?: string | null
           parking_spots?: number | null
           partner_parking_address?: string | null
+          password_instagram?: string | null
           phone?: string | null
           postal_code?: string | null
           purchases_active?: boolean | null
@@ -978,11 +985,13 @@ export type Database = {
           store_phase?: string
           uf?: string | null
           updated_at?: string
+          user_instagram?: string | null
         }
         Update: {
           address?: string | null
           address_complement?: string | null
           ai_agent_id?: string | null
+          bearer?: string | null
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -997,6 +1006,7 @@ export type Database = {
           has_parking?: boolean | null
           has_partner_parking?: boolean | null
           id?: string
+          id_unidade?: string | null
           instagram_profile?: string | null
           is_active?: boolean
           neighborhood?: string | null
@@ -1012,6 +1022,7 @@ export type Database = {
           operation_wed?: string | null
           parking_spots?: number | null
           partner_parking_address?: string | null
+          password_instagram?: string | null
           phone?: string | null
           postal_code?: string | null
           purchases_active?: boolean | null
@@ -1022,6 +1033,7 @@ export type Database = {
           store_phase?: string
           uf?: string | null
           updated_at?: string
+          user_instagram?: string | null
         }
         Relationships: []
       }
@@ -1047,7 +1059,15 @@ export type Database = {
           kind?: Database["public"]["Enums"]["whatsapp_group_kind_enum"]
           unit_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "unidades_grupos_whatsapp_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unidades_old: {
         Row: {
@@ -1289,6 +1309,16 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_unidades_para_normalizacao: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          group_code: number
+          id_unidades: string
+          id_unidades_old: string
+          nome_atual: string
+          nome_correto: string
+        }[]
+      }
       get_users_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1326,6 +1356,19 @@ export type Database = {
           _vinculo_id: number
         }
         Returns: undefined
+      }
+      normalizar_nome_unidade: {
+        Args: { p_group_code: number }
+        Returns: boolean
+      }
+      normalizar_todas_unidades: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          group_code: number
+          nome_anterior: string
+          nome_novo: string
+          sucesso: boolean
+        }[]
       }
     }
     Enums: {
