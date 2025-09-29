@@ -1363,12 +1363,7 @@ export type Database = {
       }
       normalizar_todas_unidades: {
         Args: Record<PropertyKey, never>
-        Returns: {
-          group_code: number
-          nome_anterior: string
-          nome_novo: string
-          sucesso: boolean
-        }[]
+        Returns: Json[]
       }
     }
     Enums: {

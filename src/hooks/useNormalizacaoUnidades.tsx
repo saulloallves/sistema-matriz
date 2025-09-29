@@ -77,9 +77,17 @@ export const useNormalizacaoUnidades = () => {
         throw new Error(error.message);
       }
       
-      return data || [];
+      // Converter JSON para o tipo esperado
+      return (data as any[])?.map((item: any) => ({
+        group_code: item.group_code,
+        nome_anterior: item.nome_anterior,
+        nome_novo: item.nome_novo,
+        sucesso: item.sucesso
+      })) || [];
     },
     onSuccess: (resultados) => {
+      console.log('Resultados da normalização:', resultados);
+      
       const sucessos = resultados.filter(r => r.sucesso).length;
       const falhas = resultados.filter(r => !r.sucesso).length;
       
@@ -87,11 +95,16 @@ export const useNormalizacaoUnidades = () => {
         toast.success(`${sucessos} unidades normalizadas com sucesso!`);
       } else {
         toast.error(`${sucessos} sucessos, ${falhas} falhas na normalização`);
+        
+        // Log detalhado das falhas
+        const falhasDetalhes = resultados.filter(r => !r.sucesso);
+        console.log('Falhas detalhadas:', falhasDetalhes);
       }
       
       queryClient.invalidateQueries({ queryKey: ['unidades-normalizacao'] });
     },
     onError: (error: Error) => {
+      console.error('Erro na mutation normalizar todas:', error);
       toast.error(`Erro: ${error.message}`);
     },
   });
