@@ -46,3 +46,6 @@ verify_jwt = true
 
 [functions.reset-user-password]
 verify_jwt = true
+
+[functions.webhook-dispatcher]
+verify_jwt = false
