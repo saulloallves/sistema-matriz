@@ -10,6 +10,7 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Collapse,
 } from '@mui/material';
 import {
   LayoutDashboard,
@@ -24,36 +25,95 @@ import {
   Key,
   Shield,
   Baby,
+  ChevronDown,
+  ChevronRight,
+  Building2,
+  UserCircle,
+  Lock,
+  Radio,
 } from 'lucide-react';
 
-const menuItems = [
+interface MenuItemType {
+  text: string;
+  icon: any;
+  path?: string;
+  children?: MenuItemType[];
+}
+
+const menuItems: MenuItemType[] = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { text: 'Unidades', icon: Store, path: '/unidades' },
-  { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
-  { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
-  { text: 'Filhos Franqueados', icon: Baby, path: '/franqueados-filhos' },
-  { text: 'Clientes', icon: Users, path: '/clientes' },
-  { text: 'Filhos Clientes', icon: Baby, path: '/clientes-filhos' },
-  { text: 'Colab. Interno', icon: UserCog, path: '/colaboradores-interno' },
-  { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja' },
-  { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja' },
-  { text: 'Senhas', icon: Key, path: '/senhas' },
-  { text: 'Permissões', icon: Shield, path: '/permissoes' },
-  { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
-  { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
+  { 
+    text: 'Unidades', 
+    icon: Building2,
+    children: [
+      { text: 'Unidades', icon: Store, path: '/unidades' },
+    ]
+  },
+  { 
+    text: 'Franqueados', 
+    icon: UserCircle,
+    children: [
+      { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
+      { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
+      { text: 'Filhos', icon: Baby, path: '/franqueados-filhos' },
+    ]
+  },
+  { 
+    text: 'Clientes', 
+    icon: Users,
+    children: [
+      { text: 'Clientes', icon: Users, path: '/clientes' },
+      { text: 'Filhos', icon: Baby, path: '/clientes-filhos' },
+    ]
+  },
+  { 
+    text: 'RH', 
+    icon: UserCog,
+    children: [
+      { text: 'Colab. Interno', icon: UserCog, path: '/colaboradores-interno' },
+      { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja' },
+      { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja' },
+    ]
+  },
+  { 
+    text: 'Segurança', 
+    icon: Lock,
+    children: [
+      { text: 'Senhas', icon: Key, path: '/senhas' },
+      { text: 'Permissões', icon: Shield, path: '/permissoes' },
+    ]
+  },
+  { 
+    text: 'Comunicação', 
+    icon: Radio,
+    children: [
+      { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
+      { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
+    ]
+  },
   { text: 'Configurações', icon: Settings, path: '/configuracoes' },
 ];
 
 const AppSidebar = () => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { data: profile } = useUserProfile();
 
-  const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
-  const currentIndicatorIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
+  const toggleGroup = (groupText: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupText]: !prev[groupText]
+    }));
+  };
+
+  const isActiveRoute = (path?: string, children?: MenuItemType[]) => {
+    if (path) return location.pathname === path;
+    if (children) return children.some(child => location.pathname === child.path);
+    return false;
+  };
 
   const handleUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -61,6 +121,93 @@ const AppSidebar = () => {
 
   const handleCloseUserMenu = () => {
     setAnchorEl(null);
+  };
+
+  const renderMenuItem = (item: MenuItemType, index: number) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedGroups[item.text];
+    const isActive = isActiveRoute(item.path, item.children);
+    const Icon = item.icon;
+
+    if (hasChildren) {
+      return (
+        <Box key={index}>
+          <Tooltip title={item.text} placement="right" arrow>
+            <IconButton
+              onClick={() => toggleGroup(item.text)}
+              sx={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '12px',
+                position: 'relative',
+                zIndex: 2,
+                color: isActive ? 'primary.main' : 'text.secondary',
+                backgroundColor: isActive ? 'primary.light' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Icon size={20} />
+                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              </Box>
+            </IconButton>
+          </Tooltip>
+          <Collapse in={isExpanded}>
+            <Box sx={{ pl: 1, mt: 0.5 }}>
+              {item.children?.map((child, childIndex) => {
+                const ChildIcon = child.icon;
+                return (
+                  <Tooltip key={childIndex} title={child.text} placement="right" arrow>
+                    <IconButton
+                      onClick={() => child.path && navigate(child.path)}
+                      sx={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '10px',
+                        mb: 0.5,
+                        color: location.pathname === child.path ? 'primary.main' : 'text.secondary',
+                        backgroundColor: location.pathname === child.path ? 'primary.light' : 'transparent',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <ChildIcon size={18} />
+                    </IconButton>
+                  </Tooltip>
+                );
+              })}
+            </Box>
+          </Collapse>
+        </Box>
+      );
+    }
+
+    return (
+      <Tooltip key={index} title={item.text} placement="right" arrow>
+        <IconButton
+          onClick={() => item.path && navigate(item.path)}
+          sx={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '12px',
+            position: 'relative',
+            zIndex: 2,
+            color: isActive ? 'primary.main' : 'text.secondary',
+            backgroundColor: isActive ? 'primary.light' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'action.hover',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <Icon size={20} />
+        </IconButton>
+      </Tooltip>
+    );
   };
 
   return (
@@ -71,7 +218,7 @@ const AppSidebar = () => {
         left: 16,
         background: '#fff',
         borderRadius: '10px',
-        padding: '16px 0',
+        padding: '16px',
         boxShadow: '0 0 40px rgba(0,0,0,0.03)',
         height: 'calc(100vh - 32px)',
         width: '88px',
@@ -79,232 +226,88 @@ const AppSidebar = () => {
         border: '1px solid rgba(0,0,0,0.05)',
         display: 'flex',
         flexDirection: 'column',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        '&::-webkit-scrollbar': {
+          width: '4px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: 'rgba(0,0,0,0.1)',
+          borderRadius: '4px',
+        },
       }}
     >
+      <Box
+        component="nav"
+        sx={{
+          flex: 1,
+        }}
+      >
         <Box
-          component="nav"
           sx={{
-            position: 'relative',
-            flex: 1,
-          }}
-        >
-        <Box
-          component="ul"
-          sx={{
-            position: 'relative',
-            listStyle: 'none',
-            margin: 0,
-            padding: 0,
-            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             gap: '4px',
           }}
         >
-          {/* Animated background indicator */}
-          <Box
-            sx={{
-              position: 'absolute',
-              opacity: currentIndicatorIndex >= 0 ? 1 : 0,
-              zIndex: 1,
-              top: 0,
-              left: '16px',
-              width: '56px',
-              height: '56px',
-              background: '#406ff3',
-              borderRadius: '17.5px',
-              transition: 'all 300ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-              transform: `translateY(${currentIndicatorIndex * 60}px)`,
-              willChange: 'transform',
-            }}
-          />
-
-          {menuItems.map((item, index) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            const isHovered = hoveredIndex === index;
-            // Ícone fica branco apenas se está sendo hovered OU se está ativo E não há hover em outro item
-            const shouldBeWhite = isHovered || (isActive && hoveredIndex === null);
-            
-            return (
-              <Box
-                key={item.text}
-                component="li"
-                sx={{
-                  position: 'relative',
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
-                <Tooltip 
-                  title={item.text} 
-                  placement="right"
-                  arrow
-                  slotProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: '#406ff3',
-                        color: '#fff',
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
-                        borderRadius: '17.5px',
-                        padding: '12px 16px',
-                        marginLeft: '16px !important',
-                      }
-                    },
-                    arrow: {
-                      sx: {
-                        color: '#406ff3',
-                      }
-                    }
-                  }}
-                >
-                  <IconButton
-                    onClick={() => navigate(item.path)}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    sx={{
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '56px',
-                      width: '56px',
-                      color: shouldBeWhite ? '#fff' : '#6a778e',
-                      transition: 'color 300ms ease',
-                      borderRadius: '17.5px',
-                      zIndex: 2,
-                      backgroundColor: 'transparent',
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                      },
-                    }}
-                  >
-                    <Icon size={20} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            );
-          })}
+          {menuItems.map((item, index) => renderMenuItem(item, index))}
         </Box>
       </Box>
 
-      {/* User Menu Section */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center',
-        paddingBottom: 2,
-        paddingTop: 1,
-      }}>
-        <Divider sx={{ 
-          width: '56px', 
-          marginBottom: 2,
-          backgroundColor: 'rgba(0,0,0,0.1)' 
-        }} />
-      </Box>
-      
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center',
-        paddingBottom: 1,
-      }}>
-        <Tooltip 
-          title="Perfil do usuário" 
-          placement="right"
-          arrow
-          slotProps={{
-            tooltip: {
-              sx: {
-                backgroundColor: '#406ff3',
-                color: '#fff',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                borderRadius: '17.5px',
-                padding: '12px 16px',
-                marginLeft: '16px !important',
-              }
-            },
-            arrow: {
-              sx: {
-                color: '#406ff3',
-              }
-            }
-          }}
-        >
+      <Divider sx={{ my: 2 }} />
+
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Tooltip title={profile?.full_name || user?.email || 'Usuário'} placement="right" arrow>
           <IconButton
             onClick={handleUserMenu}
-            sx={{ 
-              padding: 0,
+            sx={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '12px',
               '&:hover': {
-                backgroundColor: 'transparent',
-              }
+                backgroundColor: 'action.hover',
+              },
             }}
           >
-            <Avatar 
-              sx={{ 
-                width: 40, 
-                height: 40, 
-                bgcolor: '#406ff3',
-                borderRadius: '10px',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                }
+            <Avatar
+              sx={{
+                width: 40,
+                height: 40,
+                bgcolor: 'primary.main',
+                fontSize: '1rem',
               }}
             >
-              <UserIcon size={18} />
+              {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
             </Avatar>
           </IconButton>
         </Tooltip>
-        
         <Menu
           anchorEl={anchorEl}
-          anchorOrigin={{
-            vertical: 'center',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'center',
-            horizontal: 'left',
-          }}
           open={Boolean(anchorEl)}
           onClose={handleCloseUserMenu}
-          PaperProps={{
-            sx: {
-              borderRadius: '10px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              border: '1px solid rgba(0,0,0,0.05)',
-              ml: 2,
-            }
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
           }}
         >
-          <MenuItem 
-            sx={{
-              borderRadius: '6px',
-              margin: '4px 8px',
-              cursor: 'default',
-              '&:hover': {
-                backgroundColor: 'transparent',
-              }
-            }}
-          >
-            {profile?.full_name || 'Usuário'}
+          <MenuItem disabled>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ fontWeight: 600 }}>{profile?.full_name || 'Usuário'}</Box>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{user?.email}</Box>
+            </Box>
           </MenuItem>
-          <MenuItem 
-            onClick={async () => {
-              handleCloseUserMenu();
-              await signOut();
-            }}
-            sx={{
-              borderRadius: '6px',
-              margin: '4px 8px',
-              color: '#d32f2f',
-              '&:hover': {
-                backgroundColor: 'rgba(211, 47, 47, 0.1)',
-              }
-            }}
-          >
+          <Divider />
+          <MenuItem onClick={() => {
+            signOut();
+            handleCloseUserMenu();
+          }}>
             Sair
           </MenuItem>
         </Menu>
