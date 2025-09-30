@@ -17,7 +17,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck, Database, RefreshCw, Phone } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck, Database, RefreshCw, Phone, Webhook, Power, Plus, Trash2 } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -28,6 +28,9 @@ import { NormalizacaoContatosModal } from '@/components/modals/NormalizacaoConta
 import { useNormalizacaoUnidades } from '@/hooks/useNormalizacaoUnidades';
 import { useNormalizacaoContatos } from '@/hooks/useNormalizacaoContatos';
 import { GridColDef } from '@mui/x-data-grid';
+import { useWebhookSubscriptions, WebhookSubscription } from '@/hooks/useWebhookSubscriptions';
+import { WebhookAddModal } from '@/components/modals/WebhookAddModal';
+import { WebhookEditModal } from '@/components/modals/WebhookEditModal';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -370,6 +373,218 @@ const GerenciamentoUsuariosTab = () => {
   );
 };
 
+const RealtimeWebhooksTab = () => {
+  const {
+    webhooks,
+    isLoading,
+    createWebhook,
+    isCreating,
+    updateWebhook,
+    isUpdating,
+    deleteWebhook,
+    isDeleting,
+    toggleWebhook,
+    isToggling,
+  } = useWebhookSubscriptions();
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedWebhook, setSelectedWebhook] = useState<WebhookSubscription | null>(null);
+
+  const handleEdit = (webhook: WebhookSubscription) => {
+    setSelectedWebhook(webhook);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (webhook: WebhookSubscription) => {
+    if (window.confirm(`Tem certeza que deseja remover o webhook para ${webhook.endpoint_url}?`)) {
+      deleteWebhook(webhook.id);
+    }
+  };
+
+  const handleToggle = (webhook: WebhookSubscription) => {
+    toggleWebhook({ id: webhook.id, enabled: !webhook.enabled });
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: 'endpoint_url',
+      headerName: 'URL do Endpoint',
+      flex: 1.5,
+      minWidth: 300,
+    },
+    {
+      field: 'topic',
+      headerName: 'Tópico',
+      flex: 0.8,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          variant="outlined"
+          color={params.value === 'generic' ? 'primary' : 'default'}
+        />
+      ),
+    },
+    {
+      field: 'enabled',
+      headerName: 'Status',
+      flex: 0.4,
+      minWidth: 100,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => (
+        <Chip
+          label={params.value ? 'Ativo' : 'Inativo'}
+          color={params.value ? 'success' : 'default'}
+          size="small"
+          variant={params.value ? 'filled' : 'outlined'}
+        />
+      ),
+    },
+    {
+      field: 'created_at',
+      headerName: 'Criado em',
+      flex: 0.6,
+      minWidth: 140,
+      valueFormatter: (value) => {
+        if (!value) return '';
+        return new Date(value).toLocaleDateString('pt-BR');
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Ações',
+      flex: 1,
+      minWidth: 220,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            color={params.row.enabled ? 'warning' : 'success'}
+            startIcon={<Power size={16} />}
+            onClick={() => handleToggle(params.row)}
+            disabled={isToggling || isDeleting}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            {params.row.enabled ? 'Desativar' : 'Ativar'}
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="primary"
+            startIcon={<Edit size={16} />}
+            onClick={() => handleEdit(params.row)}
+            disabled={isUpdating || isDeleting}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            Editar
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            startIcon={<Trash2 size={16} />}
+            onClick={() => handleDelete(params.row)}
+            disabled={isDeleting || isUpdating}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            Remover
+          </Button>
+        </Box>
+      ),
+    },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Seção de Informações */}
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Webhook size={20} />
+              Sincronização Real-time
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure webhooks para receber eventos de alterações nas tabelas em tempo real. 
+              Ideal para integração com sistemas externos.
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Card variant="outlined" sx={{ flex: 1 }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Typography variant="h4" color="primary">
+                  {isLoading ? '-' : webhooks.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Webhooks Cadastrados
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card variant="outlined" sx={{ flex: 1 }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Typography variant="h4" color="success.main">
+                  {isLoading ? '-' : webhooks.filter((w) => w.enabled).length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Webhooks Ativos
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Plus size={18} />}
+            onClick={() => setAddModalOpen(true)}
+            disabled={isCreating}
+          >
+            Adicionar Webhook
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Tabela de Webhooks */}
+      <DataTable
+        title="Webhooks Cadastrados"
+        titleIcon={<Database size={20} />}
+        description="Gerencie os webhooks que receberão eventos de sincronização"
+        data={webhooks}
+        columns={columns}
+        loading={isLoading}
+      />
+
+      {/* Modais */}
+      <WebhookAddModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSave={(webhook) => createWebhook(webhook)}
+        isLoading={isCreating}
+      />
+
+      <WebhookEditModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedWebhook(null);
+        }}
+        webhook={selectedWebhook}
+        onSave={(id, updates) => updateWebhook({ id, updates })}
+        isLoading={isUpdating}
+      />
+    </Box>
+  );
+};
+
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
@@ -426,6 +641,12 @@ const ConfiguracoesPage = () => {
             <Tab 
               icon={<Settings size={18} />} 
               label="Sistema" 
+              iconPosition="start"
+              sx={{ textTransform: 'none', fontWeight: 500 }}
+            />
+            <Tab 
+              icon={<Webhook size={18} />} 
+              label="Real-time" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 500 }}
             />
@@ -602,6 +823,10 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
             </Box>
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={4}>
+            <RealtimeWebhooksTab />
           </TabPanel>
         </Box>
       </Paper>
