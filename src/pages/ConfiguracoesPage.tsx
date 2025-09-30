@@ -17,14 +17,16 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck, Database, RefreshCw } from 'lucide-react';
+import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck, Database, RefreshCw, Phone } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
 import { DataTable } from '@/components/crud/DataTable';
 import UserEditModal from '@/components/modals/UserEditModal';
 import { NormalizacaoNomesModal } from '@/components/modals/NormalizacaoNomesModal';
+import { NormalizacaoContatosModal } from '@/components/modals/NormalizacaoContatosModal';
 import { useNormalizacaoUnidades } from '@/hooks/useNormalizacaoUnidades';
+import { useNormalizacaoContatos } from '@/hooks/useNormalizacaoContatos';
 import { GridColDef } from '@mui/x-data-grid';
 
 interface TabPanelProps {
@@ -371,7 +373,9 @@ const GerenciamentoUsuariosTab = () => {
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
+  const [normalizacaoContatosModalOpen, setNormalizacaoContatosModalOpen] = useState(false);
   const { unidadesParaNormalizacao, isLoading: isLoadingNormalizacao } = useNormalizacaoUnidades();
+  const { contatosParaNormalizacao, isLoading: isLoadingNormalizacaoContatos } = useNormalizacaoContatos();
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -524,6 +528,68 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
 
+              {/* Seção de Normalização de Contatos */}
+              <Card>
+                <CardContent>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Phone size={20} />
+                      Normalização de Contatos dos Franqueados
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Identifique e corrija contatos que contêm caracteres especiais, deixando apenas números.
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Card variant="outlined" sx={{ flex: 1 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {isLoadingNormalizacaoContatos ? '-' : contatosParaNormalizacao.length}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Contatos para Normalizar
+                        </Typography>
+                      </CardContent>
+                    </Card>
+
+                    <Card variant="outlined" sx={{ flex: 1 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Chip
+                          label={
+                            isLoadingNormalizacaoContatos 
+                              ? "Carregando..." 
+                              : contatosParaNormalizacao.length === 0 
+                                ? "Tudo Normalizado" 
+                                : "Normalização Pendente"
+                          }
+                          color={
+                            isLoadingNormalizacaoContatos 
+                              ? "default" 
+                              : contatosParaNormalizacao.length === 0 
+                                ? "success" 
+                                : "warning"
+                          }
+                          variant="outlined"
+                        />
+                      </CardContent>
+                    </Card>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<RefreshCw size={18} />}
+                      onClick={() => setNormalizacaoContatosModalOpen(true)}
+                      disabled={isLoadingNormalizacaoContatos}
+                    >
+                      Verificar Contatos para Normalização
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+
               {/* Outras configurações do sistema */}
               <Card>
                 <CardContent>
@@ -540,10 +606,14 @@ const ConfiguracoesPage = () => {
         </Box>
       </Paper>
 
-      {/* Modal de Normalização */}
+      {/* Modais de Normalização */}
       <NormalizacaoNomesModal
         open={normalizacaoModalOpen}
         onClose={() => setNormalizacaoModalOpen(false)}
+      />
+      <NormalizacaoContatosModal
+        open={normalizacaoContatosModalOpen}
+        onClose={() => setNormalizacaoContatosModalOpen(false)}
       />
     </Box>
   );

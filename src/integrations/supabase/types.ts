@@ -1219,6 +1219,80 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_delivery_logs: {
+        Row: {
+          attempt: number
+          dispatched_at: string | null
+          error_message: string | null
+          id: string
+          request_body: Json | null
+          response_body: string | null
+          status_code: number | null
+          subscription_id: string | null
+          success: boolean | null
+        }
+        Insert: {
+          attempt?: number
+          dispatched_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_body?: Json | null
+          response_body?: string | null
+          status_code?: number | null
+          subscription_id?: string | null
+          success?: boolean | null
+        }
+        Update: {
+          attempt?: number
+          dispatched_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_body?: Json | null
+          response_body?: string | null
+          status_code?: number | null
+          subscription_id?: string | null
+          success?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_delivery_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_subscriptions: {
+        Row: {
+          created_at: string | null
+          enabled: boolean
+          endpoint_url: string
+          id: string
+          secret: string | null
+          topic: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean
+          endpoint_url: string
+          id?: string
+          secret?: string | null
+          topic: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean
+          endpoint_url?: string
+          id?: string
+          secret?: string | null
+          topic?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_franqueados_unidades_detalhes: {
@@ -1263,6 +1337,15 @@ export type Database = {
       can_access_sensitive_data: {
         Args: { _franqueado_id?: string }
         Returns: boolean
+      }
+      get_contatos_para_normalizacao: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          contato_atual: string
+          contato_normalizado: string
+          franqueado_id: string
+          nome_franqueado: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -1357,11 +1440,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      normalizar_contato_franqueado: {
+        Args: { p_franqueado_id: string }
+        Returns: boolean
+      }
       normalizar_nome_unidade: {
         Args: { p_group_code: number }
         Returns: boolean
       }
       normalizar_todas_unidades: {
+        Args: Record<PropertyKey, never>
+        Returns: Json[]
+      }
+      normalizar_todos_contatos: {
         Args: Record<PropertyKey, never>
         Returns: Json[]
       }
