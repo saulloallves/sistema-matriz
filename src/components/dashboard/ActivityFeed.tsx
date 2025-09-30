@@ -117,6 +117,7 @@ const ActivityFeed = ({ activities, loading = false }: ActivityFeedProps) => {
                       display: 'flex',
                       gap: 2,
                       p: 2,
+                      mr: 1,
                       borderRadius: 2,
                       backgroundColor: 'background.paper',
                       border: '1px solid',
