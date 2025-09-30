@@ -1,191 +1,112 @@
-import { useState, useEffect } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import {
   Store,
-  User,
+  Users,
   TrendingUp,
-  BarChart3,
+  Target,
 } from 'lucide-react';
-import { supabase } from '../integrations/supabase/client';
-import toast from 'react-hot-toast';
-
-interface DashboardStats {
-  totalUnidades: number;
-  totalFranqueados: number;
-  unidadesAtivas: number;
-  franqueadosComUnidades: number;
-}
+import KPICard from '../components/dashboard/KPICard';
+import ActivityFeed from '../components/dashboard/ActivityFeed';
+import PerformanceChart from '../components/dashboard/PerformanceChart';
+import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
+import { 
+  useDashboardStats, 
+  useChartData, 
+  useRecentActivity, 
+  useTopUnits 
+} from '../hooks/useDashboardStats';
 
 const DashboardPage = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUnidades: 0,
-    totalFranqueados: 0,
-    unidadesAtivas: 0,
-    franqueadosComUnidades: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboardStats();
-  }, []);
-
-  const loadDashboardStats = async () => {
-    try {
-      setLoading(true);
-
-      const [unidadesResponse, franqueadosResponse] = await Promise.all([
-        supabase.from('unidades').select('*'),
-        supabase.from('franqueados').select('*'),
-      ]);
-
-      if (unidadesResponse.error) throw unidadesResponse.error;
-      if (franqueadosResponse.error) throw franqueadosResponse.error;
-
-      const unidades = unidadesResponse.data || [];
-      const franqueados = franqueadosResponse.data || [];
-
-      const unidadesAtivas = unidades.filter(u => u.purchases_active || u.sales_active).length;
-
-      setStats({
-        totalUnidades: unidades.length,
-        totalFranqueados: franqueados.length,
-        unidadesAtivas,
-        franqueadosComUnidades: franqueados.length,
-      });
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-      toast.error('Erro ao carregar dados do dashboard');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const StatCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    color, 
-    percentage 
-  }: { 
-    title: string; 
-    value: number; 
-    icon: any; 
-    color: string;
-    percentage?: number;
-  }) => (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <Typography color="text.secondary" gutterBottom variant="body2">
-              {title}
-            </Typography>
-            <Typography variant="h4" component="div">
-              {loading ? '-' : value.toLocaleString()}
-            </Typography>
-            {percentage !== undefined && (
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  {percentage}% do total
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={percentage} 
-                  sx={{ 
-                    mt: 0.5,
-                    backgroundColor: `${color}20`,
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: color,
-                    }
-                  }} 
-                />
-              </Box>
-            )}
-          </Box>
-          <Icon size={40} style={{ color, opacity: 0.7 }} />
-        </Box>
-      </CardContent>
-    </Card>
-  );
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: chartData, isLoading: chartLoading } = useChartData();
+  const { data: activities, isLoading: activitiesLoading } = useRecentActivity();
+  const { data: topUnits, isLoading: unitsLoading } = useTopUnits();
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Dashboard
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Visão geral do sistema de gerenciamento
-      </Typography>
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom 
+          sx={{ fontWeight: 700, color: 'text.primary' }}
+        >
+          Dashboard
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Visão geral em tempo real do seu negócio
+        </Typography>
+      </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <StatCard
+      {/* KPI Cards */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+        gap: 3, 
+        mb: 4 
+      }}>
+        <KPICard
           title="Total de Unidades"
-          value={stats.totalUnidades}
+          value={stats?.totalUnidades || 0}
           icon={Store}
           color="#1976d2"
-          percentage={100}
+          loading={statsLoading}
+          trend={stats?.totalUnidades ? { value: 12.5, isPositive: true } : undefined}
         />
-        
-          <StatCard
-            title="Total de Franqueados"
-            value={stats.totalFranqueados}
-            icon={User}
-            color="#9c27b0"
-            percentage={100}
-          />
-        
-        <StatCard
+        <KPICard
+          title="Franqueados"
+          value={stats?.totalFranqueados || 0}
+          icon={Users}
+          color="#9c27b0"
+          loading={statsLoading}
+          trend={stats?.totalFranqueados ? { value: 8.2, isPositive: true } : undefined}
+        />
+        <KPICard
           title="Unidades Ativas"
-          value={stats.unidadesAtivas}
+          value={stats?.unidadesAtivas || 0}
           icon={TrendingUp}
           color="#2e7d32"
-          percentage={stats.totalUnidades > 0 ? Math.round((stats.unidadesAtivas / stats.totalUnidades) * 100) : 0}
+          loading={statsLoading}
+          percentage={stats?.totalUnidades && stats?.unidadesAtivas ? 
+            Math.round((stats.unidadesAtivas / stats.totalUnidades) * 100) : 0}
         />
-        
-          <StatCard
-            title="Relacionamentos"
-            value={stats.franqueadosComUnidades}
-            icon={BarChart3}
-            color="#ed6c02"
-            percentage={stats.totalFranqueados > 0 ? Math.round((stats.franqueadosComUnidades / stats.totalFranqueados) * 100) : 0}
-          />
+        <KPICard
+          title="Taxa de Conversão"
+          value={stats?.taxaConversao || 0}
+          suffix="%"
+          icon={Target}
+          color="#ed6c02"
+          loading={statsLoading}
+          trend={stats?.taxaConversao ? { value: 5.1, isPositive: true } : undefined}
+        />
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Resumo Operacional
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              • Sistema integrado com Supabase<br/>
-              • Gerenciamento completo de unidades e franqueados<br/>
-              • Interface responsiva com Material-UI<br/>
-              • Validações de dados em tempo real
-            </Typography>
-          </CardContent>
-        </Card>
+      {/* Main Content Area */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, 
+        gap: 3, 
+        mb: 4 
+      }}>
+        {/* Activity Feed */}
+        <ActivityFeed 
+          activities={activities || []} 
+          loading={activitiesLoading} 
+        />
         
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Próximas Funcionalidades
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              • Relatórios avançados<br/>
-              • Gráficos de performance<br/>
-              • Exportação de dados<br/>
-              • Sistema de notificações
-            </Typography>
-          </CardContent>
-        </Card>
+        {/* Performance Chart */}
+        <PerformanceChart 
+          data={chartData || []} 
+          loading={chartLoading} 
+        />
       </Box>
+
+      {/* Top Units Performance */}
+      <TopUnitsPerformance 
+        units={topUnits || []} 
+        loading={unitsLoading} 
+      />
     </Box>
   );
 };
