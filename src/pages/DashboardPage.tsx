@@ -4,21 +4,23 @@ import {
   Users,
   TrendingUp,
   Target,
+  Building,
 } from 'lucide-react';
 import KPICard from '../components/dashboard/KPICard';
 import ActivityFeed from '../components/dashboard/ActivityFeed';
 import PerformanceChart from '../components/dashboard/PerformanceChart';
 import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
+import FinancialMetrics from '../components/dashboard/FinancialMetrics';
 import { 
   useDashboardStats, 
-  useChartData, 
+  useUnidadesDistribution, 
   useRecentActivity, 
   useTopUnits 
 } from '../hooks/useDashboardStats';
 
 const DashboardPage = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: chartData, isLoading: chartLoading } = useChartData();
+  const { data: chartData, isLoading: chartLoading } = useUnidadesDistribution();
   const { data: activities, isLoading: activitiesLoading } = useRecentActivity();
   const { data: topUnits, isLoading: unitsLoading } = useTopUnits();
 
@@ -63,16 +65,16 @@ const DashboardPage = () => {
           trend={stats?.totalFranqueados ? { value: 8.2, isPositive: true } : undefined}
         />
         <KPICard
-          title="Unidades Ativas"
+          title="Franqueados com Unidades"
           value={stats?.unidadesAtivas || 0}
-          icon={TrendingUp}
+          icon={Building}
           color="#2e7d32"
           loading={statsLoading}
-          percentage={stats?.totalUnidades && stats?.unidadesAtivas ? 
-            Math.round((stats.unidadesAtivas / stats.totalUnidades) * 100) : 0}
+          percentage={stats?.totalFranqueados && stats?.unidadesAtivas ? 
+            Math.round((stats.unidadesAtivas / stats.totalFranqueados) * 100) : 0}
         />
         <KPICard
-          title="Taxa de Conversão"
+          title="Taxa de Vinculação"
           value={stats?.taxaConversao || 0}
           suffix="%"
           icon={Target}
@@ -100,6 +102,11 @@ const DashboardPage = () => {
           data={chartData || []} 
           loading={chartLoading} 
         />
+      </Box>
+
+      {/* Financial Metrics */}
+      <Box sx={{ mb: 4 }}>
+        <FinancialMetrics />
       </Box>
 
       {/* Top Units Performance */}

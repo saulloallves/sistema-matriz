@@ -2,9 +2,9 @@ import { Card, CardContent, Typography, Box } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface ChartData {
-  month: string;
-  unidades: number;
-  franqueados: number;
+  month: string; // Representa o modelo da loja
+  unidades: number; // Representa a quantidade
+  franqueados: number; // Não usado neste contexto
 }
 
 interface PerformanceChartProps {
@@ -18,7 +18,7 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
       <Card sx={{ height: '400px' }}>
         <CardContent sx={{ p: 3, height: '100%' }}>
           <Typography variant="h6" gutterBottom>
-            Crescimento Mensal
+            Distribuição por Modelo de Loja
           </Typography>
           <Box sx={{ 
             display: 'flex', 
@@ -63,7 +63,7 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
                 backgroundColor: entry.color, 
                 borderRadius: '50%' 
               }} />
-              {entry.dataKey === 'unidades' ? 'Unidades' : 'Franqueados'}: {entry.value}
+              Quantidade: {entry.value}
             </Typography>
           ))}
         </Box>
@@ -77,16 +77,12 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
       <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Crescimento Mensal
+            Distribuição por Modelo de Loja
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 12, height: 12, backgroundColor: '#1976d2', borderRadius: 1 }} />
-              <Typography variant="body2" color="text.secondary">Unidades</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 12, height: 12, backgroundColor: '#9c27b0', borderRadius: 1 }} />
-              <Typography variant="body2" color="text.secondary">Franqueados</Typography>
+              <Typography variant="body2" color="text.secondary">Quantidade</Typography>
             </Box>
           </Box>
         </Box>
@@ -115,13 +111,7 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
                 dataKey="unidades" 
                 fill="#1976d2" 
                 radius={[4, 4, 0, 0]}
-                name="Unidades"
-              />
-              <Bar 
-                dataKey="franqueados" 
-                fill="#9c27b0" 
-                radius={[4, 4, 0, 0]}
-                name="Franqueados"
+                name="Quantidade"
               />
             </BarChart>
           </ResponsiveContainer>
