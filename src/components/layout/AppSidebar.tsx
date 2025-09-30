@@ -141,10 +141,10 @@ const AppSidebar = () => {
                 borderRadius: '12px',
                 position: 'relative',
                 zIndex: 2,
-                color: isActive ? 'primary.main' : 'text.secondary',
-                backgroundColor: isActive ? 'primary.light' : 'transparent',
+                color: isActive ? '#fff' : 'text.secondary',
+                backgroundColor: isActive ? 'primary.main' : 'transparent',
                 '&:hover': {
-                  backgroundColor: 'action.hover',
+                  backgroundColor: isActive ? 'primary.dark' : 'action.hover',
                 },
                 transition: 'all 0.2s ease',
               }}
@@ -168,10 +168,10 @@ const AppSidebar = () => {
                         height: '48px',
                         borderRadius: '10px',
                         mb: 0.5,
-                        color: location.pathname === child.path ? 'primary.main' : 'text.secondary',
-                        backgroundColor: location.pathname === child.path ? 'primary.light' : 'transparent',
+                        color: location.pathname === child.path ? '#fff' : 'text.secondary',
+                        backgroundColor: location.pathname === child.path ? 'primary.main' : 'transparent',
                         '&:hover': {
-                          backgroundColor: 'action.hover',
+                          backgroundColor: location.pathname === child.path ? 'primary.dark' : 'action.hover',
                         },
                       }}
                     >
@@ -196,10 +196,10 @@ const AppSidebar = () => {
             borderRadius: '12px',
             position: 'relative',
             zIndex: 2,
-            color: isActive ? 'primary.main' : 'text.secondary',
-            backgroundColor: isActive ? 'primary.light' : 'transparent',
+            color: isActive ? '#fff' : 'text.secondary',
+            backgroundColor: isActive ? 'primary.main' : 'transparent',
             '&:hover': {
-              backgroundColor: 'action.hover',
+              backgroundColor: isActive ? 'primary.dark' : 'action.hover',
             },
             transition: 'all 0.2s ease',
           }}
