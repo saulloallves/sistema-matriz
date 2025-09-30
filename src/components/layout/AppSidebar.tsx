@@ -19,6 +19,11 @@ import {
   MessageCircle,
   Calendar,
   Settings,
+  UserCog,
+  Briefcase,
+  Key,
+  Shield,
+  Baby,
 } from 'lucide-react';
 
 const menuItems = [
@@ -26,6 +31,14 @@ const menuItems = [
   { text: 'Unidades', icon: Store, path: '/unidades' },
   { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
   { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
+  { text: 'Filhos Franqueados', icon: Baby, path: '/franqueados-filhos' },
+  { text: 'Clientes', icon: Users, path: '/clientes' },
+  { text: 'Filhos Clientes', icon: Baby, path: '/clientes-filhos' },
+  { text: 'Colab. Interno', icon: UserCog, path: '/colaboradores-interno' },
+  { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja' },
+  { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja' },
+  { text: 'Senhas', icon: Key, path: '/senhas' },
+  { text: 'Permissões', icon: Shield, path: '/permissoes' },
   { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
   { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
   { text: 'Configurações', icon: Settings, path: '/configuracoes' },
