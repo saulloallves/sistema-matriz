@@ -1473,6 +1473,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json[]
       }
+      reenviar_webhooks_normalizacao: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       to_title_case: {
         Args: { input_text: string }
         Returns: string
