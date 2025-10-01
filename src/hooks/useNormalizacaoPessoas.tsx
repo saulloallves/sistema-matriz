@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
 
 export interface PessoaNormalizacao {
-  id: string;
+  id: string; // Pode ser uuid ou bigint convertido para string
   tabela: string;
   nome_atual: string;
   nome_normalizado: string;
