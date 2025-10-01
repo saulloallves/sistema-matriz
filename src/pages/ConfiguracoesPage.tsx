@@ -36,6 +36,7 @@ import { WebhookEditModal } from '@/components/modals/WebhookEditModal';
 import { RolePermissionsModal } from '@/components/modals/RolePermissionsModal';
 import { UserPermissionsModal } from '@/components/modals/UserPermissionsModal';
 import { useTablePermissions } from '@/hooks/useTablePermissions';
+import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -64,6 +65,7 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
 const GerenciamentoUsuariosTab = () => {
   const { users, isLoading, updateUser, isUpdating, toggleUserStatus, isTogglingStatus } = useUsers();
   const { createUser, isCreating, reset } = useUserManagement();
+  const { userRoles, getRoleByUserId, getRoleLabel } = useUserRoles();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
@@ -72,7 +74,8 @@ const GerenciamentoUsuariosTab = () => {
     full_name: '',
     email: '',
     phone_number: '',
-    notes: ''
+    notes: '',
+    role: 'admin' as AppRole
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -121,7 +124,8 @@ const GerenciamentoUsuariosTab = () => {
       full_name: '',
       email: '',
       phone_number: '',
-      notes: ''
+      notes: '',
+      role: 'admin' as AppRole
     });
     setErrors({});
     reset();
@@ -194,6 +198,23 @@ const GerenciamentoUsuariosTab = () => {
       headerName: 'E-mail',
       flex: 1.2,
       minWidth: 200,
+    },
+    {
+      field: 'role',
+      headerName: 'Perfil',
+      flex: 0.5,
+      minWidth: 130,
+      renderCell: (params) => {
+        const role = getRoleByUserId(params.row.user_id);
+        return (
+          <Chip
+            label={role ? getRoleLabel(role) : 'Sem perfil'}
+            color={role === 'admin' ? 'primary' : role === 'operador' ? 'secondary' : 'default'}
+            size="small"
+            variant="outlined"
+          />
+        );
+      }
     },
     {
       field: 'created_at',
@@ -325,11 +346,19 @@ const GerenciamentoUsuariosTab = () => {
                 required
               />
 
-              <Box sx={{ display: 'flex', alignItems: 'center', p: 2, backgroundColor: 'info.light', borderRadius: 1 }}>
-                <Typography variant="body2" color="info.dark">
-                  <strong>Senha:</strong> Será gerada automaticamente e enviada via WhatsApp e Email
-                </Typography>
-              </Box>
+              <FormControl fullWidth disabled={isCreating}>
+                <InputLabel>Perfil do Usuário</InputLabel>
+                <Select
+                  value={formData.role}
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  label="Perfil do Usuário"
+                >
+                  <MenuItem value="admin">Administrador</MenuItem>
+                  <MenuItem value="operador">Operador</MenuItem>
+                  <MenuItem value="franqueado">Franqueado</MenuItem>
+                  <MenuItem value="user">Usuário</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
 
             <TextField

@@ -11,6 +11,7 @@ interface CreateUserRequest {
   email: string;
   phone_number: string;
   notes?: string;
+  role?: string;
 }
 
 const generateRandomPassword = (): string => {
@@ -88,9 +89,9 @@ serve(async (req) => {
       }
     });
 
-    const { full_name, email, phone_number, notes }: CreateUserRequest = await req.json();
+    const { full_name, email, phone_number, notes, role }: CreateUserRequest = await req.json();
 
-    console.log('Criando usuário:', { full_name, email, phone_number });
+    console.log('Criando usuário:', { full_name, email, phone_number, role });
 
     // Validar dados obrigatórios
     if (!full_name || !email || !phone_number) {
@@ -165,6 +166,22 @@ serve(async (req) => {
     // O profile será criado automaticamente pelo trigger handle_new_user()
     // Não precisamos criar manualmente aqui
     console.log('Profile será criado automaticamente pelo trigger');
+
+    // Criar role do usuário (padrão: admin se não especificado)
+    const userRole = role || 'admin';
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: newUser.user!.id,
+        role: userRole
+      });
+
+    if (roleError) {
+      console.error('Erro ao criar role:', roleError);
+      // Não falhar a criação do usuário por causa do role, apenas logar
+    } else {
+      console.log('Role criado com sucesso:', userRole);
+    }
 
     // Preparar mensagens
     const whatsappMessage = `🎉 Bem-vindo(a) ao Sistema de Gestão!

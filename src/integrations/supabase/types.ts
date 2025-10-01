@@ -452,7 +452,7 @@ export type Database = {
           referrer_unit_code: string | null
           state: string | null
           system_term_accepted: boolean
-          systems_password: number
+          systems_password: number | null
           uf: string | null
           updated_at: string | null
           was_entrepreneur: boolean | null
@@ -493,7 +493,7 @@ export type Database = {
           referrer_unit_code?: string | null
           state?: string | null
           system_term_accepted?: boolean
-          systems_password?: number
+          systems_password?: number | null
           uf?: string | null
           updated_at?: string | null
           was_entrepreneur?: boolean | null
@@ -534,7 +534,7 @@ export type Database = {
           referrer_unit_code?: string | null
           state?: string | null
           system_term_accepted?: boolean
-          systems_password?: number
+          systems_password?: number | null
           uf?: string | null
           updated_at?: string | null
           was_entrepreneur?: boolean | null

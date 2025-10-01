@@ -7,6 +7,7 @@ interface CreateUserData {
   email: string;
   phone_number: string;
   notes?: string;
+  role?: string;
 }
 
 interface CreateUserResponse {
