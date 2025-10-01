@@ -1483,7 +1483,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "franqueado" | "user"
+      app_role: "admin" | "franqueado" | "user" | "operador"
       gender_type: "Masculino" | "Feminino"
       permission_level:
         | "admin"
@@ -1681,7 +1681,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "franqueado", "user"],
+      app_role: ["admin", "franqueado", "user", "operador"],
       gender_type: ["Masculino", "Feminino"],
       permission_level: [
         "admin",
