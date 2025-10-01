@@ -25,8 +25,10 @@ import { DataTable } from '@/components/crud/DataTable';
 import UserEditModal from '@/components/modals/UserEditModal';
 import { NormalizacaoNomesModal } from '@/components/modals/NormalizacaoNomesModal';
 import { NormalizacaoContatosModal } from '@/components/modals/NormalizacaoContatosModal';
+import NormalizacaoPessoasModal from '@/components/modals/NormalizacaoPessoasModal';
 import { useNormalizacaoUnidades } from '@/hooks/useNormalizacaoUnidades';
 import { useNormalizacaoContatos } from '@/hooks/useNormalizacaoContatos';
+import { useNormalizacaoPessoas } from '@/hooks/useNormalizacaoPessoas';
 import { GridColDef } from '@mui/x-data-grid';
 import { useWebhookSubscriptions, WebhookSubscription } from '@/hooks/useWebhookSubscriptions';
 import { WebhookAddModal } from '@/components/modals/WebhookAddModal';
@@ -589,8 +591,10 @@ const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
   const [normalizacaoContatosModalOpen, setNormalizacaoContatosModalOpen] = useState(false);
+  const [normalizacaoPessoasModalOpen, setNormalizacaoPessoasModalOpen] = useState(false);
   const { unidadesParaNormalizacao, isLoading: isLoadingNormalizacao } = useNormalizacaoUnidades();
   const { contatosParaNormalizacao, isLoading: isLoadingNormalizacaoContatos } = useNormalizacaoContatos();
+  const { pessoasParaNormalizacao, isLoading: isLoadingNormalizacaoPessoas } = useNormalizacaoPessoas();
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -811,6 +815,68 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
 
+              {/* Seção de Normalização de Nomes de Pessoas */}
+              <Card>
+                <CardContent>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Users size={20} />
+                      Normalização de Nomes de Pessoas
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Normalize nomes de franqueados, clientes e colaboradores para o formato Title Case (primeira letra maiúscula).
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Card variant="outlined" sx={{ flex: 1 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="primary">
+                          {isLoadingNormalizacaoPessoas ? '-' : pessoasParaNormalizacao.length}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Nomes para Normalizar
+                        </Typography>
+                      </CardContent>
+                    </Card>
+
+                    <Card variant="outlined" sx={{ flex: 1 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Chip
+                          label={
+                            isLoadingNormalizacaoPessoas 
+                              ? "Carregando..." 
+                              : pessoasParaNormalizacao.length === 0 
+                                ? "Tudo Normalizado" 
+                                : "Normalização Pendente"
+                          }
+                          color={
+                            isLoadingNormalizacaoPessoas 
+                              ? "default" 
+                              : pessoasParaNormalizacao.length === 0 
+                                ? "success" 
+                                : "warning"
+                          }
+                          variant="outlined"
+                        />
+                      </CardContent>
+                    </Card>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<RefreshCw size={18} />}
+                      onClick={() => setNormalizacaoPessoasModalOpen(true)}
+                      disabled={isLoadingNormalizacaoPessoas}
+                    >
+                      Verificar Nomes para Normalização
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+
               {/* Outras configurações do sistema */}
               <Card>
                 <CardContent>
@@ -839,6 +905,10 @@ const ConfiguracoesPage = () => {
       <NormalizacaoContatosModal
         open={normalizacaoContatosModalOpen}
         onClose={() => setNormalizacaoContatosModalOpen(false)}
+      />
+      <NormalizacaoPessoasModal
+        open={normalizacaoPessoasModalOpen}
+        onClose={() => setNormalizacaoPessoasModalOpen(false)}
       />
     </Box>
   );

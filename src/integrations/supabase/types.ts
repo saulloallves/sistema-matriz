@@ -1392,6 +1392,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_nomes_para_normalizacao: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          nome_atual: string
+          nome_normalizado: string
+          tabela: string
+        }[]
+      }
       get_unidades_para_normalizacao: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1444,6 +1453,10 @@ export type Database = {
         Args: { p_franqueado_id: string }
         Returns: boolean
       }
+      normalizar_nome_pessoa: {
+        Args: { p_id: string; p_tabela: string }
+        Returns: boolean
+      }
       normalizar_nome_unidade: {
         Args: { p_group_code: number }
         Returns: boolean
@@ -1455,6 +1468,14 @@ export type Database = {
       normalizar_todos_contatos: {
         Args: Record<PropertyKey, never>
         Returns: Json[]
+      }
+      normalizar_todos_nomes: {
+        Args: Record<PropertyKey, never>
+        Returns: Json[]
+      }
+      to_title_case: {
+        Args: { input_text: string }
+        Returns: string
       }
     }
     Enums: {
