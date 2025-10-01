@@ -30,15 +30,20 @@ export const useNormalizacaoPessoas = () => {
   } = useQuery({
     queryKey: ['pessoas-normalizacao'],
     queryFn: async (): Promise<PessoaNormalizacao[]> => {
+      console.log('🔍 Buscando nomes para normalização...');
       const { data, error } = await supabase.rpc('get_nomes_para_normalizacao');
       
       if (error) {
-        console.error('Erro ao buscar nomes para normalização:', error);
+        console.error('❌ Erro ao buscar nomes para normalização:', error);
+        console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
+        toast.error(`Erro ao buscar nomes: ${error.message}`);
         throw new Error(error.message);
       }
       
+      console.log(`✅ Encontrados ${data?.length || 0} nomes para normalizar`);
       return data || [];
     },
+    retry: false,
   });
 
   // Mutation para normalizar um nome específico
