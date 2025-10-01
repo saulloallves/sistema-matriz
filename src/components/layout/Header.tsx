@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { User, Bell, Settings } from 'lucide-react';
 import { useState } from 'react';
+import logoHeader from '@/assets/logo-header.png';
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -44,17 +45,13 @@ const Header = () => {
           padding: '16px 24px',
         }}
       >
-        <Typography
-          variant="h6"
-          component="h1"
-          sx={{ 
-            color: '#333',
-            fontWeight: 600,
-            fontSize: '1.25rem',
-          }}
-        >
-          Sistema de Gerenciamento
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <img 
+            src={logoHeader} 
+            alt="Cresci e Perdi" 
+            style={{ height: '40px', width: 'auto' }}
+          />
+        </Box>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton
