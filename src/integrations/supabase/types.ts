@@ -708,6 +708,33 @@ export type Database = {
           },
         ]
       }
+      permission_tables: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       permissoes: {
         Row: {
           id: string
@@ -758,6 +785,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      role_table_permissions: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_read: boolean | null
+          can_update: boolean | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_table_permissions_table_name_fkey"
+            columns: ["table_name"]
+            isOneToOne: false
+            referencedRelation: "permission_tables"
+            referencedColumns: ["table_name"]
+          },
+        ]
       }
       senhas: {
         Row: {
@@ -1219,6 +1290,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_table_permissions: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_read: boolean | null
+          can_update: boolean | null
+          created_at: string
+          created_by: string | null
+          id: string
+          table_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          table_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          table_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_table_permissions_table_name_fkey"
+            columns: ["table_name"]
+            isOneToOne: false
+            referencedRelation: "permission_tables"
+            referencedColumns: ["table_name"]
+          },
+        ]
+      }
       webhook_delivery_logs: {
         Row: {
           attempt: number
@@ -1411,6 +1529,16 @@ export type Database = {
           nome_correto: string
         }[]
       }
+      get_user_permissions: {
+        Args: { _user_id: string }
+        Returns: {
+          can_create: boolean
+          can_delete: boolean
+          can_read: boolean
+          can_update: boolean
+          table_name: string
+        }[]
+      }
       get_users_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1431,6 +1559,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_table_permission: {
+        Args: { _permission: string; _table_name: string; _user_id: string }
         Returns: boolean
       }
       log_franqueado_access: {

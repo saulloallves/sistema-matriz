@@ -33,6 +33,9 @@ import { GridColDef } from '@mui/x-data-grid';
 import { useWebhookSubscriptions, WebhookSubscription } from '@/hooks/useWebhookSubscriptions';
 import { WebhookAddModal } from '@/components/modals/WebhookAddModal';
 import { WebhookEditModal } from '@/components/modals/WebhookEditModal';
+import { RolePermissionsModal } from '@/components/modals/RolePermissionsModal';
+import { UserPermissionsModal } from '@/components/modals/UserPermissionsModal';
+import { useTablePermissions } from '@/hooks/useTablePermissions';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -587,6 +590,174 @@ const RealtimeWebhooksTab = () => {
   );
 };
 
+const PermissoesTab = () => {
+  const { users, isLoading: isLoadingUsers } = useUsers();
+  const { permissionTables, rolePermissions, isLoading: isLoadingPermissions } = useTablePermissions();
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [userPermModalOpen, setUserPermModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'operador' | 'user' | 'franqueado' | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const roles = [
+    { value: 'admin', label: 'Administrador', description: 'Acesso total ao sistema', color: 'error.main' },
+    { value: 'operador', label: 'Operador', description: 'Visualização de dados sem edição', color: 'info.main' },
+    { value: 'user', label: 'Usuário', description: 'Acesso limitado personalizado', color: 'success.main' },
+  ];
+
+  const handleConfigureRole = (role: 'admin' | 'operador' | 'user' | 'franqueado') => {
+    setSelectedRole(role);
+    setRoleModalOpen(true);
+  };
+
+  const handleConfigureUser = (user: User) => {
+    setSelectedUser(user);
+    setUserPermModalOpen(true);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Seção de Permissões por Perfil */}
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Shield size={20} />
+              Permissões por Perfil
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure as permissões padrão para cada perfil de usuário no sistema.
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            {roles.map((role) => (
+              <Card variant="outlined" key={role.value}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" sx={{ color: role.color, mb: 0.5 }}>
+                          {role.label}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {role.description}
+                        </Typography>
+                      </Box>
+                      <Shield size={24} style={{ color: role.color }} />
+                    </Box>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => handleConfigureRole(role.value as any)}
+                      disabled={isLoadingPermissions}
+                    >
+                      Configurar Permissões
+                    </Button>
+                  </CardContent>
+                </Card>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Seção de Permissões por Usuário */}
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users size={20} />
+              Permissões Específicas de Usuário
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure permissões individuais que sobrescrevem as permissões do perfil.
+            </Typography>
+          </Box>
+
+          <DataTable
+            title=""
+            data={users}
+            columns={[
+              {
+                field: 'full_name',
+                headerName: 'Nome',
+                flex: 1,
+                minWidth: 180,
+              },
+              {
+                field: 'email',
+                headerName: 'Email',
+                flex: 1,
+                minWidth: 200,
+              },
+              {
+                field: 'status',
+                headerName: 'Status',
+                flex: 0.4,
+                minWidth: 100,
+                align: 'center',
+                headerAlign: 'center',
+                renderCell: (params) => (
+                  <Chip
+                    label={params.value === 'ativo' ? 'Ativo' : 'Inativo'}
+                    color={params.value === 'ativo' ? 'success' : 'default'}
+                    size="small"
+                    variant={params.value === 'ativo' ? 'filled' : 'outlined'}
+                  />
+                ),
+              },
+              {
+                field: 'actions',
+                headerName: 'Ações',
+                flex: 0.6,
+                minWidth: 150,
+                align: 'center',
+                headerAlign: 'center',
+                sortable: false,
+                renderCell: (params) => (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Shield size={16} />}
+                    onClick={() => handleConfigureUser(params.row)}
+                  >
+                    Configurar
+                  </Button>
+                ),
+              },
+            ]}
+            loading={isLoadingUsers}
+            searchPlaceholder="Buscar usuário..."
+          />
+        </CardContent>
+      </Card>
+
+      {/* Modais */}
+      {selectedRole && (
+        <RolePermissionsModal
+          open={roleModalOpen}
+          onClose={() => {
+            setRoleModalOpen(false);
+            setSelectedRole(null);
+          }}
+          role={selectedRole}
+          roleDisplayName={roles.find((r) => r.value === selectedRole)?.label || ''}
+        />
+      )}
+
+      {selectedUser && (
+        <UserPermissionsModal
+          open={userPermModalOpen}
+          onClose={() => {
+            setUserPermModalOpen(false);
+            setSelectedUser(null);
+          }}
+          userId={selectedUser.user_id}
+          userName={selectedUser.full_name}
+        />
+      )}
+    </Box>
+  );
+};
+
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
@@ -633,7 +804,6 @@ const ConfiguracoesPage = () => {
               label="Permissões" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 500 }}
-              disabled
             />
             <Tab 
               icon={<Mail size={18} />} 
@@ -659,11 +829,15 @@ const ConfiguracoesPage = () => {
 
         {/* Tab Panels */}
         <Box sx={{ p: 3 }}>
-          <TabPanel value={tabValue} index={0}>
-            <GerenciamentoUsuariosTab />
-          </TabPanel>
+      <TabPanel value={tabValue} index={0}>
+        <GerenciamentoUsuariosTab />
+      </TabPanel>
 
-          <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={1}>
+        <PermissoesTab />
+      </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
