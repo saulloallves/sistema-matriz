@@ -19,6 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, User, Eye, EyeOff } from 'lucide-react';
 import { ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
+import { formatCPF, formatPhone, formatCEP, removeMask } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 
 interface ColaboradorInternoEditModalProps {
@@ -231,9 +232,9 @@ export function ColaboradorInternoEditModal({
     onUpdate(colaborador.id, {
       employee_name: data.employee_name,
       position_name: data.position_name,
-      cpf: data.cpf,
+      cpf: removeMask(data.cpf),
       email: data.email,
-      phone: data.phone,
+      phone: removeMask(data.phone),
       birth_date: data.birth_date,
       admission_date: data.admission_date,
       salary: data.salary,
@@ -246,7 +247,7 @@ export function ColaboradorInternoEditModal({
       city: data.city || null,
       state: data.state || null,
       uf: data.uf || null,
-      postal_code: data.postal_code || null,
+      postal_code: data.postal_code ? removeMask(data.postal_code) : null,
       meal_voucher_active: data.meal_voucher_active,
       meal_voucher_value: data.meal_voucher_active ? data.meal_voucher_value : null,
       transport_voucher_active: data.transport_voucher_active,
@@ -337,6 +338,8 @@ export function ColaboradorInternoEditModal({
                         label="CPF"
                         sx={{ flex: 1 }}
                         required
+                        value={formatCPF(field.value)}
+                        onChange={(e) => field.onChange(e.target.value)}
                         error={!!errors.cpf}
                         helperText={errors.cpf?.message}
                       />
@@ -387,6 +390,8 @@ export function ColaboradorInternoEditModal({
                         label="Telefone"
                         sx={{ flex: 1 }}
                         required
+                        value={formatPhone(field.value)}
+                        onChange={(e) => field.onChange(e.target.value)}
                         placeholder="(00) 00000-0000"
                         error={!!errors.phone}
                         helperText={errors.phone?.message}
@@ -516,6 +521,8 @@ export function ColaboradorInternoEditModal({
                       {...field}
                       label="CEP"
                       placeholder="00000-000"
+                      value={formatCEP(field.value || '')}
+                      onChange={(e) => field.onChange(e.target.value)}
                       error={!!errors.postal_code}
                       helperText={errors.postal_code?.message}
                       InputProps={{
