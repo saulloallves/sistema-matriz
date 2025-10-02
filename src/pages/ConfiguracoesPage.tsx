@@ -31,8 +31,10 @@ import { useNormalizacaoContatos } from '@/hooks/useNormalizacaoContatos';
 import { useNormalizacaoPessoas } from '@/hooks/useNormalizacaoPessoas';
 import { GridColDef } from '@mui/x-data-grid';
 import { useWebhookSubscriptions, WebhookSubscription } from '@/hooks/useWebhookSubscriptions';
+import { useWebhookDeliveryLogs } from '@/hooks/useWebhookDeliveryLogs';
 import { WebhookAddModal } from '@/components/modals/WebhookAddModal';
 import { WebhookEditModal } from '@/components/modals/WebhookEditModal';
+import { Tooltip } from '@mui/material';
 import { RolePermissionsModal } from '@/components/modals/RolePermissionsModal';
 import { UserPermissionsModal } from '@/components/modals/UserPermissionsModal';
 import { useTablePermissions } from '@/hooks/useTablePermissions';
@@ -408,6 +410,8 @@ const GerenciamentoUsuariosTab = () => {
 };
 
 const RealtimeWebhooksTab = () => {
+  const [realtimeSubTab, setRealtimeSubTab] = useState(0);
+  
   const {
     webhooks,
     isLoading,
@@ -420,6 +424,15 @@ const RealtimeWebhooksTab = () => {
     toggleWebhook,
     isToggling,
   } = useWebhookSubscriptions();
+
+  const {
+    logs,
+    isLoading: isLoadingLogs,
+    deleteLog,
+    isDeleting: isDeletingLog,
+    deleteAllLogs,
+    isDeletingAll
+  } = useWebhookDeliveryLogs();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -546,75 +559,289 @@ const RealtimeWebhooksTab = () => {
               Sincronização Real-time
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Configure webhooks para receber eventos de alterações nas tabelas em tempo real. 
-              Ideal para integração com sistemas externos.
+              Configure webhooks para receber eventos de alterações nas tabelas em tempo real e visualize os logs de entregas.
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            <Card variant="outlined" sx={{ flex: 1 }}>
-              <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                <Typography variant="h4" color="primary">
-                  {isLoading ? '-' : webhooks.length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Webhooks Cadastrados
-                </Typography>
-              </CardContent>
-            </Card>
-
-            <Card variant="outlined" sx={{ flex: 1 }}>
-              <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                <Typography variant="h4" color="success.main">
-                  {isLoading ? '-' : webhooks.filter((w) => w.enabled).length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Webhooks Ativos
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Plus size={18} />}
-            onClick={() => setAddModalOpen(true)}
-            disabled={isCreating}
+          <Tabs 
+            value={realtimeSubTab} 
+            onChange={(_, newValue) => setRealtimeSubTab(newValue)}
+            sx={{ mb: 2 }}
           >
-            Adicionar Webhook
-          </Button>
+            <Tab label="Webhooks" />
+            <Tab label="Logs de Entrega" />
+          </Tabs>
+
+          {realtimeSubTab === 0 && (
+            <>
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Card variant="outlined" sx={{ flex: 1 }}>
+                  <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                    <Typography variant="h4" color="primary">
+                      {isLoading ? '-' : webhooks.length}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Webhooks Cadastrados
+                    </Typography>
+                  </CardContent>
+                </Card>
+
+                <Card variant="outlined" sx={{ flex: 1 }}>
+                  <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                    <Typography variant="h4" color="success.main">
+                      {isLoading ? '-' : webhooks.filter((w) => w.enabled).length}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Webhooks Ativos
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Plus size={18} />}
+                onClick={() => setAddModalOpen(true)}
+                disabled={isCreating}
+              >
+                Adicionar Webhook
+              </Button>
+            </>
+          )}
+
+          {realtimeSubTab === 1 && (
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <Card variant="outlined" sx={{ flex: 1 }}>
+                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                  <Typography variant="h4" color="primary">
+                    {isLoadingLogs ? '-' : logs.length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total de Logs
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card variant="outlined" sx={{ flex: 1 }}>
+                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                  <Typography variant="h4" color="success.main">
+                    {isLoadingLogs ? '-' : logs.filter((l) => l.success).length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Entregas com Sucesso
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card variant="outlined" sx={{ flex: 1 }}>
+                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                  <Typography variant="h4" color="error.main">
+                    {isLoadingLogs ? '-' : logs.filter((l) => !l.success).length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Falhas
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
         </CardContent>
       </Card>
 
       {/* Tabela de Webhooks */}
-      <DataTable
-        title="Webhooks Cadastrados"
-        titleIcon={<Database size={20} />}
-        description="Gerencie os webhooks que receberão eventos de sincronização"
-        data={webhooks}
-        columns={columns}
-        loading={isLoading}
-      />
+      {realtimeSubTab === 0 && (
+        <>
+          <DataTable
+            title="Webhooks Cadastrados"
+            titleIcon={<Database size={20} />}
+            description="Gerencie os webhooks que receberão eventos de sincronização"
+            data={webhooks}
+            columns={columns}
+            loading={isLoading}
+          />
 
-      {/* Modais */}
-      <WebhookAddModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onSave={(webhook) => createWebhook(webhook)}
-        isLoading={isCreating}
-      />
+          {/* Modais */}
+          <WebhookAddModal
+            open={addModalOpen}
+            onClose={() => setAddModalOpen(false)}
+            onSave={(webhook) => createWebhook(webhook)}
+            isLoading={isCreating}
+          />
 
-      <WebhookEditModal
-        open={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setSelectedWebhook(null);
-        }}
-        webhook={selectedWebhook}
-        onSave={(id, updates) => updateWebhook({ id, updates })}
-        isLoading={isUpdating}
-      />
+          <WebhookEditModal
+            open={editModalOpen}
+            onClose={() => {
+              setEditModalOpen(false);
+              setSelectedWebhook(null);
+            }}
+            webhook={selectedWebhook}
+            onSave={(id, updates) => updateWebhook({ id, updates })}
+            isLoading={isUpdating}
+          />
+        </>
+      )}
+
+      {/* Tabela de Logs */}
+      {realtimeSubTab === 1 && (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<Trash2 size={16} />}
+              onClick={() => {
+                if (window.confirm('Tem certeza que deseja apagar todos os logs?')) {
+                  deleteAllLogs();
+                }
+              }}
+              disabled={isDeletingAll || logs.length === 0}
+            >
+              Limpar Todos os Logs
+            </Button>
+          </Box>
+
+          <DataTable
+            title="Logs de Entrega de Webhooks"
+            titleIcon={<Database size={20} />}
+            description="Histórico de todas as entregas de webhooks realizadas pelo sistema"
+            columns={[
+              { 
+                field: 'dispatched_at', 
+                headerName: 'Data/Hora', 
+                flex: 0.8,
+                minWidth: 180,
+                renderCell: (params: any) => {
+                  if (!params.row.dispatched_at) return 'N/A';
+                  const date = new Date(params.row.dispatched_at);
+                  return date.toLocaleString('pt-BR');
+                }
+              },
+              { 
+                field: 'subscription_id', 
+                headerName: 'Webhook', 
+                flex: 1,
+                minWidth: 200,
+                renderCell: (params: any) => {
+                  const webhook = webhooks.find(w => w.id === params.row.subscription_id);
+                  if (!webhook) return 'N/A';
+                  const url = new URL(webhook.endpoint_url);
+                  return (
+                    <Tooltip title={webhook.endpoint_url}>
+                      <span style={{ cursor: 'pointer' }}>
+                        {url.pathname.split('/').pop() || url.hostname}
+                      </span>
+                    </Tooltip>
+                  );
+                }
+              },
+              { 
+                field: 'status_code', 
+                headerName: 'Status', 
+                flex: 0.4,
+                minWidth: 100,
+                align: 'center',
+                headerAlign: 'center',
+                renderCell: (params: any) => (
+                  <Chip 
+                    label={params.row.status_code || 'N/A'}
+                    color={params.row.success ? 'success' : 'error'}
+                    size="small"
+                  />
+                )
+              },
+              { 
+                field: 'success', 
+                headerName: 'Resultado', 
+                flex: 0.5,
+                minWidth: 120,
+                align: 'center',
+                headerAlign: 'center',
+                renderCell: (params: any) => (
+                  <Chip 
+                    label={params.row.success ? 'Sucesso' : 'Falha'}
+                    color={params.row.success ? 'success' : 'error'}
+                    size="small"
+                    variant="outlined"
+                  />
+                )
+              },
+              { 
+                field: 'attempt', 
+                headerName: 'Tentativa', 
+                flex: 0.4,
+                minWidth: 100,
+                align: 'center',
+                headerAlign: 'center',
+              },
+              {
+                field: 'request_body',
+                headerName: 'Request',
+                flex: 1,
+                minWidth: 200,
+                renderCell: (params: any) => {
+                  const table = params.row.request_body?.table || 'N/A';
+                  const fullText = JSON.stringify(params.row.request_body, null, 2);
+                  return (
+                    <Tooltip title={<pre style={{ fontSize: '11px' }}>{fullText}</pre>}>
+                      <span style={{ cursor: 'pointer' }}>Tabela: {table}</span>
+                    </Tooltip>
+                  );
+                }
+              },
+              {
+                field: 'response_body',
+                headerName: 'Response',
+                flex: 1,
+                minWidth: 250,
+                renderCell: (params: any) => {
+                  if (!params.row.response_body) return 'N/A';
+                  
+                  let displayText = params.row.response_body;
+                  try {
+                    const parsed = JSON.parse(params.row.response_body);
+                    displayText = parsed.message || parsed.code || displayText;
+                  } catch (e) {
+                    // Keep original if not JSON
+                  }
+                  
+                  return (
+                    <Tooltip title={<pre style={{ fontSize: '11px' }}>{params.row.response_body}</pre>}>
+                      <span style={{ cursor: 'pointer' }}>
+                        {displayText.length > 50 ? displayText.substring(0, 50) + '...' : displayText}
+                      </span>
+                    </Tooltip>
+                  );
+                }
+              },
+              {
+                field: 'error_message',
+                headerName: 'Erro',
+                flex: 0.8,
+                minWidth: 200,
+                renderCell: (params: any) => {
+                  if (!params.row.error_message) return '-';
+                  return (
+                    <Tooltip title={params.row.error_message}>
+                      <span style={{ color: 'red', cursor: 'pointer' }}>
+                        {params.row.error_message.substring(0, 30)}...
+                      </span>
+                    </Tooltip>
+                  );
+                }
+              }
+            ]}
+            data={logs}
+            searchPlaceholder="Buscar logs..."
+            loading={isLoadingLogs}
+            onDelete={(log) => {
+              if (window.confirm('Tem certeza que deseja deletar este log?')) {
+                deleteLog(log.id);
+              }
+            }}
+          />
+        </Box>
+      )}
     </Box>
   );
 };
