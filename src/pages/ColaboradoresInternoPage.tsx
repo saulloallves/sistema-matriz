@@ -65,7 +65,11 @@ function createColumns(
       field: 'admission_date',
       headerName: 'Data Admissão',
       width: 130,
-      renderCell: (params) => params.value ? format(new Date(params.value), 'dd/MM/yyyy') : '-',
+      renderCell: (params) => {
+        if (!params.value) return '-';
+        const [year, month, day] = params.value.split('-');
+        return `${day}/${month}/${year}`;
+      },
     },
     {
       field: 'salary',
