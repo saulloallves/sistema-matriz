@@ -25,6 +25,7 @@ interface WebhookAddModalProps {
     secret: string | null;
     topic: string;
     enabled: boolean;
+    nickname: string | null;
   }) => void;
   isLoading?: boolean;
 }
@@ -45,6 +46,7 @@ export const WebhookAddModal: React.FC<WebhookAddModalProps> = ({
   isLoading = false,
 }) => {
   const [formData, setFormData] = useState({
+    nickname: '',
     endpoint_url: '',
     secret: '',
     topic: 'generic',
@@ -74,6 +76,7 @@ export const WebhookAddModal: React.FC<WebhookAddModalProps> = ({
     if (!validateForm()) return;
 
     onSave({
+      nickname: formData.nickname.trim() || null,
       endpoint_url: formData.endpoint_url.trim(),
       secret: formData.secret.trim() || null,
       topic: formData.topic,
@@ -85,6 +88,7 @@ export const WebhookAddModal: React.FC<WebhookAddModalProps> = ({
 
   const handleClose = () => {
     setFormData({
+      nickname: '',
       endpoint_url: '',
       secret: '',
       topic: 'generic',
@@ -112,6 +116,16 @@ export const WebhookAddModal: React.FC<WebhookAddModalProps> = ({
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+          <TextField
+            fullWidth
+            label="Apelido (Opcional)"
+            placeholder="Ex: Sistema de Vendas, Sistema Financeiro"
+            value={formData.nickname}
+            onChange={(e) => handleInputChange('nickname', e.target.value)}
+            helperText="Nome amigável para identificar este webhook"
+            disabled={isLoading}
+          />
+
           <TextField
             fullWidth
             label="URL do Endpoint"

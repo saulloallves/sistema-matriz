@@ -444,7 +444,8 @@ const RealtimeWebhooksTab = () => {
   };
 
   const handleDelete = (webhook: WebhookSubscription) => {
-    if (window.confirm(`Tem certeza que deseja remover o webhook para ${webhook.endpoint_url}?`)) {
+    const displayName = webhook.nickname || webhook.endpoint_url;
+    if (window.confirm(`Tem certeza que deseja remover o webhook "${displayName}"?`)) {
       deleteWebhook(webhook.id);
     }
   };
@@ -456,9 +457,24 @@ const RealtimeWebhooksTab = () => {
   const columns: GridColDef[] = [
     {
       field: 'endpoint_url',
-      headerName: 'URL do Endpoint',
+      headerName: 'Webhook',
       flex: 1.5,
       minWidth: 300,
+      renderCell: (params: any) => {
+        const webhook = params.row as WebhookSubscription;
+        return (
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: webhook.nickname ? 600 : 400 }}>
+              {webhook.nickname || webhook.endpoint_url}
+            </Typography>
+            {webhook.nickname && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {webhook.endpoint_url}
+              </Typography>
+            )}
+          </Box>
+        );
+      },
     },
     {
       field: 'topic',
@@ -725,11 +741,11 @@ const RealtimeWebhooksTab = () => {
                 renderCell: (params: any) => {
                   const webhook = webhooks.find(w => w.id === params.row.subscription_id);
                   if (!webhook) return 'N/A';
-                  const url = new URL(webhook.endpoint_url);
+                  const displayName = webhook.nickname || webhook.endpoint_url;
                   return (
                     <Tooltip title={webhook.endpoint_url}>
                       <span style={{ cursor: 'pointer' }}>
-                        {url.pathname.split('/').pop() || url.hostname}
+                        {displayName}
                       </span>
                     </Tooltip>
                   );

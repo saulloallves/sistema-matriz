@@ -43,6 +43,7 @@ export const WebhookEditModal: React.FC<WebhookEditModalProps> = ({
   isLoading = false,
 }) => {
   const [formData, setFormData] = useState({
+    nickname: '',
     endpoint_url: '',
     secret: '',
     topic: 'generic',
@@ -54,6 +55,7 @@ export const WebhookEditModal: React.FC<WebhookEditModalProps> = ({
   useEffect(() => {
     if (webhook) {
       setFormData({
+        nickname: webhook.nickname || '',
         endpoint_url: webhook.endpoint_url,
         secret: webhook.secret || '',
         topic: webhook.topic,
@@ -83,6 +85,7 @@ export const WebhookEditModal: React.FC<WebhookEditModalProps> = ({
     if (!validateForm() || !webhook) return;
 
     onSave(webhook.id, {
+      nickname: formData.nickname.trim() || null,
       endpoint_url: formData.endpoint_url.trim(),
       secret: formData.secret.trim() || null,
       topic: formData.topic,
@@ -117,6 +120,16 @@ export const WebhookEditModal: React.FC<WebhookEditModalProps> = ({
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+          <TextField
+            fullWidth
+            label="Apelido (Opcional)"
+            placeholder="Ex: Sistema de Vendas, Sistema Financeiro"
+            value={formData.nickname}
+            onChange={(e) => handleInputChange('nickname', e.target.value)}
+            helperText="Nome amigável para identificar este webhook"
+            disabled={isLoading}
+          />
+          
           <TextField
             fullWidth
             label="URL do Endpoint"

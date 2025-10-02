@@ -8,6 +8,7 @@ export interface WebhookSubscription {
   secret: string | null;
   topic: string;
   enabled: boolean;
+  nickname: string | null;
   created_at: string;
   updated_at: string;
 }

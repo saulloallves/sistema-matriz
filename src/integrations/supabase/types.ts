@@ -1390,6 +1390,7 @@ export type Database = {
           enabled: boolean
           endpoint_url: string
           id: string
+          nickname: string | null
           secret: string | null
           topic: string
           updated_at: string | null
@@ -1399,6 +1400,7 @@ export type Database = {
           enabled?: boolean
           endpoint_url: string
           id?: string
+          nickname?: string | null
           secret?: string | null
           topic: string
           updated_at?: string | null
@@ -1408,6 +1410,7 @@ export type Database = {
           enabled?: boolean
           endpoint_url?: string
           id?: string
+          nickname?: string | null
           secret?: string | null
           topic?: string
           updated_at?: string | null
@@ -1458,6 +1461,57 @@ export type Database = {
       can_access_sensitive_data: {
         Args: { _franqueado_id?: string }
         Returns: boolean
+      }
+      get_all_unidades_for_sync: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: string | null
+          address_complement: string | null
+          ai_agent_id: string | null
+          bearer: string | null
+          city: string | null
+          cnpj: string | null
+          created_at: string
+          docs_folder_id: string | null
+          docs_folder_link: string | null
+          drive_folder_id: string | null
+          drive_folder_link: string | null
+          email: string | null
+          fantasy_name: string | null
+          group_code: number
+          group_name: string
+          has_parking: boolean | null
+          has_partner_parking: boolean | null
+          id: string
+          id_unidade: string | null
+          instagram_profile: string | null
+          is_active: boolean
+          neighborhood: string | null
+          notion_page_id: string | null
+          number_address: string | null
+          operation_fri: string | null
+          operation_hol: string | null
+          operation_mon: string | null
+          operation_sat: string | null
+          operation_sun: string | null
+          operation_thu: string | null
+          operation_tue: string | null
+          operation_wed: string | null
+          parking_spots: number | null
+          partner_parking_address: string | null
+          password_instagram: string | null
+          phone: string | null
+          postal_code: string | null
+          purchases_active: boolean | null
+          sales_active: boolean | null
+          state: string | null
+          store_imp_phase: string | null
+          store_model: string
+          store_phase: string
+          uf: string | null
+          updated_at: string
+          user_instagram: string | null
+        }[]
       }
       get_contatos_para_normalizacao: {
         Args: Record<PropertyKey, never>
