@@ -6,6 +6,7 @@ import { DataTable } from '@/components/crud/DataTable';
 import { useColaboradoresInterno, ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
 import { format } from 'date-fns';
 import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoViewModal';
+import ColaboradorInternoAddModal from '@/components/modals/ColaboradorInternoAddModal';
 import toast from 'react-hot-toast';
 
 interface ActionCellProps {
@@ -102,7 +103,7 @@ function createColumns(
 }
 
 export default function ColaboradoresInternoPage() {
-  const { colaboradores, isLoading, deleteColaborador } = useColaboradoresInterno();
+  const { colaboradores, isLoading, deleteColaborador, createColaborador, isCreating } = useColaboradoresInterno();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -155,6 +156,11 @@ export default function ColaboradoresInternoPage() {
     setAddModalOpen(true);
   };
 
+  const handleSave = async (data: any) => {
+    await createColaborador(data);
+    setAddModalOpen(false);
+  };
+
   const columns = createColumns(handleView, handleEdit, handleDelete);
 
   if (isLoading) {
@@ -170,7 +176,7 @@ export default function ColaboradoresInternoPage() {
       <DataTable
         columns={columns}
         data={colaboradores}
-        onAdd={() => toast.success('Modal de adição em desenvolvimento')}
+        onAdd={handleAdd}
         searchPlaceholder="Pesquisar colaboradores internos..."
         title="Colaboradores Internos"
         titleIcon={<UserCog size={32} />}
@@ -187,6 +193,13 @@ export default function ColaboradoresInternoPage() {
           setViewModalOpen(false);
           toast.success('Modal de edição em desenvolvimento');
         }}
+      />
+
+      <ColaboradorInternoAddModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSave={handleSave}
+        isLoading={isCreating}
       />
     </Box>
   );
