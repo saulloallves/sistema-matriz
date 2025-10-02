@@ -19,11 +19,31 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
   const [selectedModelo, setSelectedModelo] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const handleBarClick = (entry: any) => {
-    if (entry && entry.month) {
-      setSelectedModelo(entry.month);
-      setModalOpen(true);
-    }
+  const handleBarClick = (modelo: string) => {
+    console.log('Clicou no modelo:', modelo);
+    setSelectedModelo(modelo);
+    setModalOpen(true);
+  };
+
+  // Componente customizado para a barra clicável
+  const CustomBar = (props: any) => {
+    const { fill, x, y, width, height, payload } = props;
+    
+    return (
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={fill}
+        rx={4}
+        ry={4}
+        cursor="pointer"
+        onClick={() => handleBarClick(payload.month)}
+        onMouseEnter={() => setHoveredIndex(props.index)}
+        onMouseLeave={() => setHoveredIndex(null)}
+      />
+    );
   };
 
   if (loading) {
@@ -106,12 +126,6 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               barGap={8}
-              onClick={(event: any) => {
-                if (event && event.activePayload && event.activePayload[0]) {
-                  const clickedData = event.activePayload[0].payload;
-                  handleBarClick(clickedData);
-                }
-              }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
@@ -128,17 +142,14 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(245, 158, 66, 0.1)' }} />
               <Bar 
                 dataKey="unidades" 
-                radius={[4, 4, 0, 0]}
                 name="Quantidade"
-              >
-                {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`}
-                    fill={hoveredIndex === index ? '#f59e42' : '#1976d2'}
-                    cursor="pointer"
+                shape={(props: any) => (
+                  <CustomBar 
+                    {...props} 
+                    fill={hoveredIndex === props.index ? '#f59e42' : '#1976d2'}
                   />
-                ))}
-              </Bar>
+                )}
+              />
             </BarChart>
           </ResponsiveContainer>
         </Box>
