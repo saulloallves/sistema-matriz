@@ -153,6 +153,7 @@ export default function ColaboradoresInternoPage() {
   };
 
   const handleAdd = () => {
+    console.log('Opening add modal...');
     setAddModalOpen(true);
   };
 
@@ -195,12 +196,14 @@ export default function ColaboradoresInternoPage() {
         }}
       />
 
-      <ColaboradorInternoAddModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onSave={handleSave}
-        isLoading={isCreating}
-      />
+      {addModalOpen && (
+        <ColaboradorInternoAddModal
+          open={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          onSave={handleSave}
+          isLoading={isCreating}
+        />
+      )}
     </Box>
   );
 }
