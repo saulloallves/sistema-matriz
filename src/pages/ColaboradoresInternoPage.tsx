@@ -6,7 +6,7 @@ import { DataTable } from '@/components/crud/DataTable';
 import { useColaboradoresInterno, ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
 import { format } from 'date-fns';
 import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoViewModal';
-import ColaboradorInternoAddModal from '@/components/modals/ColaboradorInternoAddModal';
+import { ColaboradorInternoAddModal } from '@/components/modals/ColaboradorInternoAddModal';
 import toast from 'react-hot-toast';
 
 interface ActionCellProps {
@@ -153,7 +153,6 @@ export default function ColaboradoresInternoPage() {
   };
 
   const handleAdd = () => {
-    console.log('Opening add modal...');
     setAddModalOpen(true);
   };
 
