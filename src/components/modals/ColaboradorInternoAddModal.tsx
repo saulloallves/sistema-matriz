@@ -37,7 +37,7 @@ const colaboradorSchema = z.object({
   email: z.string().email('Email inválido'),
   phone: z.string().min(14, 'Telefone inválido'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
-  position_id: z.string().min(1, 'Selecione um cargo'),
+  position_name: z.string().min(2, 'Cargo deve ter no mínimo 2 caracteres'),
   admission_date: z.string().min(1, 'Data de admissão é obrigatória'),
   salary: z.string().min(1, 'Salário obrigatório'),
   web_password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
@@ -84,7 +84,6 @@ export function ColaboradorInternoAddModal({
 }: ColaboradorInternoAddModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [searchingCEP, setSearchingCEP] = useState(false);
-  const { cargos } = useCargosInterno();
 
   const {
     control,
@@ -97,11 +96,12 @@ export function ColaboradorInternoAddModal({
     resolver: zodResolver(colaboradorSchema),
     defaultValues: {
       employee_name: '',
+      position_name: '',
       cpf: '',
       email: '',
       phone: '',
       birth_date: '',
-      position_id: '',
+      
       admission_date: '',
       salary: '',
       web_password: '',
@@ -342,24 +342,18 @@ export function ColaboradorInternoAddModal({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Controller
-                    name="position_id"
+                    name="position_name"
                     control={control}
                     render={({ field }) => (
                       <TextField
                         {...field}
                         label="Cargo"
-                        select
                         sx={{ flex: 1 }}
                         required
-                        error={!!errors.position_id}
-                        helperText={errors.position_id?.message}
-                      >
-                        {cargos.map((cargo) => (
-                          <MenuItem key={cargo.id} value={cargo.id}>
-                            {cargo.role}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                        placeholder="Ex: Gerente de RH, Analista de TI, etc."
+                        error={!!errors.position_name}
+                        helperText={errors.position_name?.message}
+                      />
                     )}
                   />
 
