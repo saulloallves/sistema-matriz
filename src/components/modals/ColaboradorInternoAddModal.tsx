@@ -20,7 +20,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, UserPlus, Eye, EyeOff, Search } from 'lucide-react';
-import { formatCPF, formatPhone, formatCEP, removeMask } from '@/utils/formatters';
+import { formatCPF, formatPhone, formatCEP, formatMoneyInput, unformatMoney, removeMask } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 
 interface ColaboradorInternoAddModalProps {
@@ -176,10 +176,11 @@ export function ColaboradorInternoAddModal({
       cpf: removeMask(data.cpf),
       phone: removeMask(data.phone),
       postal_code: data.postal_code ? removeMask(data.postal_code) : null,
-      meal_voucher_value: data.meal_voucher_active && data.meal_voucher_value ? data.meal_voucher_value : null,
-      transport_voucher_value: data.transport_voucher_active && data.transport_voucher_value ? data.transport_voucher_value : null,
-      basic_food_basket_value: data.basic_food_basket_active && data.basic_food_basket_value ? data.basic_food_basket_value : null,
-      cost_assistance_value: data.cost_assistance_active && data.cost_assistance_value ? data.cost_assistance_value : null,
+      salary: unformatMoney(data.salary),
+      meal_voucher_value: data.meal_voucher_active && data.meal_voucher_value ? unformatMoney(data.meal_voucher_value) : null,
+      transport_voucher_value: data.transport_voucher_active && data.transport_voucher_value ? unformatMoney(data.transport_voucher_value) : null,
+      basic_food_basket_value: data.basic_food_basket_active && data.basic_food_basket_value ? unformatMoney(data.basic_food_basket_value) : null,
+      cost_assistance_value: data.cost_assistance_active && data.cost_assistance_value ? unformatMoney(data.cost_assistance_value) : null,
     };
     onSave(formattedData);
   };
@@ -384,6 +385,8 @@ export function ColaboradorInternoAddModal({
                         label="Salário"
                         sx={{ flex: 1 }}
                         required
+                        value={formatMoneyInput(field.value)}
+                        onChange={(e) => field.onChange(e.target.value)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
                         }}

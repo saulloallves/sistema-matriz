@@ -65,3 +65,25 @@ export const getInitials = (name: string): string => {
 export const removeMask = (value: string): string => {
   return value.replace(/\D/g, '');
 };
+
+export const formatMoneyInput = (value: string): string => {
+  if (!value) return '';
+  
+  // Remove tudo que não é número
+  const numbers = value.replace(/\D/g, '');
+  
+  // Converte para número e divide por 100 para ter os centavos
+  const amount = parseFloat(numbers) / 100;
+  
+  // Formata como moeda brasileira
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+};
+
+export const unformatMoney = (value: string): string => {
+  if (!value) return '';
+  // Remove pontos de milhar e substitui vírgula por ponto
+  return value.replace(/\./g, '').replace(',', '.');
+};

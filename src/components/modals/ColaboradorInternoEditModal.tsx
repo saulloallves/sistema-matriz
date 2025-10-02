@@ -19,7 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, User, Eye, EyeOff } from 'lucide-react';
 import { ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
-import { formatCPF, formatPhone, formatCEP, removeMask } from '@/utils/formatters';
+import { formatCPF, formatPhone, formatCEP, formatMoneyInput, unformatMoney, removeMask } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 
 interface ColaboradorInternoEditModalProps {
@@ -81,6 +81,16 @@ const formatDateForInput = (dateStr: string | null | undefined): string => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+// Função para formatar valor monetário do banco para o input
+const formatMoneyForInput = (value: string | null | undefined): string => {
+  if (!value) return '';
+  // Se o valor já está formatado, retorna direto
+  if (value.includes(',')) return value;
+  // Converte o valor do banco (1000.00) para o formato de exibição (1000,00)
+  const numValue = parseFloat(value);
+  return (numValue * 100).toString();
 };
 
 export function ColaboradorInternoEditModal({
@@ -195,7 +205,7 @@ export function ColaboradorInternoEditModal({
         phone: colaborador.phone || '',
         birth_date: formatDateForInput(colaborador.birth_date),
         admission_date: formatDateForInput(colaborador.admission_date),
-        salary: colaborador.salary || '',
+        salary: formatMoneyForInput(colaborador.salary),
         web_password: colaborador.web_password || '',
         instagram_profile: colaborador.instagram_profile || '',
         address: colaborador.address || '',
@@ -237,7 +247,7 @@ export function ColaboradorInternoEditModal({
       phone: removeMask(data.phone),
       birth_date: data.birth_date,
       admission_date: data.admission_date,
-      salary: data.salary,
+      salary: unformatMoney(data.salary),
       web_password: data.web_password,
       instagram_profile: data.instagram_profile || null,
       address: data.address || null,
@@ -249,14 +259,14 @@ export function ColaboradorInternoEditModal({
       uf: data.uf || null,
       postal_code: data.postal_code ? removeMask(data.postal_code) : null,
       meal_voucher_active: data.meal_voucher_active,
-      meal_voucher_value: data.meal_voucher_active ? data.meal_voucher_value : null,
+      meal_voucher_value: data.meal_voucher_active && data.meal_voucher_value ? unformatMoney(data.meal_voucher_value) : null,
       transport_voucher_active: data.transport_voucher_active,
-      transport_voucher_value: data.transport_voucher_active ? data.transport_voucher_value : null,
+      transport_voucher_value: data.transport_voucher_active && data.transport_voucher_value ? unformatMoney(data.transport_voucher_value) : null,
       health_plan: data.health_plan,
       basic_food_basket_active: data.basic_food_basket_active,
-      basic_food_basket_value: data.basic_food_basket_active ? data.basic_food_basket_value : null,
+      basic_food_basket_value: data.basic_food_basket_active && data.basic_food_basket_value ? unformatMoney(data.basic_food_basket_value) : null,
       cost_assistance_active: data.cost_assistance_active,
-      cost_assistance_value: data.cost_assistance_active ? data.cost_assistance_value : null,
+      cost_assistance_value: data.cost_assistance_active && data.cost_assistance_value ? unformatMoney(data.cost_assistance_value) : null,
       cash_access: data.cash_access,
       evaluation_access: data.evaluation_access,
       training: data.training,
@@ -468,7 +478,12 @@ export function ColaboradorInternoEditModal({
                         label="Salário"
                         sx={{ flex: 1 }}
                         required
-                        placeholder="R$ 0,00"
+                        value={formatMoneyInput(field.value)}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        placeholder="0,00"
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                        }}
                         error={!!errors.salary}
                         helperText={errors.salary?.message}
                       />
