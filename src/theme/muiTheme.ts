@@ -3,15 +3,33 @@ import { createTheme } from '@mui/material/styles';
 export const muiTheme = createTheme({
   palette: {
     primary: {
-      main: '#f59e42',
-      light: '#ffb366',
-      dark: '#d17a2a',
-      contrastText: '#fff',
+      main: '#ffc31a', // Amarelo Girafa
+      light: '#ffd04d',
+      dark: '#cc9c15',
+      contrastText: '#6b3a10', // Marrom Girafa
     },
     secondary: {
-      main: '#8b6f47',
-      light: '#a68a64',
-      dark: '#6b5535',
+      main: '#ff9923', // Laranja Mancha
+      light: '#ffad52',
+      dark: '#cc7a1c',
+      contrastText: '#fff',
+    },
+    info: {
+      main: '#00aeff', // Azul do Céu
+      light: '#33bfff',
+      dark: '#008bcc',
+      contrastText: '#fff',
+    },
+    error: {
+      main: '#d32f2f',
+      light: '#ef5350',
+      dark: '#c62828',
+      contrastText: '#fff',
+    },
+    warning: {
+      main: '#6b3a10', // Marrom Girafa
+      light: '#8a5020',
+      dark: '#4d2a0c',
       contrastText: '#fff',
     },
     background: {

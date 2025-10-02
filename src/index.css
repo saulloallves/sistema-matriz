@@ -12,6 +12,14 @@ body {
   line-height: 1.6;
 }
 
+/* Cores da marca Cresci e Perdi */
+:root {
+  --color-amarelo-girafa: #ffc31a;
+  --color-marrom-girafa: #6b3a10;
+  --color-laranja-mancha: #ff9923;
+  --color-azul-ceu: #00aeff;
+}
+
 /* Scrollbar customizada */
 ::-webkit-scrollbar {
   width: 8px;
