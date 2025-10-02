@@ -106,6 +106,12 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               barGap={8}
+              onClick={(event: any) => {
+                if (event && event.activePayload && event.activePayload[0]) {
+                  const clickedData = event.activePayload[0].payload;
+                  handleBarClick(clickedData);
+                }
+              }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
@@ -119,20 +125,17 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#666' }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(245, 158, 66, 0.1)' }} />
               <Bar 
                 dataKey="unidades" 
                 radius={[4, 4, 0, 0]}
                 name="Quantidade"
-                cursor="pointer"
-                onClick={(data) => handleBarClick(data)}
-                onMouseEnter={(_, index) => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
               >
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`}
                     fill={hoveredIndex === index ? '#f59e42' : '#1976d2'}
+                    cursor="pointer"
                   />
                 ))}
               </Bar>
