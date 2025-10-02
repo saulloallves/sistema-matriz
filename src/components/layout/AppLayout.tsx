@@ -22,9 +22,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         p: 3, 
         marginLeft: '120px',
         backgroundColor: 'transparent',
-        width: 'calc(100vw - 120px)',
-        maxWidth: 'calc(100vw - 120px)',
-        overflow: 'hidden',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
         {/* Logo no canto superior direito */}
         <Box sx={{
