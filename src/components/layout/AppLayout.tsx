@@ -26,23 +26,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         display: 'flex',
         flexDirection: 'column',
       }}>
-        {/* Logo no canto superior direito */}
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: 2,
-        }}>
-          <img 
-            src={logoHeader} 
-            alt="Cresci e Perdi" 
-            style={{ 
-              height: '40px', 
-              width: 'auto',
-              mixBlendMode: 'multiply'
-            }}
-          />
-        </Box>
-        
         {children}
       </Box>
     </Box>
