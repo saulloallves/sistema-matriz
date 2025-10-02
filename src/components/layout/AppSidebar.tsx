@@ -91,7 +91,6 @@ const menuItems: MenuItemType[] = [
       { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
     ]
   },
-  { text: 'Configurações', icon: Settings, path: '/configuracoes' },
 ];
 
 const AppSidebar = () => {
@@ -267,7 +266,25 @@ const AppSidebar = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Tooltip title="Configurações" placement="right" arrow>
+          <IconButton
+            onClick={() => navigate('/configuracoes')}
+            sx={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '12px',
+              color: location.pathname === '/configuracoes' ? '#fff' : 'text.secondary',
+              backgroundColor: location.pathname === '/configuracoes' ? 'primary.main' : 'transparent',
+              '&:hover': {
+                backgroundColor: location.pathname === '/configuracoes' ? 'primary.dark' : 'action.hover',
+              },
+            }}
+          >
+            <Settings size={20} />
+          </IconButton>
+        </Tooltip>
+
         <Tooltip title={profile?.full_name || user?.email || 'Usuário'} placement="right" arrow>
           <IconButton
             onClick={handleUserMenu}
