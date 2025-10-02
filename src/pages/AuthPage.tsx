@@ -91,7 +91,7 @@ const AuthPage = () => {
       >
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #406ff3 0%, #5a7ef4 100%)',
+            background: 'linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%)',
             padding: 4,
             textAlign: 'center',
           }}
@@ -106,7 +106,7 @@ const AuthPage = () => {
           <Typography 
             variant="h4" 
             sx={{ 
-              color: '#fff', 
+              color: '#8b6f47', 
               fontWeight: 700,
               marginBottom: 1,
             }}
@@ -116,7 +116,7 @@ const AuthPage = () => {
           <Typography 
             variant="body1" 
             sx={{ 
-              color: 'rgba(255,255,255,0.9)',
+              color: '#6b5535',
               fontSize: '1rem',
             }}
           >
@@ -147,7 +147,7 @@ const AuthPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Mail size={20} color="#406ff3" />
+                      <Mail size={20} color="#f59e42" />
                     </InputAdornment>
                   ),
                 }}
@@ -160,10 +160,10 @@ const AuthPage = () => {
                       border: '1px solid rgba(0,0,0,0.1)',
                     },
                     '&:hover fieldset': {
-                      border: '1px solid #406ff3',
+                      border: '1px solid #f59e42',
                     },
                     '&.Mui-focused fieldset': {
-                      border: '2px solid #406ff3',
+                      border: '2px solid #f59e42',
                     },
                   },
                 }}
@@ -191,7 +191,7 @@ const AuthPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock size={20} color="#406ff3" />
+                      <Lock size={20} color="#f59e42" />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -215,10 +215,10 @@ const AuthPage = () => {
                       border: '1px solid rgba(0,0,0,0.1)',
                     },
                     '&:hover fieldset': {
-                      border: '1px solid #406ff3',
+                      border: '1px solid #f59e42',
                     },
                     '&.Mui-focused fieldset': {
-                      border: '2px solid #406ff3',
+                      border: '2px solid #f59e42',
                     },
                   },
                 }}
@@ -232,15 +232,15 @@ const AuthPage = () => {
               sx={{
                 height: 56,
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #406ff3 0%, #5a7ef4 100%)',
+                background: 'linear-gradient(135deg, #f59e42 0%, #ffb366 100%)',
                 color: '#fff',
                 fontWeight: 600,
                 fontSize: '1rem',
                 textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(64, 111, 243, 0.3)',
+                boxShadow: '0 4px 20px rgba(245, 158, 66, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #355bb8 0%, #4a6ad1 100%)',
-                  boxShadow: '0 6px 25px rgba(64, 111, 243, 0.4)',
+                  background: 'linear-gradient(135deg, #d17a2a 0%, #f59e42 100%)',
+                  boxShadow: '0 6px 25px rgba(245, 158, 66, 0.4)',
                 },
                 '&:disabled': {
                   background: '#e0e0e0',
