@@ -5,6 +5,8 @@ import { Eye, Edit, Trash2, UserCog, Check, X } from 'lucide-react';
 import { DataTable } from '@/components/crud/DataTable';
 import { useColaboradoresInterno, ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
 import { format } from 'date-fns';
+import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoViewModal';
+import toast from 'react-hot-toast';
 
 interface ActionCellProps {
   row: ColaboradorInterno;
@@ -168,13 +170,23 @@ export default function ColaboradoresInternoPage() {
       <DataTable
         columns={columns}
         data={colaboradores}
-        onAdd={handleAdd}
+        onAdd={() => toast.success('Modal de adição em desenvolvimento')}
         searchPlaceholder="Pesquisar colaboradores internos..."
         title="Colaboradores Internos"
         titleIcon={<UserCog size={32} />}
         description="Gerencie os funcionários internos da matriz"
         loading={isLoading}
         customCards={statsCards}
+      />
+      
+      <ColaboradorInternoViewModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        colaborador={selectedColaborador}
+        onEdit={() => {
+          setViewModalOpen(false);
+          toast.success('Modal de edição em desenvolvimento');
+        }}
       />
     </Box>
   );
