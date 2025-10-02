@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import UnidadesPorModeloModal from '../modals/UnidadesPorModeloModal';
 
 interface ChartData {
   month: string; // Representa o modelo da loja
@@ -13,6 +15,17 @@ interface PerformanceChartProps {
 }
 
 const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedModelo, setSelectedModelo] = useState<string | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const handleBarClick = (entry: any) => {
+    if (entry && entry.month) {
+      setSelectedModelo(entry.month);
+      setModalOpen(true);
+    }
+  };
+
   if (loading) {
     return (
       <Card sx={{ height: '400px' }}>
@@ -109,14 +122,30 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
               <Tooltip content={<CustomTooltip />} />
               <Bar 
                 dataKey="unidades" 
-                fill="#1976d2" 
                 radius={[4, 4, 0, 0]}
                 name="Quantidade"
-              />
+                cursor="pointer"
+                onClick={(data) => handleBarClick(data)}
+                onMouseEnter={(_, index) => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`}
+                    fill={hoveredIndex === index ? '#f59e42' : '#1976d2'}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Box>
       </CardContent>
+
+      <UnidadesPorModeloModal 
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        modelo={selectedModelo}
+      />
     </Card>
   );
 };
