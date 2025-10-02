@@ -19,7 +19,7 @@ interface ActionCellProps {
 
 function ActionCell({ row, onView, onEdit, onDelete }: ActionCellProps) {
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
       <IconButton size="small" onClick={() => onView(row)} sx={{ color: 'info.main' }}>
         <Eye size={16} />
       </IconButton>
