@@ -21,6 +21,7 @@ import { Edit2, X, KeyRound } from 'lucide-react';
 import { User } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 
 interface UserEditModalProps {
   open: boolean;
@@ -31,25 +32,29 @@ interface UserEditModalProps {
 }
 
 const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModalProps) => {
+  const { getRoleByUserId, getRoleLabel, updateUserRole, isUpdating } = useUserRoles();
   const [formData, setFormData] = useState({
     full_name: '',
     phone_number: '',
     status: 'ativo' as 'ativo' | 'inativo',
-    notes: ''
+    notes: '',
+    role: 'user' as AppRole
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
+      const userRole = getRoleByUserId(user.user_id) || 'user';
       setFormData({
         full_name: user.full_name || '',
         phone_number: user.phone_number || '',
         status: user.status,
-        notes: user.notes || ''
+        notes: user.notes || '',
+        role: userRole
       });
     }
-  }, [user]);
+  }, [user, getRoleByUserId]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -68,7 +73,7 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm() || !user) {
@@ -78,12 +83,19 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
     // Limpar telefone (apenas números)
     const cleanPhone = formData.phone_number.replace(/\D/g, '');
     
+    // Salvar dados do perfil
     onSave(user.id, {
       full_name: formData.full_name.trim(),
       phone_number: cleanPhone,
       status: formData.status,
       notes: formData.notes.trim() || null
     });
+
+    // Atualizar role se mudou
+    const currentRole = getRoleByUserId(user.user_id);
+    if (currentRole !== formData.role) {
+      updateUserRole({ userId: user.user_id, role: formData.role });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -186,8 +198,22 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
               required
             />
 
+            <FormControl fullWidth disabled={isLoading || isUpdating}>
+              <InputLabel>Perfil</InputLabel>
+              <Select
+                value={formData.role}
+                label="Perfil"
+                onChange={(e) => handleInputChange('role', e.target.value as AppRole)}
+              >
+                <MenuItem value="admin">Administrador</MenuItem>
+                <MenuItem value="operador">Operador</MenuItem>
+                <MenuItem value="franqueado">Franqueado</MenuItem>
+                <MenuItem value="user">Usuário</MenuItem>
+              </Select>
+            </FormControl>
+
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-              <FormControl fullWidth disabled={isLoading}>
+              <FormControl fullWidth disabled={isLoading || isUpdating}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={formData.status}
@@ -204,7 +230,7 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
                   variant="outlined"
                   color="warning"
                   onClick={handleResetPassword}
-                  disabled={isLoading || isResettingPassword}
+                  disabled={isLoading || isResettingPassword || isUpdating}
                   startIcon={isResettingPassword ? <CircularProgress size={16} /> : <KeyRound size={16} />}
                   sx={{ 
                     minWidth: 'auto', 
@@ -217,8 +243,6 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
                 </Button>
               </Tooltip>
             </Box>
-
-            <Box /> {/* Empty space */}
           </Box>
 
           <Box sx={{ mt: 3 }}>
@@ -239,17 +263,17 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
           <Button 
             onClick={handleClose} 
             variant="outlined"
-            disabled={isLoading}
+            disabled={isLoading || isUpdating}
           >
             Cancelar
           </Button>
           <Button 
             type="submit"
             variant="contained"
-            startIcon={isLoading ? <CircularProgress size={18} /> : <Edit2 size={18} />}
-            disabled={isLoading}
+            startIcon={(isLoading || isUpdating) ? <CircularProgress size={18} /> : <Edit2 size={18} />}
+            disabled={isLoading || isUpdating}
           >
-            {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            {(isLoading || isUpdating) ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </DialogActions>
       </form>
