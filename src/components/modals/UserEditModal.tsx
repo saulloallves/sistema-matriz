@@ -54,7 +54,7 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
         role: userRole
       });
     }
-  }, [user, getRoleByUserId]);
+  }, [user, user?.user_id]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
