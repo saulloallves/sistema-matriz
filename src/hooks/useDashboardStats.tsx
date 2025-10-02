@@ -182,19 +182,44 @@ export const useTopUnits = () => {
   return useQuery({
     queryKey: ['top-units'],
     queryFn: async (): Promise<UnitPerformance[]> => {
-      const { data: unidadesWithVinculos, error } = await supabase
+      // Buscar unidades primeiro
+      const { data: unidades, error: unidadesError } = await supabase
         .from('unidades')
-        .select(`
-          *,
-          franqueados_unidades(franqueado_id)
-        `)
+        .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(8);
 
-      if (error) throw error;
+      if (unidadesError) {
+        console.error('Erro ao buscar unidades:', unidadesError);
+        throw unidadesError;
+      }
 
-      return (unidadesWithVinculos || []).map((unidade): UnitPerformance => {
-        const vinculosCount = unidade.franqueados_unidades?.length || 0;
+      if (!unidades || unidades.length === 0) {
+        console.log('Nenhuma unidade encontrada');
+        return [];
+      }
+
+      // Buscar vínculos para as unidades encontradas
+      const unidadeIds = unidades.map(u => u.id);
+      const { data: vinculos, error: vinculosError } = await supabase
+        .from('franqueados_unidades')
+        .select('unidade_id, franqueado_id')
+        .in('unidade_id', unidadeIds);
+
+      if (vinculosError) {
+        console.error('Erro ao buscar vínculos:', vinculosError);
+      }
+
+      // Mapear vínculos por unidade
+      const vinculosPorUnidade = (vinculos || []).reduce((acc, v) => {
+        if (!acc[v.unidade_id]) acc[v.unidade_id] = [];
+        acc[v.unidade_id].push(v);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      return unidades.map((unidade): UnitPerformance => {
+        const vinculosCount = vinculosPorUnidade[unidade.id]?.length || 0;
         const daysSinceCreation = Math.floor((Date.now() - new Date(unidade.created_at).getTime()) / (1000 * 60 * 60 * 24));
         
         // Determinar trend baseado em métricas reais
@@ -212,7 +237,7 @@ export const useTopUnits = () => {
           phase: unidade.store_phase,
           isActive: unidade.is_active,
           trend,
-          score: vinculosCount, // Score real baseado em vínculos
+          score: vinculosCount,
         };
       });
     },
