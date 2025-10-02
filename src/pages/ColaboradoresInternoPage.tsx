@@ -180,7 +180,7 @@ export default function ColaboradoresInternoPage() {
         searchPlaceholder="Pesquisar colaboradores internos..."
         title="Colaboradores Internos"
         titleIcon={<UserCog size={32} />}
-        description="Gerencie os funcionários internos da matriz"
+        description="Gerencie os funcionários da Cresci e Perdi"
         loading={isLoading}
         customCards={statsCards}
       />
