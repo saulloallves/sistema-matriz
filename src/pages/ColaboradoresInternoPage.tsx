@@ -7,6 +7,7 @@ import { useColaboradoresInterno, ColaboradorInterno } from '@/hooks/useColabora
 import { format } from 'date-fns';
 import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoViewModal';
 import { ColaboradorInternoAddModal } from '@/components/modals/ColaboradorInternoAddModal';
+import { ColaboradorInternoEditModal } from '@/components/modals/ColaboradorInternoEditModal';
 import toast from 'react-hot-toast';
 
 interface ActionCellProps {
@@ -103,7 +104,7 @@ function createColumns(
 }
 
 export default function ColaboradoresInternoPage() {
-  const { colaboradores, isLoading, deleteColaborador, createColaborador, isCreating } = useColaboradoresInterno();
+  const { colaboradores, isLoading, deleteColaborador, createColaborador, updateColaborador, isCreating } = useColaboradoresInterno();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -187,12 +188,27 @@ export default function ColaboradoresInternoPage() {
       
       <ColaboradorInternoViewModal
         open={viewModalOpen}
-        onClose={() => setViewModalOpen(false)}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedColaborador(null);
+        }}
         colaborador={selectedColaborador}
         onEdit={() => {
           setViewModalOpen(false);
-          toast.success('Modal de edição em desenvolvimento');
+          if (selectedColaborador) {
+            handleEdit(selectedColaborador);
+          }
         }}
+      />
+
+      <ColaboradorInternoEditModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedColaborador(null);
+        }}
+        colaborador={selectedColaborador}
+        onUpdate={(id, data) => updateColaborador({ id, ...data })}
       />
 
       {addModalOpen && (

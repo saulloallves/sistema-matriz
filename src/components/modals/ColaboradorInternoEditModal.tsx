@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,29 +10,27 @@ import {
   Typography,
   Switch,
   FormControlLabel,
-  MenuItem,
   InputAdornment,
   IconButton,
-  Divider,
   CircularProgress
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Save, UserPlus, Eye, EyeOff, Search } from 'lucide-react';
-import { formatCPF, formatPhone, formatCEP, removeMask } from '@/utils/formatters';
+import { X, Save, User, Eye, EyeOff } from 'lucide-react';
+import { ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
 import toast from 'react-hot-toast';
 
-interface ColaboradorInternoAddModalProps {
+interface ColaboradorInternoEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  isLoading: boolean;
+  colaborador: ColaboradorInterno | null;
+  onUpdate: (id: string, data: Partial<ColaboradorInterno>) => void;
 }
 
 const colaboradorSchema = z.object({
-  employee_name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  cpf: z.string().min(14, 'CPF inválido'),
+  employee_name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
+  cpf: z.string().min(11, 'CPF inválido'),
   email: z.string().email('Email inválido'),
   phone: z.string().min(14, 'Telefone inválido'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
@@ -62,25 +60,34 @@ const colaboradorSchema = z.object({
   evaluation_access: z.boolean(),
   training: z.boolean(),
   support: z.boolean(),
-  lgpd_term: z.boolean().refine(val => val === true, {
-    message: 'É obrigatório aceitar o termo LGPD'
-  }),
-  confidentiality_term: z.boolean().refine(val => val === true, {
-    message: 'É obrigatório aceitar o termo de confidencialidade'
-  }),
-  system_term: z.boolean().refine(val => val === true, {
-    message: 'É obrigatório aceitar o termo do sistema'
-  }),
+  lgpd_term: z.boolean(),
+  confidentiality_term: z.boolean(),
+  system_term: z.boolean(),
 });
 
 type ColaboradorFormData = z.infer<typeof colaboradorSchema>;
 
-export function ColaboradorInternoAddModal({ 
-  open, 
-  onClose, 
-  onSave, 
-  isLoading 
-}: ColaboradorInternoAddModalProps) {
+// Função para formatar data do banco (YYYY-MM-DD) para o input type="date"
+const formatDateForInput = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return '';
+  // Se já está no formato correto (YYYY-MM-DD), retorna direto
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  // Caso contrário, converte
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export function ColaboradorInternoEditModal({
+  open,
+  onClose,
+  colaborador,
+  onUpdate
+}: ColaboradorInternoEditModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [searchingCEP, setSearchingCEP] = useState(false);
 
@@ -100,7 +107,6 @@ export function ColaboradorInternoAddModal({
       email: '',
       phone: '',
       birth_date: '',
-      
       admission_date: '',
       salary: '',
       web_password: '',
@@ -136,20 +142,15 @@ export function ColaboradorInternoAddModal({
   const transport_voucher_active = watch('transport_voucher_active');
   const basic_food_basket_active = watch('basic_food_basket_active');
   const cost_assistance_active = watch('cost_assistance_active');
+  const postal_code = watch('postal_code');
 
-  const searchCEP = async () => {
-    const cep = watch('postal_code');
-    if (!cep) return;
-    
-    const cleanCEP = removeMask(cep);
-    if (cleanCEP.length !== 8) {
-      toast.error('CEP deve ter 8 dígitos');
-      return;
-    }
+  // Buscar endereço pelo CEP
+  const fetchAddressByCep = useCallback(async (cep: string) => {
+    if (!cep || cep.length !== 8) return;
 
-    setSearchingCEP(true);
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      setSearchingCEP(true);
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await response.json();
 
       if (data.erro) {
@@ -160,28 +161,111 @@ export function ColaboradorInternoAddModal({
       setValue('address', data.logradouro || '');
       setValue('neighborhood', data.bairro || '');
       setValue('city', data.localidade || '');
-      setValue('state', data.estado || '');
+      setValue('state', data.localidade || '');
       setValue('uf', data.uf || '');
-      toast.success('Endereço preenchido automaticamente');
+
+      toast.success('Endereço preenchido automaticamente!');
     } catch (error) {
-      toast.error('Erro ao buscar CEP');
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar informações do CEP');
     } finally {
       setSearchingCEP(false);
     }
-  };
+  }, [setValue]);
+
+  // Debounce CEP lookup
+  useEffect(() => {
+    if (postal_code && postal_code.length === 8) {
+      const timer = setTimeout(() => {
+        fetchAddressByCep(postal_code);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [postal_code, fetchAddressByCep]);
+
+  useEffect(() => {
+    if (colaborador && open) {
+      reset({
+        employee_name: colaborador.employee_name || '',
+        position_name: colaborador.position_name || '',
+        cpf: colaborador.cpf || '',
+        email: colaborador.email || '',
+        phone: colaborador.phone || '',
+        birth_date: formatDateForInput(colaborador.birth_date),
+        admission_date: formatDateForInput(colaborador.admission_date),
+        salary: colaborador.salary || '',
+        web_password: colaborador.web_password || '',
+        instagram_profile: colaborador.instagram_profile || '',
+        address: colaborador.address || '',
+        number_address: colaborador.number_address || '',
+        address_complement: colaborador.address_complement || '',
+        neighborhood: colaborador.neighborhood || '',
+        city: colaborador.city || '',
+        state: colaborador.state || '',
+        uf: colaborador.uf || '',
+        postal_code: colaborador.postal_code || '',
+        meal_voucher_active: colaborador.meal_voucher_active || false,
+        meal_voucher_value: colaborador.meal_voucher_value || '',
+        transport_voucher_active: colaborador.transport_voucher_active || false,
+        transport_voucher_value: colaborador.transport_voucher_value || '',
+        health_plan: colaborador.health_plan || false,
+        basic_food_basket_active: colaborador.basic_food_basket_active || false,
+        basic_food_basket_value: colaborador.basic_food_basket_value || '',
+        cost_assistance_active: colaborador.cost_assistance_active || false,
+        cost_assistance_value: colaborador.cost_assistance_value || '',
+        cash_access: colaborador.cash_access || false,
+        evaluation_access: colaborador.evaluation_access || false,
+        training: colaborador.training || false,
+        support: colaborador.support || false,
+        lgpd_term: colaborador.lgpd_term || false,
+        confidentiality_term: colaborador.confidentiality_term || false,
+        system_term: colaborador.system_term || false,
+      });
+    }
+  }, [colaborador, open, reset]);
 
   const onSubmit = (data: ColaboradorFormData) => {
-    const formattedData = {
-      ...data,
-      cpf: removeMask(data.cpf),
-      phone: removeMask(data.phone),
-      postal_code: data.postal_code ? removeMask(data.postal_code) : null,
-      meal_voucher_value: data.meal_voucher_active && data.meal_voucher_value ? data.meal_voucher_value : null,
-      transport_voucher_value: data.transport_voucher_active && data.transport_voucher_value ? data.transport_voucher_value : null,
-      basic_food_basket_value: data.basic_food_basket_active && data.basic_food_basket_value ? data.basic_food_basket_value : null,
-      cost_assistance_value: data.cost_assistance_active && data.cost_assistance_value ? data.cost_assistance_value : null,
-    };
-    onSave(formattedData);
+    if (!colaborador) return;
+
+    onUpdate(colaborador.id, {
+      employee_name: data.employee_name,
+      position_name: data.position_name,
+      cpf: data.cpf,
+      email: data.email,
+      phone: data.phone,
+      birth_date: data.birth_date,
+      admission_date: data.admission_date,
+      salary: data.salary,
+      web_password: data.web_password,
+      instagram_profile: data.instagram_profile || null,
+      address: data.address || null,
+      number_address: data.number_address || null,
+      address_complement: data.address_complement || null,
+      neighborhood: data.neighborhood || null,
+      city: data.city || null,
+      state: data.state || null,
+      uf: data.uf || null,
+      postal_code: data.postal_code || null,
+      meal_voucher_active: data.meal_voucher_active,
+      meal_voucher_value: data.meal_voucher_active ? data.meal_voucher_value : null,
+      transport_voucher_active: data.transport_voucher_active,
+      transport_voucher_value: data.transport_voucher_active ? data.transport_voucher_value : null,
+      health_plan: data.health_plan,
+      basic_food_basket_active: data.basic_food_basket_active,
+      basic_food_basket_value: data.basic_food_basket_active ? data.basic_food_basket_value : null,
+      cost_assistance_active: data.cost_assistance_active,
+      cost_assistance_value: data.cost_assistance_active ? data.cost_assistance_value : null,
+      cash_access: data.cash_access,
+      evaluation_access: data.evaluation_access,
+      training: data.training,
+      support: data.support,
+      lgpd_term: data.lgpd_term,
+      confidentiality_term: data.confidentiality_term,
+      system_term: data.system_term,
+    });
+
+    onClose();
   };
 
   const handleClose = () => {
@@ -190,27 +274,27 @@ export function ColaboradorInternoAddModal({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={handleClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: { borderRadius: 2 }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <DialogTitle sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: 1,
         borderColor: 'divider',
         pb: 2
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <UserPlus size={24} />
+          <User size={24} />
           <Typography variant="h6">
-            Adicionar Colaborador Interno
+            Editar Colaborador Interno: {colaborador?.employee_name}
           </Typography>
         </Box>
         <IconButton onClick={handleClose} size="small">
@@ -224,10 +308,9 @@ export function ColaboradorInternoAddModal({
             {/* Dados Pessoais */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                📋 Dados Pessoais
+                Dados Pessoais
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Controller
                   name="employee_name"
@@ -254,8 +337,6 @@ export function ColaboradorInternoAddModal({
                         label="CPF"
                         sx={{ flex: 1 }}
                         required
-                        value={formatCPF(field.value)}
-                        onChange={(e) => field.onChange(e.target.value)}
                         error={!!errors.cpf}
                         helperText={errors.cpf?.message}
                       />
@@ -306,8 +387,7 @@ export function ColaboradorInternoAddModal({
                         label="Telefone"
                         sx={{ flex: 1 }}
                         required
-                        value={formatPhone(field.value)}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        placeholder="(00) 00000-0000"
                         error={!!errors.phone}
                         helperText={errors.phone?.message}
                       />
@@ -321,8 +401,8 @@ export function ColaboradorInternoAddModal({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Instagram"
-                      fullWidth
+                      label="Perfil do Instagram"
+                      placeholder="@usuario"
                       error={!!errors.instagram_profile}
                       helperText={errors.instagram_profile?.message}
                     />
@@ -334,10 +414,9 @@ export function ColaboradorInternoAddModal({
             {/* Dados Profissionais */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                💼 Dados Profissionais
+                Dados Profissionais
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Controller
@@ -384,9 +463,7 @@ export function ColaboradorInternoAddModal({
                         label="Salário"
                         sx={{ flex: 1 }}
                         required
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                        }}
+                        placeholder="R$ 0,00"
                         error={!!errors.salary}
                         helperText={errors.salary?.message}
                       />
@@ -399,10 +476,12 @@ export function ColaboradorInternoAddModal({
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Senha do Sistema"
+                        label="Senha Web"
                         type={showPassword ? 'text' : 'password'}
                         sx={{ flex: 1 }}
                         required
+                        error={!!errors.web_password}
+                        helperText={errors.web_password?.message}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -415,8 +494,6 @@ export function ColaboradorInternoAddModal({
                             </InputAdornment>
                           ),
                         }}
-                        error={!!errors.web_password}
-                        helperText={errors.web_password?.message}
                       />
                     )}
                   />
@@ -427,38 +504,30 @@ export function ColaboradorInternoAddModal({
             {/* Endereço */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                📍 Endereço
+                Endereço
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Controller
-                    name="postal_code"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="CEP"
-                        sx={{ flex: 2 }}
-                        value={formatCEP(field.value || '')}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        error={!!errors.postal_code}
-                        helperText={errors.postal_code?.message}
-                      />
-                    )}
-                  />
 
-                  <Button
-                    variant="outlined"
-                    onClick={searchCEP}
-                    disabled={searchingCEP}
-                    sx={{ flex: 1, height: '56px' }}
-                    startIcon={searchingCEP ? <CircularProgress size={18} /> : <Search size={18} />}
-                  >
-                    Buscar
-                  </Button>
-                </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Controller
+                  name="postal_code"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="CEP"
+                      placeholder="00000-000"
+                      error={!!errors.postal_code}
+                      helperText={errors.postal_code?.message}
+                      InputProps={{
+                        endAdornment: searchingCEP ? (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        ) : null,
+                      }}
+                    />
+                  )}
+                />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Controller
@@ -467,7 +536,7 @@ export function ColaboradorInternoAddModal({
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Endereço"
+                        label="Logradouro"
                         sx={{ flex: 2 }}
                         error={!!errors.address}
                         helperText={errors.address?.message}
@@ -497,7 +566,6 @@ export function ColaboradorInternoAddModal({
                     <TextField
                       {...field}
                       label="Complemento"
-                      fullWidth
                       error={!!errors.address_complement}
                       helperText={errors.address_complement?.message}
                     />
@@ -512,7 +580,7 @@ export function ColaboradorInternoAddModal({
                       <TextField
                         {...field}
                         label="Bairro"
-                        sx={{ flex: 2 }}
+                        sx={{ flex: 1 }}
                         error={!!errors.neighborhood}
                         helperText={errors.neighborhood?.message}
                       />
@@ -526,9 +594,25 @@ export function ColaboradorInternoAddModal({
                       <TextField
                         {...field}
                         label="Cidade"
-                        sx={{ flex: 2 }}
+                        sx={{ flex: 1 }}
                         error={!!errors.city}
                         helperText={errors.city?.message}
+                      />
+                    )}
+                  />
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Controller
+                    name="state"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Estado"
+                        sx={{ flex: 1 }}
+                        error={!!errors.state}
+                        helperText={errors.state?.message}
                       />
                     )}
                   />
@@ -541,6 +625,7 @@ export function ColaboradorInternoAddModal({
                         {...field}
                         label="UF"
                         sx={{ flex: 1 }}
+                        inputProps={{ maxLength: 2 }}
                         error={!!errors.uf}
                         helperText={errors.uf?.message}
                       />
@@ -553,27 +638,24 @@ export function ColaboradorInternoAddModal({
             {/* Benefícios */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                🎁 Benefícios
+                Benefícios
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box>
-                  <Controller
-                    name="meal_voucher_active"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={field.value}
-                            onChange={field.onChange}
-                          />
-                        }
-                        label="Vale Refeição"
-                      />
-                    )}
-                  />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="meal_voucher_active"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={<Switch {...field} checked={field.value} />}
+                          label="Vale Refeição"
+                        />
+                      )}
+                    />
+                  </Box>
+
                   {meal_voucher_active && (
                     <Controller
                       name="meal_voucher_value"
@@ -581,34 +663,31 @@ export function ColaboradorInternoAddModal({
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Valor Vale Refeição"
-                          fullWidth
-                          sx={{ mt: 1 }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                          }}
+                          label="Valor"
+                          sx={{ flex: 1 }}
+                          placeholder="R$ 0,00"
+                          error={!!errors.meal_voucher_value}
+                          helperText={errors.meal_voucher_value?.message}
                         />
                       )}
                     />
                   )}
                 </Box>
 
-                <Box>
-                  <Controller
-                    name="transport_voucher_active"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={field.value}
-                            onChange={field.onChange}
-                          />
-                        }
-                        label="Vale Transporte"
-                      />
-                    )}
-                  />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="transport_voucher_active"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={<Switch {...field} checked={field.value} />}
+                          label="Vale Transporte"
+                        />
+                      )}
+                    />
+                  </Box>
+
                   {transport_voucher_active && (
                     <Controller
                       name="transport_voucher_value"
@@ -616,12 +695,11 @@ export function ColaboradorInternoAddModal({
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Valor Vale Transporte"
-                          fullWidth
-                          sx={{ mt: 1 }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                          }}
+                          label="Valor"
+                          sx={{ flex: 1 }}
+                          placeholder="R$ 0,00"
+                          error={!!errors.transport_voucher_value}
+                          helperText={errors.transport_voucher_value?.message}
                         />
                       )}
                     />
@@ -633,33 +711,26 @@ export function ColaboradorInternoAddModal({
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      }
+                      control={<Switch {...field} checked={field.value} />}
                       label="Plano de Saúde"
                     />
                   )}
                 />
 
-                <Box>
-                  <Controller
-                    name="basic_food_basket_active"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={field.value}
-                            onChange={field.onChange}
-                          />
-                        }
-                        label="Cesta Básica"
-                      />
-                    )}
-                  />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="basic_food_basket_active"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={<Switch {...field} checked={field.value} />}
+                          label="Cesta Básica"
+                        />
+                      )}
+                    />
+                  </Box>
+
                   {basic_food_basket_active && (
                     <Controller
                       name="basic_food_basket_value"
@@ -667,34 +738,31 @@ export function ColaboradorInternoAddModal({
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Valor Cesta Básica"
-                          fullWidth
-                          sx={{ mt: 1 }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                          }}
+                          label="Valor"
+                          sx={{ flex: 1 }}
+                          placeholder="R$ 0,00"
+                          error={!!errors.basic_food_basket_value}
+                          helperText={errors.basic_food_basket_value?.message}
                         />
                       )}
                     />
                   )}
                 </Box>
 
-                <Box>
-                  <Controller
-                    name="cost_assistance_active"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={field.value}
-                            onChange={field.onChange}
-                          />
-                        }
-                        label="Auxílio Custo"
-                      />
-                    )}
-                  />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="cost_assistance_active"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={<Switch {...field} checked={field.value} />}
+                          label="Auxílio Custo"
+                        />
+                      )}
+                    />
+                  </Box>
+
                   {cost_assistance_active && (
                     <Controller
                       name="cost_assistance_value"
@@ -702,12 +770,11 @@ export function ColaboradorInternoAddModal({
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Valor Auxílio Custo"
-                          fullWidth
-                          sx={{ mt: 1 }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                          }}
+                          label="Valor"
+                          sx={{ flex: 1 }}
+                          placeholder="R$ 0,00"
+                          error={!!errors.cost_assistance_value}
+                          helperText={errors.cost_assistance_value?.message}
                         />
                       )}
                     />
@@ -716,25 +783,19 @@ export function ColaboradorInternoAddModal({
               </Box>
             </Box>
 
-            {/* Acessos */}
+            {/* Acessos e Permissões */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                🔑 Acessos e Permissões
+                Acessos e Permissões
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Controller
                   name="cash_access"
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      }
+                      control={<Switch {...field} checked={field.value} />}
                       label="Acesso ao Caixa"
                     />
                   )}
@@ -745,12 +806,7 @@ export function ColaboradorInternoAddModal({
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      }
+                      control={<Switch {...field} checked={field.value} />}
                       label="Acesso à Avaliação"
                     />
                   )}
@@ -761,12 +817,7 @@ export function ColaboradorInternoAddModal({
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      }
+                      control={<Switch {...field} checked={field.value} />}
                       label="Treinamento"
                     />
                   )}
@@ -777,12 +828,7 @@ export function ColaboradorInternoAddModal({
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      }
+                      control={<Switch {...field} checked={field.value} />}
                       label="Suporte"
                     />
                   )}
@@ -793,108 +839,57 @@ export function ColaboradorInternoAddModal({
             {/* Termos */}
             <Box>
               <Typography variant="h6" gutterBottom color="primary">
-                📄 Termos e Condições
+                Termos
               </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Controller
                   name="lgpd_term"
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                          color={errors.lgpd_term ? 'error' : 'primary'}
-                        />
-                      }
-                      label={
-                        <Typography color={errors.lgpd_term ? 'error' : 'inherit'}>
-                          Termo LGPD *
-                        </Typography>
-                      }
+                      control={<Switch {...field} checked={field.value} />}
+                      label="Termo LGPD"
                     />
                   )}
                 />
-                {errors.lgpd_term && (
-                  <Typography color="error" variant="caption" sx={{ ml: 2 }}>
-                    {errors.lgpd_term.message}
-                  </Typography>
-                )}
 
                 <Controller
                   name="confidentiality_term"
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                          color={errors.confidentiality_term ? 'error' : 'primary'}
-                        />
-                      }
-                      label={
-                        <Typography color={errors.confidentiality_term ? 'error' : 'inherit'}>
-                          Termo de Confidencialidade *
-                        </Typography>
-                      }
+                      control={<Switch {...field} checked={field.value} />}
+                      label="Termo de Confidencialidade"
                     />
                   )}
                 />
-                {errors.confidentiality_term && (
-                  <Typography color="error" variant="caption" sx={{ ml: 2 }}>
-                    {errors.confidentiality_term.message}
-                  </Typography>
-                )}
 
                 <Controller
                   name="system_term"
                   control={control}
                   render={({ field }) => (
                     <FormControlLabel
-                      control={
-                        <Switch
-                          checked={field.value}
-                          onChange={field.onChange}
-                          color={errors.system_term ? 'error' : 'primary'}
-                        />
-                      }
-                      label={
-                        <Typography color={errors.system_term ? 'error' : 'inherit'}>
-                          Termo do Sistema *
-                        </Typography>
-                      }
+                      control={<Switch {...field} checked={field.value} />}
+                      label="Termo do Sistema"
                     />
                   )}
                 />
-                {errors.system_term && (
-                  <Typography color="error" variant="caption" sx={{ ml: 2 }}>
-                    {errors.system_term.message}
-                  </Typography>
-                )}
               </Box>
             </Box>
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-          <Button 
-            onClick={handleClose} 
-            variant="outlined"
-            startIcon={<X size={18} />}
-          >
+        <DialogActions sx={{ px: 3, py: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button onClick={handleClose} variant="outlined">
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             variant="contained"
-            disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={18} /> : <Save size={18} />}
+            startIcon={<Save size={20} />}
           >
-            {isLoading ? 'Salvando...' : 'Salvar'}
+            Salvar Alterações
           </Button>
         </DialogActions>
       </form>

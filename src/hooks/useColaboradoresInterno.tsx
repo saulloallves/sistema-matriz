@@ -9,7 +9,8 @@ export interface ColaboradorInterno {
   email: string;
   phone: string;
   birth_date: string;
-  position_id: string;
+  position_id?: string | null;
+  position_name?: string | null;
   admission_date: string;
   salary: string;
   web_password: string;
