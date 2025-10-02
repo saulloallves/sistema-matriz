@@ -103,10 +103,18 @@ const AppSidebar = () => {
   const { data: profile } = useUserProfile();
 
   const toggleGroup = (groupText: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupText]: !prev[groupText]
-    }));
+    setExpandedGroups(prev => {
+      const isCurrentlyExpanded = prev[groupText];
+      // Se está fechando o grupo atual, apenas fecha ele
+      if (isCurrentlyExpanded) {
+        return {
+          ...prev,
+          [groupText]: false
+        };
+      }
+      // Se está abrindo um grupo, fecha todos os outros e abre apenas o selecionado
+      return { [groupText]: true };
+    });
   };
 
   const isActiveRoute = (path?: string, children?: MenuItemType[]) => {
