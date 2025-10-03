@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,15 +13,18 @@ import {
   MenuItem,
   InputAdornment,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Save, User, MapPin } from 'lucide-react';
+import { X, Save, User, MapPin, RefreshCw } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
+import { useFranqueadosUnidades } from '@/hooks/useFranqueadosUnidades';
+import { generateSystemPassword } from '@/utils/passwordGenerator';
 
 type Franqueado = Tables<"franqueados">;
 
@@ -67,7 +70,8 @@ const franqueadoSchema = z.object({
   lgpd_term_accepted: z.boolean(),
   confidentiality_term_accepted: z.boolean(),
   system_term_accepted: z.boolean(),
-  is_active_system: z.boolean()
+  is_active_system: z.boolean(),
+  systems_password: z.number().optional()
 });
 
 type FranqueadoFormData = z.infer<typeof franqueadoSchema>;
@@ -75,6 +79,13 @@ type FranqueadoFormData = z.infer<typeof franqueadoSchema>;
 export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: FranqueadoEditModalProps) {
   const [loading, setLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  
+  const { vinculos } = useFranqueadosUnidades();
+  
+  const unidadesVinculadas = useMemo(() => {
+    if (!franqueado) return [];
+    return vinculos.filter(v => v.franqueado_id === franqueado.id);
+  }, [vinculos, franqueado]);
 
   const {
     control,
@@ -118,7 +129,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       lgpd_term_accepted: false,
       confidentiality_term_accepted: false,
       system_term_accepted: false,
-      is_active_system: true
+      is_active_system: true,
+      systems_password: undefined
     }
   });
 
@@ -204,7 +216,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         lgpd_term_accepted: franqueado.lgpd_term_accepted || false,
         confidentiality_term_accepted: franqueado.confidentiality_term_accepted || false,
         system_term_accepted: franqueado.system_term_accepted || false,
-        is_active_system: (franqueado as any).is_active_system || true
+        is_active_system: (franqueado as any).is_active_system || true,
+        systems_password: (franqueado as any).systems_password || undefined
       });
     }
   }, [franqueado, open, reset]);
@@ -251,6 +264,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
           confidentiality_term_accepted: data.confidentiality_term_accepted,
           system_term_accepted: data.system_term_accepted,
           is_active_system: data.is_active_system,
+          systems_password: data.systems_password || null,
           updated_at: new Date().toISOString()
         })
         .eq("id", franqueado.id);
@@ -273,6 +287,19 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
   const handleClose = () => {
     reset();
     onClose();
+  };
+
+  const handleGeneratePassword = () => {
+    if (unidadesVinculadas.length === 0) {
+      toast.error('Franqueado sem unidades vinculadas');
+      return;
+    }
+    
+    const groupCode = unidadesVinculadas[0].unidade_group_code;
+    const novaSenha = generateSystemPassword(groupCode);
+    
+    setValue('systems_password', novaSenha);
+    toast.success(`Senha gerada: ${novaSenha}`);
   };
 
   return (
@@ -858,11 +885,63 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
               </Box>
             </Box>
 
-            {/* Termos e Condições */}
-            <Box>
-              <Typography variant="h6" gutterBottom color="primary">
-                Termos e Condições
-              </Typography>
+              {/* Senha do Sistema */}
+              <Box>
+                <Typography variant="h6" gutterBottom color="primary">
+                  Senha do Sistema
+                </Typography>
+                
+                {unidadesVinculadas.length === 0 ? (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    Este franqueado não possui unidades vinculadas. Vincule a uma unidade para gerar a senha automaticamente.
+                  </Alert>
+                ) : (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Unidade principal: {unidadesVinculadas[0].unidade_group_name} (Código: {unidadesVinculadas[0].unidade_group_code})
+                  </Alert>
+                )}
+                
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Controller
+                    name="systems_password"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        value={field.value ? String(field.value) : ''}
+                        label="Senha do Sistema"
+                        fullWidth
+                        placeholder="Clique em 'Gerar' para criar uma senha"
+                        InputProps={{
+                          readOnly: true,
+                          sx: { 
+                            fontFamily: 'monospace',
+                            fontSize: '1.1rem',
+                            letterSpacing: '0.1em'
+                          }
+                        }}
+                        helperText="Senha gerada automaticamente baseada no código da unidade"
+                      />
+                    )}
+                  />
+                  
+                  <Button
+                    variant="contained"
+                    onClick={handleGeneratePassword}
+                    disabled={unidadesVinculadas.length === 0}
+                    startIcon={<RefreshCw size={18} />}
+                    sx={{ minWidth: 120, height: 56 }}
+                  >
+                    Gerar
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Termos e Condições */}
+              <Box>
+                <Typography variant="h6" gutterBottom color="primary">
+                  Termos e Condições
+                </Typography>
               
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Controller
