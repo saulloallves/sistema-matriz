@@ -336,6 +336,9 @@ const FranqueadosUnidadesPage = () => {
   }, [vinculos]);
 
   const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') {
+      return 'N/A';
+    }
     return name
       .split(' ')
       .map(word => word[0])
@@ -442,11 +445,26 @@ const FranqueadosUnidadesPage = () => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="caption">
-          {format(new Date(params.row.created_at), 'dd/MM/yyyy', { locale: ptBR })}
-        </Typography>
-      ),
+      renderCell: (params) => {
+        const dateValue = params.row.created_at;
+        if (!dateValue) {
+          return <Typography variant="caption">-</Typography>;
+        }
+        
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) {
+            return <Typography variant="caption">Data inválida</Typography>;
+          }
+          return (
+            <Typography variant="caption">
+              {format(date, 'dd/MM/yyyy', { locale: ptBR })}
+            </Typography>
+          );
+        } catch (error) {
+          return <Typography variant="caption">Data inválida</Typography>;
+        }
+      },
     },
     {
       field: 'actions',
