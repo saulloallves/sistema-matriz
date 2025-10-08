@@ -18,3 +18,17 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Cliente para o projeto original (com Edge Functions não migradas)
+const SUPABASE_ORIGINAL_URL = import.meta.env.VITE_SUPABASE_ORIGINAL_URL;
+const SUPABASE_ORIGINAL_KEY = import.meta.env.VITE_SUPABASE_ORIGINAL_PUBLISHABLE_KEY;
+
+export const supabaseOriginal = SUPABASE_ORIGINAL_URL && SUPABASE_ORIGINAL_KEY
+  ? createClient(SUPABASE_ORIGINAL_URL, SUPABASE_ORIGINAL_KEY, {
+      auth: {
+        storage: localStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    })
+  : supabase; // Fallback para o cliente principal se as variáveis não existirem

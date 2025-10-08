@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseOriginal } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
 
 interface CreateUserData {
@@ -26,7 +26,8 @@ export const useUserManagement = () => {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: CreateUserData): Promise<CreateUserResponse> => {
-      const { data, error } = await supabase.functions.invoke('create-user-with-notifications', {
+      // Usar o cliente do projeto original para chamar a Edge Function
+      const { data, error } = await supabaseOriginal.functions.invoke('create-user-with-notifications', {
         body: userData
       });
 

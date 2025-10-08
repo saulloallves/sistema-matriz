@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Edit2, X, KeyRound } from 'lucide-react';
 import { User } from '@/types/user';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseOriginal } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 
@@ -120,7 +120,8 @@ const UserEditModal = ({ open, onClose, user, onSave, isLoading }: UserEditModal
 
     setIsResettingPassword(true);
     try {
-      const { error } = await supabase.functions.invoke('reset-user-password', {
+      // Usar o cliente do projeto original para chamar a Edge Function
+      const { error } = await supabaseOriginal.functions.invoke('reset-user-password', {
         body: { 
           user_id: user.user_id,
           full_name: user.full_name,
