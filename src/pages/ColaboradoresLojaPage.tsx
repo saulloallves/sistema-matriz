@@ -1,7 +1,20 @@
 import { useState, useMemo } from 'react';
 import { Box, Chip, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { Eye, Edit, Trash2, Users, Check, X, MoreHorizontal } from 'lucide-react';
+import { 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Users, 
+  Check, 
+  X, 
+  MoreHorizontal,
+  HeartPulse,
+  Utensils,
+  Bus,
+  Wallet,
+  Award
+} from 'lucide-react';
 import { DataTable } from '@/components/crud/DataTable';
 import { useColaboradoresLoja, ColaboradorLoja } from '@/hooks/useColaboradoresLoja';
 import { ColaboradorLojaAddModal } from '@/components/modals/ColaboradorLojaAddModal';
@@ -150,32 +163,128 @@ export default function ColaboradoresLojaPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedColaborador, setSelectedColaborador] = useState<ColaboradorLoja | null>(null);
 
-  const statsCards = useMemo(() => (
-    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-      <Card sx={{ flex: 1 }}>
-        <CardContent sx={{ py: 2 }}>
-          <Typography variant="h5">{colaboradores.length}</Typography>
-          <Typography color="text.secondary" variant="body2">Total de Colaboradores</Typography>
-        </CardContent>
-      </Card>
-      <Card sx={{ flex: 1 }}>
-        <CardContent sx={{ py: 2 }}>
-          <Typography variant="h5">
-            {colaboradores.filter(c => c.health_plan).length}
-          </Typography>
-          <Typography color="text.secondary" variant="body2">Com Plano de Saúde</Typography>
-        </CardContent>
-      </Card>
-      <Card sx={{ flex: 1 }}>
-        <CardContent sx={{ py: 2 }}>
-          <Typography variant="h5">
-            {colaboradores.filter(c => c.meal_voucher_active).length}
-          </Typography>
-          <Typography color="text.secondary" variant="body2">Com Vale Refeição</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  ), [colaboradores]);
+  const statsCards = useMemo(() => {
+    if (!colaboradores || !Array.isArray(colaboradores)) {
+      return null;
+    }
+
+    const totalColaboradores = colaboradores.length;
+    const comPlanoSaude = colaboradores.filter(c => c.health_plan).length;
+    const comValeRefeicao = colaboradores.filter(c => c.meal_voucher_active).length;
+    const comValeTransporte = colaboradores.filter(c => c.transport_voucher_active).length;
+    const comAcessoCaixa = colaboradores.filter(c => c.cash_access).length;
+    const comTreinamento = colaboradores.filter(c => c.training).length;
+
+    const cardData = [
+      { title: "Total de Colaboradores", value: totalColaboradores, icon: "Users", color: "primary.main" },
+      { title: "Com Plano de Saúde", value: comPlanoSaude, icon: "HeartPulse", color: "success.main" },
+      { title: "Com Vale Refeição", value: comValeRefeicao, icon: "Utensils", color: "info.main" },
+      { title: "Com Vale Transporte", value: comValeTransporte, icon: "Bus", color: "secondary.main" },
+      { title: "Com Acesso ao Caixa", value: comAcessoCaixa, icon: "Wallet", color: "warning.main" },
+      { title: "Com Treinamento", value: comTreinamento, icon: "Award", color: "error.main" },
+    ];
+
+    return (
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
+        gap: 3, 
+        mb: 3 
+      }}>
+        {cardData.map((card, index) => {
+          const renderIcon = () => {
+            switch(card.icon) {
+              case "Users": return <Users size={24} />;
+              case "HeartPulse": return <HeartPulse size={24} />;
+              case "Utensils": return <Utensils size={24} />;
+              case "Bus": return <Bus size={24} />;
+              case "Wallet": return <Wallet size={24} />;
+              case "Award": return <Award size={24} />;
+              default: return <Users size={24} />;
+            }
+          };
+          
+          return (
+            <Card 
+              key={index}
+              sx={{ 
+                height: '100px',
+                background: 'background.paper',
+                border: `1px solid ${card.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 4px 20px ${card.color}15`,
+                  border: `1px solid ${card.color}40`
+                }
+              }}
+            >
+              <CardContent sx={{ 
+                p: 3, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 3,
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '12px',
+                    backgroundColor: `${card.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    color: card.color
+                  }}
+                >
+                  {renderIcon()}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: card.color, 
+                      fontWeight: 700,
+                      mb: 0.5,
+                      fontSize: '1.75rem'
+                    }}
+                  >
+                    {card.value}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 500,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {card.title}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 4,
+                    backgroundColor: card.color,
+                    borderRadius: '0 12px 12px 0',
+                    opacity: 0.8
+                  }}
+                />
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    );
+  }, [colaboradores]);
 
   const handleView = (colab: ColaboradorLoja) => {
     setSelectedColaborador(colab);
