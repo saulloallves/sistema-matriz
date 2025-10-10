@@ -1,13 +1,25 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Box, Typography } from '@mui/material';
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'background.default',
+      }}
+    >
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h2" component="h1" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Welcome to Your Blank App
+        </Typography>
+        <Typography variant="h5" color="text.secondary">
+          Start building your amazing project here!
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 
