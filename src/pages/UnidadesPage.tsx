@@ -523,7 +523,7 @@ export default function UnidadesPage() {
   };
 
   const columns = createColumns(handleView, handleEdit, handleDelete);
-  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+  const activeFilterCount = Object.values(filters).filter(v => v !== '' && v !== undefined).length;
 
   if (loading) {
     return (
@@ -549,7 +549,7 @@ export default function UnidadesPage() {
           <Badge badgeContent={activeFilterCount} color="primary">
             <Button
               variant={activeFilterCount > 0 ? "contained" : "outlined"}
-              startIcon={<Filter size={16} />}
+              endIcon={<Filter size={16} />}
               onClick={() => setIsFilterDrawerOpen(true)}
             >
               Filtros

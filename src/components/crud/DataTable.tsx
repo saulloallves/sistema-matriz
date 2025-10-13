@@ -76,7 +76,6 @@ export function DataTable({
       display: 'flex', 
       flexDirection: 'column',
       width: '100%',
-      overflow: 'hidden'
     }}>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
