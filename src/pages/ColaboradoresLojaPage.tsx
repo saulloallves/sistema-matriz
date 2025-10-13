@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, Chip, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem } from '@mui/material';
+import { Box, Chip, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem, Button, Badge } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { 
   Eye, 
@@ -13,15 +13,28 @@ import {
   Utensils,
   Bus,
   Wallet,
-  Award
+  Award,
+  Filter
 } from 'lucide-react';
 import { DataTable } from '@/components/crud/DataTable';
 import { useColaboradoresLoja, ColaboradorLoja } from '@/hooks/useColaboradoresLoja';
 import { ColaboradorLojaAddModal } from '@/components/modals/ColaboradorLojaAddModal';
 import { ColaboradorLojaEditModal } from '@/components/modals/ColaboradorLojaEditModal';
 import { ColaboradorLojaViewModal } from '@/components/modals/ColaboradorLojaViewModal';
+import { ColaboradorLojaFilterDrawer } from '@/components/modals/ColaboradorLojaFilterDrawer';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/utils/formatters';
+
+interface FilterState {
+  position_id?: string;
+  health_plan?: boolean;
+  meal_voucher_active?: boolean;
+  transport_voucher_active?: boolean;
+  cash_access?: boolean;
+  training?: boolean;
+  city?: string;
+  uf?: string;
+}
 
 interface ActionCellProps {
   row: ColaboradorLoja;
@@ -162,6 +175,23 @@ export default function ColaboradoresLojaPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedColaborador, setSelectedColaborador] = useState<ColaboradorLoja | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({});
+
+  const filteredData = useMemo(() => {
+    return colaboradores.filter(colab => {
+      return (
+        (!filters.position_id || colab.position_id === filters.position_id) &&
+        (filters.health_plan === undefined || colab.health_plan === filters.health_plan) &&
+        (filters.meal_voucher_active === undefined || colab.meal_voucher_active === filters.meal_voucher_active) &&
+        (filters.transport_voucher_active === undefined || colab.transport_voucher_active === filters.transport_voucher_active) &&
+        (filters.cash_access === undefined || colab.cash_access === filters.cash_access) &&
+        (filters.training === undefined || colab.training === filters.training) &&
+        (!filters.city || (colab.city && colab.city.toLowerCase().includes(filters.city.toLowerCase()))) &&
+        (!filters.uf || (colab.uf && colab.uf.toLowerCase().includes(filters.uf.toLowerCase())))
+      );
+    });
+  }, [colaboradores, filters]);
 
   const statsCards = useMemo(() => {
     if (!colaboradores || !Array.isArray(colaboradores)) {
@@ -319,7 +349,16 @@ export default function ColaboradoresLojaPage() {
     });
   };
 
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+  };
+
   const columns = createColumns(handleView, handleEdit, handleDelete);
+  const activeFilterCount = Object.values(filters).filter(v => v !== '' && v !== undefined).length;
 
   if (isLoading) {
     return (
@@ -333,7 +372,7 @@ export default function ColaboradoresLojaPage() {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 3 }}>
       <DataTable
         columns={columns}
-        data={colaboradores}
+        data={filteredData}
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar colaboradores de loja..."
         title="Colaboradores de Loja"
@@ -341,6 +380,17 @@ export default function ColaboradoresLojaPage() {
         description="Gerencie os funcionários das lojas/unidades"
         loading={isLoading}
         customCards={statsCards}
+        filterComponent={
+          <Badge badgeContent={activeFilterCount} color="primary">
+            <Button
+              variant={activeFilterCount > 0 ? "contained" : "outlined"}
+              endIcon={<Filter size={16} />}
+              onClick={() => setIsFilterDrawerOpen(true)}
+            >
+              Filtros
+            </Button>
+          </Badge>
+        }
       />
 
       <ColaboradorLojaAddModal
@@ -370,6 +420,14 @@ export default function ColaboradoresLojaPage() {
           />
         </>
       )}
+
+      <ColaboradorLojaFilterDrawer
+        open={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        initialFilters={filters}
+      />
     </Box>
   );
 }
