@@ -25,6 +25,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
       }}>
         {children}
       </Box>
