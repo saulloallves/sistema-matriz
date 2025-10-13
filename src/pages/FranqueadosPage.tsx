@@ -10,7 +10,9 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  Alert
+  Alert,
+  Button,
+  Badge
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { 
@@ -24,17 +26,30 @@ import {
   Building, 
   DollarSign, 
   Clock,
-  Shield
+  Shield,
+  Filter
 } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { FranqueadoViewModal } from "@/components/modals/FranqueadoViewModal";
 import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
 import { FranqueadoAddModal } from "@/components/modals/FranqueadoAddModal";
+import { FranqueadoFilterDrawer } from "@/components/modals/FranqueadoFilterDrawer";
 import { useFranqueados, useUserRole } from "@/hooks/useFranqueados";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Franqueado = Tables<"franqueados">;
+
+interface FilterState {
+  owner_type?: string;
+  is_in_contract?: boolean;
+  receives_prolabore?: boolean;
+  was_referred?: boolean;
+  city?: string;
+  state?: string;
+  uf?: string;
+  availability?: string;
+}
 
 const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (franqueado: Franqueado) => void; onEdit: (franqueado: Franqueado) => void; onDelete: (franqueado: Franqueado) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -110,6 +125,22 @@ export default function FranqueadosPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({});
+
+  const filteredData = useMemo(() => {
+    return franqueados.filter((franqueado: any) => {
+      return (
+        (!filters.owner_type || franqueado.owner_type === filters.owner_type) &&
+        (filters.is_in_contract === undefined || franqueado.is_in_contract === filters.is_in_contract) &&
+        (filters.receives_prolabore === undefined || franqueado.receives_prolabore === filters.receives_prolabore) &&
+        (filters.was_referred === undefined || franqueado.was_referred === filters.was_referred) &&
+        (!filters.city || franqueado.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
+        (!filters.uf || franqueado.uf?.toLowerCase().includes(filters.uf.toLowerCase())) &&
+        (!filters.availability || franqueado.availability?.toLowerCase().includes(filters.availability.toLowerCase()))
+      );
+    });
+  }, [franqueados, filters]);
 
   const handleAdd = () => {
     if (!isAdmin()) {
@@ -162,6 +193,14 @@ export default function FranqueadosPage() {
 
   const handleCloseAddModal = () => {
     setAddModalOpen(false);
+  };
+
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
   };
 
   const statsCards = useMemo(() => {
@@ -532,6 +571,8 @@ export default function FranqueadosPage() {
     },
   ];
 
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
   // Show loading state for both data and role
   if (dataLoading || roleLoading) {
     return (
@@ -561,7 +602,7 @@ export default function FranqueadosPage() {
       
       <DataTable
         columns={columns}
-        data={franqueados || []}
+        data={filteredData}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -571,6 +612,17 @@ export default function FranqueadosPage() {
         description="Gerencie todos os franqueados do sistema"
         loading={dataLoading || isDeleting}
         customCards={statsCards || undefined}
+        filterComponent={
+          <Badge badgeContent={activeFilterCount} color="primary">
+            <Button
+              variant={activeFilterCount > 0 ? "contained" : "outlined"}
+              endIcon={<Filter size={16} />}
+              onClick={() => setIsFilterDrawerOpen(true)}
+            >
+              Filtros
+            </Button>
+          </Badge>
+        }
       />
 
       <FranqueadoViewModal
@@ -590,6 +642,14 @@ export default function FranqueadosPage() {
         open={addModalOpen}
         onClose={handleCloseAddModal}
         onUpdate={() => {}} // Handled by React Query cache invalidation
+      />
+
+      <FranqueadoFilterDrawer
+        open={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        initialFilters={filters}
       />
     </>
   );
