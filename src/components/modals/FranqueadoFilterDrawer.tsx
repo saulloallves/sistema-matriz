@@ -74,8 +74,8 @@ export const FranqueadoFilterDrawer = ({
               onChange={(e) => handleInputChange('owner_type', e.target.value)}
             >
               <MenuItem value=""><em>Todos</em></MenuItem>
-              <MenuItem value="principal">Principal</MenuItem>
-              <MenuItem value="socio">Sócio</MenuItem>
+              <MenuItem value="Principal">Principal</MenuItem>
+              <MenuItem value="Sócio">Sócio</MenuItem>
             </Select>
           </FormControl>
 
