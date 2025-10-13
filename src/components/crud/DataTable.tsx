@@ -125,26 +125,7 @@ export function DataTable({
           loading={loading}
           slots={{ toolbar: GridToolbar }}
           getRowId={(row) => row.id || Math.random()}
-          sx={{ 
-            border: 0,
-            width: '100%',
-            overflow: 'hidden',
-            '& .MuiDataGrid-root': {
-              overflow: 'hidden'
-            },
-            '& .MuiDataGrid-main': {
-              overflow: 'hidden'
-            },
-            '& .MuiDataGrid-columnsContainer': {
-              width: '100% !important'
-            },
-            '& .MuiDataGrid-virtualScroller': {
-              width: '100% !important'
-            },
-            '& .MuiDataGrid-columnHeaders': {
-              width: '100% !important'
-            }
-          }}
+          sx={{ border: 0 }}
           disableRowSelectionOnClick
         />
       </Card>
