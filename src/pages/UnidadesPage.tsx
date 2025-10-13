@@ -188,7 +188,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
         light: "secondary", 
         padrao: "primary",
         intermediaria: "info",
-        mega_store: "error",
+        'mega store': "error",
         pontinha: "warning"
       };
       
@@ -197,7 +197,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
         light: "Light",
         padrao: "Padrão",
         intermediaria: "Intermediária",
-        mega_store: "Mega Store",
+        'mega store': "Mega Store",
         pontinha: "Pontinha"
       };
       
@@ -312,7 +312,7 @@ export default function UnidadesPage() {
     const unidadesOperacao = data.filter(u => u.store_phase === 'operacao').length;
     const unidadesImplantacao = data.filter(u => u.store_phase === 'implantacao').length;
     const unidadesPadrao = data.filter(u => u.store_model === 'padrao').length;
-    const unidadesMegaStore = data.filter(u => u.store_model === 'mega_store').length;
+    const unidadesMegaStore = data.filter(u => u.store_model === 'mega store').length;
     const unidadesAtivas = data.filter(u => u.sales_active || u.purchases_active).length;
 
     const cardData = [

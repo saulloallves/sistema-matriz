@@ -78,7 +78,7 @@ export const UnidadeFilterDrawer = ({
               <MenuItem value="light">Light</MenuItem>
               <MenuItem value="padrao">Padrão</MenuItem>
               <MenuItem value="intermediaria">Intermediária</MenuItem>
-              <MenuItem value="mega_store">Mega Store</MenuItem>
+              <MenuItem value="mega store">Mega Store</MenuItem>
               <MenuItem value="pontinha">Pontinha</MenuItem>
             </Select>
           </FormControl>
