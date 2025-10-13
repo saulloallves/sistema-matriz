@@ -10,7 +10,9 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
-  Alert
+  Alert,
+  Button,
+  Badge
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { 
@@ -22,7 +24,8 @@ import {
   Store,
   TrendingUp,
   Users,
-  Shield
+  Shield,
+  Filter
 } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { useFranqueadosUnidades, FranqueadoUnidade } from '@/hooks/useFranqueadosUnidades';
@@ -32,7 +35,18 @@ import { ptBR } from 'date-fns/locale';
 import VinculoAddModal from '@/components/modals/VinculoAddModal';
 import VinculoEditModal from '@/components/modals/VinculoEditModal';
 import VinculoViewModal from '@/components/modals/VinculoViewModal';
+import { VinculoFilterDrawer } from '@/components/modals/VinculoFilterDrawer';
 import toast from 'react-hot-toast';
+
+interface FilterState {
+  franqueado_owner_type?: string;
+  franqueado_is_in_contract?: boolean;
+  unidade_store_model?: string;
+  unidade_store_phase?: string;
+  unidade_is_active?: boolean;
+  unidade_city?: string;
+  unidade_uf?: string;
+}
 
 const ActionCell = ({ row, onView, onEdit, onDelete, isAdmin, isDeleting }: { 
   row: FranqueadoUnidade; 
@@ -110,6 +124,8 @@ const FranqueadosUnidadesPage = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [selectedVinculo, setSelectedVinculo] = useState<FranqueadoUnidade | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({});
 
   const { 
     vinculos, 
@@ -118,6 +134,20 @@ const FranqueadosUnidadesPage = () => {
     isDeleting 
   } = useFranqueadosUnidades();
   const { isAdmin, isFranqueado, userRole, isLoading: roleLoading } = useUserRole();
+
+  const filteredData = useMemo(() => {
+    return vinculos.filter(vinculo => {
+      return (
+        (!filters.franqueado_owner_type || vinculo.franqueado_owner_type === filters.franqueado_owner_type) &&
+        (filters.franqueado_is_in_contract === undefined || vinculo.franqueado_is_in_contract === filters.franqueado_is_in_contract) &&
+        (!filters.unidade_store_model || vinculo.unidade_store_model === filters.unidade_store_model) &&
+        (!filters.unidade_store_phase || vinculo.unidade_store_phase === filters.unidade_store_phase) &&
+        (filters.unidade_is_active === undefined || vinculo.unidade_is_active === filters.unidade_is_active) &&
+        (!filters.unidade_city || vinculo.unidade_city?.toLowerCase().includes(filters.unidade_city.toLowerCase())) &&
+        (!filters.unidade_uf || vinculo.unidade_state?.toLowerCase().includes(filters.unidade_uf.toLowerCase()))
+      );
+    });
+  }, [vinculos, filters]);
 
   const handleAdd = () => {
     if (!isAdmin()) {
@@ -163,6 +193,14 @@ const FranqueadosUnidadesPage = () => {
 
   const handleCloseAddModal = () => {
     setOpenAddModal(false);
+  };
+
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
   };
 
   // Estatísticas dos vínculos
@@ -469,6 +507,8 @@ const FranqueadosUnidadesPage = () => {
     },
   ];
 
+  const activeFilterCount = Object.values(filters).filter(v => v !== '' && v !== undefined).length;
+
   // Show loading state for both data and role
   if (dataLoading || roleLoading) {
     return (
@@ -498,7 +538,7 @@ const FranqueadosUnidadesPage = () => {
       
       <DataTable
         columns={columns}
-        data={vinculos || []}
+        data={filteredData}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -508,6 +548,17 @@ const FranqueadosUnidadesPage = () => {
         description="Gerencie os vínculos entre franqueados e suas unidades"
         loading={dataLoading || isDeleting}
         customCards={statsCards || undefined}
+        filterComponent={
+          <Badge badgeContent={activeFilterCount} color="primary">
+            <Button
+              variant={activeFilterCount > 0 ? "contained" : "outlined"}
+              endIcon={<Filter size={16} />}
+              onClick={() => setIsFilterDrawerOpen(true)}
+            >
+              Filtros
+            </Button>
+          </Badge>
+        }
       />
 
       {/* Modais */}
@@ -531,6 +582,14 @@ const FranqueadosUnidadesPage = () => {
           />
         </>
       )}
+
+      <VinculoFilterDrawer
+        open={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        initialFilters={filters}
+      />
     </>
   );
 };
