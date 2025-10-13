@@ -6,10 +6,11 @@ import {
   IconButton, 
   Menu, 
   MenuItem,
-  Avatar,
   CircularProgress,
   Card,
-  CardContent
+  CardContent,
+  Button,
+  Badge
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { 
@@ -22,17 +23,29 @@ import {
   Construction, 
   Crown, 
   Zap, 
-  TrendingUp 
+  TrendingUp,
+  Filter
 } from 'lucide-react';
 import { DataTable } from "@/components/crud/DataTable";
 import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { UnidadeEditModal } from "@/components/modals/UnidadeEditModal";
 import { UnidadeAddModal } from "@/components/modals/UnidadeAddModal";
+import { UnidadeFilterDrawer } from "@/components/modals/UnidadeFilterDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
 type Unidade = Tables<"unidades">;
+
+interface FilterState {
+  store_model?: string;
+  store_phase?: string;
+  is_active?: boolean;
+  city?: string;
+  state?: string;
+  uf?: string;
+  cnpj?: string;
+}
 
 const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void; onDelete: (unidade: Unidade) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -252,6 +265,8 @@ export default function UnidadesPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedUnidade, setSelectedUnidade] = useState<Unidade | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({});
 
   useEffect(() => {
     loadUnidades();
@@ -277,6 +292,20 @@ export default function UnidadesPage() {
       setLoading(false);
     }
   };
+
+  const filteredData = useMemo(() => {
+    return data.filter(unidade => {
+      return (
+        (!filters.store_model || unidade.store_model === filters.store_model) &&
+        (!filters.store_phase || unidade.store_phase === filters.store_phase) &&
+        (filters.is_active === undefined || unidade.is_active === filters.is_active) &&
+        (!filters.city || unidade.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
+        (!filters.state || unidade.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
+        (!filters.uf || unidade.uf?.toLowerCase().includes(filters.uf.toLowerCase())) &&
+        (!filters.cnpj || unidade.cnpj?.includes(filters.cnpj))
+      );
+    });
+  }, [data, filters]);
 
   const statsCards = useMemo(() => {
     const totalUnidades = data.length;
@@ -431,7 +460,6 @@ export default function UnidadesPage() {
                     {card.title}
                   </Typography>
                 </Box>
-                {/* Elemento decorativo moderno no lado direito */}
                 <Box
                   sx={{
                     position: 'absolute',
@@ -486,7 +514,16 @@ export default function UnidadesPage() {
     setAddModalOpen(true);
   };
 
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+  };
+
   const columns = createColumns(handleView, handleEdit, handleDelete);
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   if (loading) {
     return (
@@ -500,16 +537,25 @@ export default function UnidadesPage() {
     <>
       <DataTable
         columns={columns}
-        data={data}
+        data={filteredData}
         onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        searchPlaceholder="Pesquisar unidades..."
+        searchPlaceholder="Pesquisar por nome, código, cidade..."
         title="Unidades"
         titleIcon={<Building2 size={32} color="#1976d2" />}
         description="Gerencie todas as unidades do sistema"
         loading={loading}
         customCards={statsCards}
+        filterComponent={
+          <Badge badgeContent={activeFilterCount} color="primary">
+            <Button
+              variant={activeFilterCount > 0 ? "contained" : "outlined"}
+              startIcon={<Filter size={16} />}
+              onClick={() => setIsFilterDrawerOpen(true)}
+            >
+              Filtros
+            </Button>
+          </Badge>
+        }
       />
       
       <UnidadeViewModal
@@ -529,6 +575,14 @@ export default function UnidadesPage() {
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
         onAdd={loadUnidades}
+      />
+
+      <UnidadeFilterDrawer
+        open={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        initialFilters={filters}
       />
     </>
   );

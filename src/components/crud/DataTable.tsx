@@ -18,7 +18,6 @@ import { ptBR } from "@mui/x-data-grid/locales";
 import {
   Plus,
   Search,
-  Filter,
   Download,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -35,20 +34,20 @@ interface DataTableProps {
   description?: string;
   loading?: boolean;
   customCards?: React.ReactNode;
+  filterComponent?: React.ReactNode;
 }
 
 export function DataTable({
   columns,
   data,
   onAdd,
-  onEdit,
-  onDelete,
   searchPlaceholder = "Pesquisar...",
   title,
   titleIcon,
   description,
   loading = false,
   customCards,
+  filterComponent,
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -96,30 +95,9 @@ export function DataTable({
           </Box>
         </Box>
 
-        {customCards || (
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            <Card sx={{ flex: 1 }}>
-              <CardContent sx={{ py: 2 }}>
-                <Typography variant="h5">{data.length}</Typography>
-                <Typography color="text.secondary" variant="body2">Total de registros</Typography>
-              </CardContent>
-            </Card>
-            <Card sx={{ flex: 1 }}>
-              <CardContent sx={{ py: 2 }}>
-                <Typography variant="h5">{filteredData.length}</Typography>
-                <Typography color="text.secondary" variant="body2">Registros filtrados</Typography>
-              </CardContent>
-            </Card>
-            <Card sx={{ flex: 1 }}>
-              <CardContent sx={{ py: 2 }}>
-                <Typography variant="h5">{Math.ceil(filteredData.length / paginationModel.pageSize)}</Typography>
-                <Typography color="text.secondary" variant="body2">Total de páginas</Typography>
-              </CardContent>
-            </Card>
-          </Box>
-        )}
+        {customCards}
 
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
           <TextField
             fullWidth
             placeholder={searchPlaceholder}
@@ -127,6 +105,7 @@ export function DataTable({
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment> }}
           />
+          {filterComponent}
         </Box>
       </Box>
 
