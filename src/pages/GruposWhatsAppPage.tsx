@@ -114,21 +114,19 @@ const createColumns = (
     flex: 2.5,
     minWidth: 200,
     renderCell: (params) => (
-      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <Chip
-          label={`${params.row.unidade_code} - ${params.row.unidade_name}`}
-          variant="outlined"
-          size="small"
-          color="primary"
-          sx={{ 
-            maxWidth: '100%',
-            '& .MuiChip-label': {
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              maxWidth: '160px'
-            }
-          }}
-        />
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: '100%',
+        py: 1
+      }}>
+        <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2 }}>
+          {params.row.unidade_name}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
+          Código: {params.row.unidade_code}
+        </Typography>
       </Box>
     ),
   },
