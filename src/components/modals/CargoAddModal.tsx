@@ -7,16 +7,23 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   Box,
   Typography,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from '@mui/material';
 import { Briefcase, X, Save } from 'lucide-react';
+import { storeRoleEnumOptions } from '@/hooks/useCargosLoja';
 
 const cargoSchema = z.object({
-  role: z.string().min(2, 'O nome do cargo deve ter pelo menos 2 caracteres'),
+  role: z.enum(storeRoleEnumOptions as [string, ...string[]], {
+    errorMap: () => ({ message: 'Selecione um cargo válido' }),
+  }),
 });
 
 type CargoFormData = z.infer<typeof cargoSchema>;
@@ -36,7 +43,7 @@ export const CargoAddModal = ({ open, onClose, onSave, isLoading }: CargoAddModa
     formState: { errors },
   } = useForm<CargoFormData>({
     resolver: zodResolver(cargoSchema),
-    defaultValues: { role: '' },
+    defaultValues: { role: '' as any },
   });
 
   const handleClose = () => {
@@ -61,23 +68,28 @@ export const CargoAddModal = ({ open, onClose, onSave, isLoading }: CargoAddModa
       </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                autoFocus
-                margin="dense"
-                label="Nome do Cargo"
-                type="text"
-                fullWidth
-                variant="outlined"
-                error={!!errors.role}
-                helperText={errors.role?.message}
-              />
-            )}
-          />
+          <Box sx={{ pt: 1 }}>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.role}>
+                  <InputLabel>Nome do Cargo</InputLabel>
+                  <Select
+                    {...field}
+                    label="Nome do Cargo"
+                  >
+                    {storeRoleEnumOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.role && <FormHelperText>{errors.role.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={handleClose} variant="outlined">Cancelar</Button>

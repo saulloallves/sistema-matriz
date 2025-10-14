@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Box, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem } from '@mui/material';
+import { Box, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem, Button, Badge } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import { Eye, Edit, Trash2, Briefcase, MoreHorizontal } from 'lucide-react';
 import { DataTable } from '@/components/crud/DataTable';
-import { useCargosLoja, CargoLoja } from '@/hooks/useCargosLoja';
+import { useCargosLoja, CargoLoja, StoreRoleEnum } from '@/hooks/useCargosLoja';
 import { CargoAddModal } from '@/components/modals/CargoAddModal';
 import { CargoEditModal } from '@/components/modals/CargoEditModal';
 import { CargoViewModal } from '@/components/modals/CargoViewModal';
@@ -213,13 +213,13 @@ export default function CargosLojaPage() {
     setAddModalOpen(true);
   };
 
-  const handleSaveNew = (data: { role: string }) => {
+  const handleSaveNew = (data: { role: StoreRoleEnum }) => {
     createCargo(data, {
       onSuccess: () => setAddModalOpen(false)
     });
   };
 
-  const handleSaveUpdate = (data: { role: string }) => {
+  const handleSaveUpdate = (data: { role: StoreRoleEnum }) => {
     if (!selectedCargo) return;
     updateCargo({ id: selectedCargo.id, ...data }, {
       onSuccess: () => setEditModalOpen(false)

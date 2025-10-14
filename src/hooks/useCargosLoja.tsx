@@ -17,6 +17,22 @@ export type StoreRoleEnum =
   | 'Store Assistant'
   | 'Store Leader';
 
+export const storeRoleEnumOptions: StoreRoleEnum[] = [
+  'Cashier',
+  'Cleaner',
+  'Cleaning Assistant',
+  'Evaluator',
+  'HR',
+  'Main',
+  'Manager',
+  'Partner',
+  'Replenisher',
+  'Social Media',
+  'Stocker',
+  'Store Assistant',
+  'Store Leader'
+];
+
 export interface CargoLoja {
   id: string;
   role: StoreRoleEnum;
