@@ -11,6 +11,7 @@ import PerformanceChart from '../components/dashboard/PerformanceChart';
 import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
 import FinancialMetrics from '../components/dashboard/FinancialMetrics';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
+import GeographicalDistributionChart from '../components/dashboard/GeographicalDistributionChart';
 import { 
   useDashboardStats, 
   useUnidadesDistribution, 
@@ -91,6 +92,7 @@ const DashboardPage = () => {
         {/* Coluna da Direita */}
         <Grid item xs={12} lg={4}>
           <Stack spacing={3}>
+            <GeographicalDistributionChart />
             <FinancialMetrics />
             <ActivityFeed 
               activities={activities || []} 
