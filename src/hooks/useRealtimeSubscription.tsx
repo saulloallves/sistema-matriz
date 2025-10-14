@@ -1,7 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+/**
+ * Função Debounce: Agrupa múltiplas chamadas a uma função em um curto 
+ * período de tempo em uma única execução.
+ */
+function debounce(func: () => void, delay: number) {
+  let timeoutId: number;
+  return () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func();
+    }, delay);
+  };
+}
 
 export function useRealtimeSubscription(
   tableName: string,
@@ -9,23 +23,33 @@ export function useRealtimeSubscription(
 ) {
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // Usaremos um nome de canal simples e único para cada tabela para maior robustez.
-    const channel = supabase.channel(`table-changes-${tableName}`);
+  // Usamos useMemo para garantir que a função debounced seja criada apenas uma vez
+  // e não a cada renderização, evitando comportamentos inesperados.
+  const debouncedInvalidate = useMemo(
+    () =>
+      debounce(() => {
+        console.log(`[Realtime Debounced] Invalidando a query para a tabela: ${tableName}`, queryKey);
+        queryClient.invalidateQueries({ queryKey });
+      }, 500), // Agrupa todas as atualizações que ocorrerem em um intervalo de 500ms
+    [queryClient, queryKey, tableName]
+  );
 
-    channel
+  useEffect(() => {
+    const channelName = `db-changes-${tableName}`;
+    const channel = supabase.channel(channelName);
+
+    const subscription = channel
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: tableName },
         (payload: RealtimePostgresChangesPayload<any>) => {
-          console.log(`[Realtime] Mudança detectada em '${tableName}':`, payload);
-          // Invalida a query para forçar o React Query a buscar os dados mais recentes.
-          // Isso garante que todas as regras de segurança (RLS) e RPCs sejam reaplicadas.
-          queryClient.invalidateQueries({ queryKey });
+          console.log(`[Realtime] Mudança recebida da tabela '${tableName}':`, payload.eventType);
+          // Chama a função debounced em vez de invalidar a query diretamente
+          debouncedInvalidate();
         }
       )
       .subscribe((status, err) => {
-        // Adiciona logs para depuração do status da conexão em tempo real.
+        // Adiciona logs detalhados para monitorar o status da conexão
         if (status === 'SUBSCRIBED') {
           console.log(`[Realtime] Conectado com sucesso ao canal da tabela: ${tableName}`);
         }
@@ -33,14 +57,17 @@ export function useRealtimeSubscription(
           console.error(`[Realtime] Erro de conexão no canal da tabela ${tableName}:`, err);
         }
         if (status === 'TIMED_OUT') {
-          console.warn(`[Realtime] Conexão com o canal da tabela ${tableName} expirou.`);
+          console.warn(`[Realtime] Conexão com o canal da tabela ${tableName} expirou. Tentando reconectar...`);
+        }
+        if (status === 'CLOSED') {
+          console.log(`[Realtime] Canal da tabela ${tableName} fechado.`);
         }
       });
 
-    // Função de limpeza para remover a inscrição quando o componente não estiver mais na tela.
+    // Função de limpeza para remover a inscrição quando o componente não estiver mais na tela
     return () => {
       console.log(`[Realtime] Desconectando do canal da tabela: ${tableName}`);
-      supabase.removeChannel(channel);
+      supabase.removeChannel(subscription);
     };
-  }, [tableName, queryKey, queryClient]);
+  }, [tableName, queryKey, queryClient, debouncedInvalidate]);
 }
