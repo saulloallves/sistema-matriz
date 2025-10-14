@@ -55,11 +55,18 @@ export function DataTable({
     pageSize: 10,
   });
 
-  const filteredData = data.filter((row) =>
-    Object.values(row).some((value) =>
-      String(value).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredData = data.filter((row) => {
+    const normalizedSearchTerm = searchTerm.toLowerCase().replace(/[\.\-\/]/g, '');
+    if (!normalizedSearchTerm) return true;
+
+    return Object.values(row).some((value) => {
+      if (value === null || value === undefined) {
+        return false;
+      }
+      const normalizedValue = String(value).toLowerCase().replace(/[\.\-\/]/g, '');
+      return normalizedValue.includes(normalizedSearchTerm);
+    });
+  });
 
   const finalColumns = columns;
 

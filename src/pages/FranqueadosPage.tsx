@@ -422,6 +422,25 @@ export default function FranqueadosPage() {
       },
     },
     {
+      field: "cpf_rnm",
+      headerName: "CPF/RNM",
+      flex: 1.5,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            fontFamily: 'monospace',
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
+          {params.value}
+        </Typography>
+      ),
+    },
+    {
       field: "owner_type",
       headerName: "Tipo",
       flex: 1,
@@ -606,7 +625,7 @@ export default function FranqueadosPage() {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        searchPlaceholder="Pesquisar franqueados..."
+        searchPlaceholder="Pesquisar por nome, CPF, telefone..."
         title="Franqueados"
         titleIcon={<Users size={32} color="#1976d2" />}
         description="Gerencie todos os franqueados do sistema"
