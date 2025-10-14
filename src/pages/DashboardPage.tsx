@@ -52,7 +52,7 @@ const DashboardPage = () => {
           title="Total de Unidades"
           value={stats?.totalUnidades || 0}
           icon={Store}
-          color="#1976d2"
+          color="#E3A024"
           loading={statsLoading}
           trend={stats?.totalUnidades ? { value: 12.5, isPositive: true } : undefined}
         />

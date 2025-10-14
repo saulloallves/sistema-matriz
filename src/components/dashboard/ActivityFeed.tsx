@@ -38,7 +38,7 @@ const ActivityFeed = ({ activities, loading = false }: ActivityFeedProps) => {
       case 'warning':
         return '#ed6c02';
       case 'info':
-        return '#1976d2';
+        return '#E3A024';
       default:
         return '#666666';
     }

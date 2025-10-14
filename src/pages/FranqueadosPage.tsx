@@ -626,7 +626,7 @@ export default function FranqueadosPage() {
         onDelete={handleDelete}
         searchPlaceholder="Pesquisar por nome, CPF, telefone..."
         title="Franqueados"
-        titleIcon={<Users size={32} color="#1976d2" />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie todos os franqueados do sistema"
         loading={dataLoading || isDeleting}
         customCards={statsCards || undefined}

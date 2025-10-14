@@ -505,7 +505,7 @@ export default function UnidadesPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar por nome, código, cidade..."
         title="Unidades"
-        titleIcon={<Building2 size={32} color="#1976d2" />}
+        titleIcon={<Building2 size={32} color="#E3A024" />}
         description="Gerencie todas as unidades do sistema"
         loading={isLoading || isToggling}
         customCards={statsCards}

@@ -544,7 +544,7 @@ const FranqueadosUnidadesPage = () => {
         onDelete={handleDelete}
         searchPlaceholder="Pesquisar vínculos..."
         title="Vínculos Franqueados-Unidades"
-        titleIcon={<Users size={32} color="#1976d2" />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie os vínculos entre franqueados e suas unidades"
         loading={dataLoading || isDeleting}
         customCards={statsCards || undefined}

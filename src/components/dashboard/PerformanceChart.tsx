@@ -114,7 +114,7 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 12, height: 12, backgroundColor: '#1976d2', borderRadius: 1 }} />
+              <Box sx={{ width: 12, height: 12, backgroundColor: '#E3A024', borderRadius: 1 }} />
               <Typography variant="body2" color="text.secondary">Quantidade</Typography>
             </Box>
           </Box>
@@ -146,7 +146,7 @@ const PerformanceChart = ({ data, loading = false }: PerformanceChartProps) => {
                 shape={(props: any) => (
                   <CustomBar 
                     {...props} 
-                    fill={hoveredIndex === props.index ? '#f59e42' : '#1976d2'}
+                    fill={hoveredIndex === props.index ? '#f59e42' : '#E3A024'}
                   />
                 )}
               />

@@ -1244,7 +1244,7 @@ const ConfiguracoesPage = () => {
     <Box>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Settings size={32} color="#1976d2" />
+          <Settings size={32} color="#E3A024" />
           Configurações
         </Typography>
         <Typography variant="body1" color="text.secondary">

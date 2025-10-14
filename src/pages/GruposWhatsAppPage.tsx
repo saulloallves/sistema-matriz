@@ -425,7 +425,7 @@ export default function GruposWhatsAppPage() {
     <>
       <DataTable
         title="Grupos WhatsApp"
-        titleIcon={<MessageSquare size={28} color="#1976d2" />}
+        titleIcon={<MessageSquare size={28} color="#E3A024" />}
         description="Gerencie os grupos WhatsApp vinculados às unidades"
         columns={columns}
         data={groups}

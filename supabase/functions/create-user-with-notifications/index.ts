@@ -198,7 +198,7 @@ Mantenha suas credenciais em local seguro.`;
 
     const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1976d2, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+      <div style="background: linear-gradient(135deg, #E3A024, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 28px;">Bem-vindo(a) ao Sistema!</h1>
       </div>
       
@@ -211,7 +211,7 @@ Mantenha suas credenciais em local seguro.`;
           Suas credenciais de acesso ao sistema foram criadas com sucesso. Use os dados abaixo para fazer seu primeiro login:
         </p>
         
-        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #1976d2; margin: 20px 0;">
+        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #E3A024; margin: 20px 0;">
           <p style="margin: 0; color: #333;"><strong>📧 Email:</strong> ${email}</p>
           <p style="margin: 10px 0 0 0; color: #333;"><strong>🔑 Senha:</strong> <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">${password}</code></p>
         </div>

@@ -45,9 +45,9 @@ const FinancialMetrics = () => {
             textAlign: 'center'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-              <DollarSign size={20} style={{ color: '#1976d2' }} />
+              <DollarSign size={20} style={{ color: '#E3A024' }} />
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1976d2' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#E3A024' }}>
               R$ {metrics?.totalProlabore.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
             </Typography>
             <Typography variant="caption" color="text.secondary">

@@ -58,7 +58,7 @@ const TopUnitsPerformance = ({ units, loading = false }: TopUnitsPerformanceProp
   const getModelColor = (model: string) => {
     switch (model.toLowerCase()) {
       case 'padrao':
-        return '#1976d2';
+        return '#E3A024';
       case 'intermediaria':
         return '#9c27b0';
       case 'light':
