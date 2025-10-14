@@ -376,7 +376,7 @@ export default function ColaboradoresLojaPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar colaboradores de loja..."
         title="Colaboradores de Loja"
-        titleIcon={<Users size={32} />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie os funcionários das lojas/unidades"
         loading={isLoading}
         customCards={statsCards}

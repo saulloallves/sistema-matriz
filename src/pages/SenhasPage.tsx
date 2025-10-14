@@ -153,7 +153,7 @@ export default function SenhasPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar senhas..."
         title="Gerenciador de Senhas"
-        titleIcon={<Key size={32} />}
+        titleIcon={<Key size={32} color="#E3A024" />}
         description="Gerencie as credenciais de acesso dos sistemas corporativos"
         loading={isLoading}
         customCards={statsCards}

@@ -168,7 +168,7 @@ export default function FranqueadosFilhosPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar filhos de franqueados..."
         title="Filhos de Franqueados"
-        titleIcon={<Users size={32} />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie os filhos dos franqueados"
         loading={isLoading}
         customCards={statsCards}

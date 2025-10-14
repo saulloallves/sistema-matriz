@@ -113,7 +113,7 @@ export default function PermissoesPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar permissões..."
         title="Permissões"
-        titleIcon={<Shield size={32} />}
+        titleIcon={<Shield size={32} color="#E3A024" />}
         description="Gerencie os níveis de permissão do sistema"
         loading={isLoading}
         customCards={statsCards}

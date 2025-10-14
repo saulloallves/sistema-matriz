@@ -308,7 +308,7 @@ const GerenciamentoUsuariosTab = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <DataTable
         title="Usuários do Sistema"
-        titleIcon={<Users size={20} />}
+        titleIcon={<Users size={20} color="#E3A024" />}
         description="Visualize e gerencie todos os usuários cadastrados"
         data={users}
         columns={columns}
@@ -570,7 +570,7 @@ const GerenciamentoColaboradoresInternosTab = () => {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar colaboradores internos..."
         title="Colaboradores Internos"
-        titleIcon={<UserCog size={32} />}
+        titleIcon={<UserCog size={32} color="#E3A024" />}
         description="Gerencie os funcionários da Cresci e Perdi"
         loading={isLoading}
         customCards={statsCards}
@@ -1037,7 +1037,7 @@ const RealtimeWebhooksTab = () => {
         <>
           <DataTable
             title="Webhooks Cadastrados"
-            titleIcon={<Database size={20} />}
+            titleIcon={<Database size={20} color="#E3A024" />}
             description="Gerencie os webhooks que receberão eventos de sincronização"
             data={webhooks}
             columns={columns}
@@ -1084,7 +1084,7 @@ const RealtimeWebhooksTab = () => {
 
           <DataTable
             title="Logs de Entrega de Webhooks"
-            titleIcon={<Database size={20} />}
+            titleIcon={<Database size={20} color="#E3A024" />}
             description="Histórico de todas as entregas de webhooks realizadas pelo sistema"
             columns={[
               { 

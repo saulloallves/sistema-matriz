@@ -168,7 +168,7 @@ export default function ClientesFilhosPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar filhos de clientes..."
         title="Filhos de Clientes"
-        titleIcon={<Users size={32} />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie os filhos dos clientes"
         loading={isLoading}
         customCards={statsCards}

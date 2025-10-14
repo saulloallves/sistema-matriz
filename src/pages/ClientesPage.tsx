@@ -147,7 +147,7 @@ export default function ClientesPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar clientes..."
         title="Clientes"
-        titleIcon={<Users size={32} />}
+        titleIcon={<Users size={32} color="#E3A024" />}
         description="Gerencie os clientes das unidades"
         loading={isLoading}
         customCards={statsCards}
