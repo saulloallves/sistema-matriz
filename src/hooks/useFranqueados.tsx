@@ -2,14 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 type Franqueado = Tables<"franqueados">;
 
 export const useFranqueados = () => {
   const queryClient = useQueryClient();
+  const queryKey = ['franqueados'];
+
+  // Habilita a atualização em tempo real para esta tabela
+  useRealtimeSubscription('franqueados', queryKey);
 
   const franqueadosQuery = useQuery({
-    queryKey: ['franqueados'],
+    queryKey: queryKey,
     queryFn: async () => {
       // Use the secure function that handles data masking
       const { data, error } = await supabase
@@ -53,6 +58,7 @@ export const useFranqueados = () => {
     },
     onSuccess: () => {
       toast.success('Franqueado criado com sucesso!');
+      // A invalidação agora é tratada pelo hook de realtime, mas podemos manter para garantir
       queryClient.invalidateQueries({ queryKey: ['franqueados'] });
     },
     onError: (error: Error) => {
@@ -85,7 +91,7 @@ export const useFranqueados = () => {
     },
     onSuccess: () => {
       toast.success('Franqueado atualizado com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['franqueados'] });
+      // A invalidação agora é tratada pelo hook de realtime
     },
     onError: (error: Error) => {
       console.error('Erro ao atualizar franqueado:', error);
@@ -124,7 +130,7 @@ export const useFranqueados = () => {
     },
     onSuccess: () => {
       toast.success('Franqueado e seus vínculos excluídos com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['franqueados'] });
+      // A invalidação agora é tratada pelo hook de realtime
       queryClient.invalidateQueries({ queryKey: ['franqueados-unidades'] });
     },
     onError: (error: Error) => {
