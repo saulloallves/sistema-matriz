@@ -133,8 +133,8 @@ const createColumns = (
   {
     field: "kind",
     headerName: "Tipo de Grupo",
-    flex: 1.8,
-    minWidth: 160,
+    flex: 1.2,
+    minWidth: 150,
     headerAlign: 'center',
     align: 'center',
     renderCell: (params) => (
@@ -148,8 +148,8 @@ const createColumns = (
   {
     field: "group_id",
     headerName: "ID do Grupo",
-    flex: 2,
-    minWidth: 180,
+    flex: 1.5,
+    minWidth: 160,
     headerAlign: 'center',
     align: 'center',
     renderCell: (params) => (
@@ -172,8 +172,8 @@ const createColumns = (
   {
     field: "created_at",
     headerName: "Criado em",
-    flex: 1.5,
-    minWidth: 140,
+    flex: 1,
+    minWidth: 120,
     headerAlign: 'center',
     align: 'center',
     renderCell: (params) => (
