@@ -1,8 +1,7 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Grid, Stack } from '@mui/material';
 import {
   Store,
   Users,
-  TrendingUp,
   Target,
   Building,
 } from 'lucide-react';
@@ -11,6 +10,7 @@ import ActivityFeed from '../components/dashboard/ActivityFeed';
 import PerformanceChart from '../components/dashboard/PerformanceChart';
 import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
 import FinancialMetrics from '../components/dashboard/FinancialMetrics';
+import DashboardHeader from '../components/dashboard/DashboardHeader';
 import { 
   useDashboardStats, 
   useUnidadesDistribution, 
@@ -26,20 +26,8 @@ const DashboardPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography 
-          variant="h4" 
-          component="h1" 
-          gutterBottom 
-          sx={{ fontWeight: 700, color: 'text.primary' }}
-        >
-          Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Visão geral em tempo real do seu negócio
-        </Typography>
-      </Box>
+      {/* Novo Cabeçalho com Saudação e Acesso Rápido */}
+      <DashboardHeader />
 
       {/* KPI Cards */}
       <Box sx={{ 
@@ -84,36 +72,33 @@ const DashboardPage = () => {
         />
       </Box>
 
-      {/* Main Content Area */}
-      <Box sx={{ 
-        display: 'grid', 
-        gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, 
-        gap: 3, 
-        mb: 4 
-      }}>
-        {/* Activity Feed */}
-        <ActivityFeed 
-          activities={activities || []} 
-          loading={activitiesLoading} 
-        />
-        
-        {/* Performance Chart */}
-        <PerformanceChart 
-          data={chartData || []} 
-          loading={chartLoading} 
-        />
-      </Box>
+      {/* Novo Layout em Grid */}
+      <Grid container spacing={3}>
+        {/* Coluna da Esquerda */}
+        <Grid item xs={12} lg={8}>
+          <Stack spacing={3}>
+            <PerformanceChart 
+              data={chartData || []} 
+              loading={chartLoading} 
+            />
+            <TopUnitsPerformance 
+              units={topUnits || []} 
+              loading={unitsLoading} 
+            />
+          </Stack>
+        </Grid>
 
-      {/* Financial Metrics */}
-      <Box sx={{ mb: 4 }}>
-        <FinancialMetrics />
-      </Box>
-
-      {/* Top Units Performance */}
-      <TopUnitsPerformance 
-        units={topUnits || []} 
-        loading={unitsLoading} 
-      />
+        {/* Coluna da Direita */}
+        <Grid item xs={12} lg={4}>
+          <Stack spacing={3}>
+            <FinancialMetrics />
+            <ActivityFeed 
+              activities={activities || []} 
+              loading={activitiesLoading} 
+            />
+          </Stack>
+        </Grid>
+      </Grid>
     </Box>
   );
 };
