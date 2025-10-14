@@ -33,7 +33,7 @@ const franqueadoSchema = z.object({
   nationality: z.string().optional(),
   birth_date: z.string().optional(),
   address: z.string().optional(),
-  owner_type: z.enum(['principal', 'socio'], {
+  owner_type: z.enum(['Principal', 'Sócio'], {
     required_error: "Tipo de proprietário é obrigatório"
   }),
   contact: z.string().min(1, "Contato é obrigatório"),
@@ -77,7 +77,7 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
       nationality: '',
       birth_date: '',
       address: '',
-      owner_type: 'principal',
+      owner_type: 'Principal',
       contact: '',
       availability: '',
       education: '',
@@ -322,8 +322,8 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
                         error={!!errors.owner_type}
                         helperText={errors.owner_type?.message}
                       >
-                        <MenuItem value="principal">Principal</MenuItem>
-                        <MenuItem value="socio">Sócio</MenuItem>
+                        <MenuItem value="Principal">Principal</MenuItem>
+                        <MenuItem value="Sócio">Sócio</MenuItem>
                       </TextField>
                     )}
                   />

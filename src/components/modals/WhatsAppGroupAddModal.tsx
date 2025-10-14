@@ -158,8 +158,8 @@ export const WhatsAppGroupAddModal: React.FC<WhatsAppGroupAddModalProps> = ({
                   required
                   label="ID do Grupo WhatsApp"
                   error={!!errors.group_id}
-                  helperText={errors.group_id?.message || 'Ex: grupo_principal_123, suporte@unidade1'}
-                  placeholder="grupo_principal_123"
+                  helperText={errors.group_id?.message || 'Ex: grupo_Principal_123, suporte@unidade1'}
+                  placeholder="grupo_Principal_123"
                 />
               )}
             />

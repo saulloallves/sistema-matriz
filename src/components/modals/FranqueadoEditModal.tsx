@@ -48,7 +48,7 @@ const franqueadoSchema = z.object({
   state: z.string().optional(),
   uf: z.string().optional(),
   postal_code: z.string().optional(),
-  owner_type: z.enum(['principal', 'socio'], {
+  owner_type: z.enum(['Principal', 'Sócio'], {
     required_error: "Tipo de proprietário é obrigatório"
   }),
   contact: z.string().min(1, "Contato é obrigatório"),
@@ -109,7 +109,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       state: '',
       uf: '',
       postal_code: '',
-      owner_type: 'principal',
+      owner_type: 'Principal',
       contact: '',
       availability: '',
       education: '',
@@ -195,7 +195,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         state: (franqueado as any).state || '',
         uf: (franqueado as any).uf || '',
         postal_code: (franqueado as any).postal_code || '',
-        owner_type: franqueado.owner_type as 'principal' | 'socio',
+        owner_type: franqueado.owner_type as 'Principal' | 'Sócio',
         contact: franqueado.contact || '',
         availability: franqueado.availability || '',
         education: franqueado.education || '',
@@ -586,8 +586,8 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                         error={!!errors.owner_type}
                         helperText={errors.owner_type?.message}
                       >
-                        <MenuItem value="principal">Principal</MenuItem>
-                        <MenuItem value="socio">Sócio</MenuItem>
+                        <MenuItem value="Principal">Principal</MenuItem>
+                        <MenuItem value="Sócio">Sócio</MenuItem>
                       </TextField>
                     )}
                   />
@@ -897,7 +897,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                   </Alert>
                 ) : (
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    Unidade principal: {unidadesVinculadas[0].unidade_group_name} (Código: {unidadesVinculadas[0].unidade_group_code})
+                    Unidade Principal: {unidadesVinculadas[0].unidade_group_name} (Código: {unidadesVinculadas[0].unidade_group_code})
                   </Alert>
                 )}
                 

@@ -212,7 +212,7 @@ export default function FranqueadosPage() {
     const totalFranqueados = franqueados.length;
     const franqueadosAtivos = franqueados.filter(f => f?.is_in_contract).length;
     const franqueadosPrincipais = franqueados.filter(f => f?.owner_type === 'Principal').length;
-    const franqueadosSocios = franqueados.filter(f => f?.owner_type === 'Sócio').length;
+    const franqueadosSócios = franqueados.filter(f => f?.owner_type === 'Sócio').length;
     const franqueadosComProlabore = franqueados.filter(f => f?.receives_prolabore).length;
     const franqueadosIntegrais = franqueados.filter(f => f?.availability === 'integral').length;
 
@@ -243,7 +243,7 @@ export default function FranqueadosPage() {
       },
       {
         title: "Sócios",
-        value: franqueadosSocios,
+        value: franqueadosSócios,
         icon: "Building",
         color: "info.main",
         bgColor: "info.light",
@@ -448,8 +448,8 @@ export default function FranqueadosPage() {
       headerAlign: "center",
       renderCell: (params) => {
         const formatOwnerType = (type: string) => {
-          if (type === 'principal') return 'Principal';
-          if (type === 'socio') return 'Sócio';
+          if (type === 'Principal') return 'Principal';
+          if (type === 'Sócio') return 'Sócio';
           return type;
         };
         
