@@ -34,6 +34,7 @@ import { UnidadeFilterDrawer } from "@/components/modals/UnidadeFilterDrawer";
 import { useUnidades } from "@/hooks/useUnidades";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
+import { formatPhone } from "@/utils/formatters";
 
 type Unidade = Tables<"unidades">;
 
@@ -130,6 +131,7 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     headerName: "Telefone",
     flex: 2,
     minWidth: 140,
+    valueFormatter: (value) => formatPhone(value || ''),
   },
   {
     field: "city",
