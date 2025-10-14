@@ -3,9 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { WhatsAppGroup, WhatsAppGroupInsert, WhatsAppGroupUpdate, WhatsAppGroupWithUnidade } from '@/types/whatsapp';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export const useWhatsAppGroups = (unitId?: string) => {
   const queryClient = useQueryClient();
+  // Invalida a query genérica, que fará com que as queries específicas (com unitId) sejam refetchadas.
+  useRealtimeSubscription('unidades_grupos_whatsapp', ['whatsapp-groups']);
 
   const { data: groups, error, isLoading } = useQuery({
     queryKey: ['whatsapp-groups', unitId],
@@ -58,7 +61,6 @@ export const useWhatsAppGroups = (unitId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-groups'] });
       toast.success('Grupo WhatsApp criado com sucesso!');
     },
     onError: (error: any) => {
@@ -90,7 +92,6 @@ export const useWhatsAppGroups = (unitId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-groups'] });
       toast.success('Grupo WhatsApp atualizado com sucesso!');
     },
     onError: (error: any) => {
@@ -116,7 +117,6 @@ export const useWhatsAppGroups = (unitId?: string) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-groups'] });
       toast.success('Grupo WhatsApp excluído com sucesso!');
     },
     onError: (error: any) => {

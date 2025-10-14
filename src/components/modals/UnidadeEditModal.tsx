@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,7 +16,10 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  InputAdornment,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { 
@@ -29,17 +32,20 @@ import {
   Clock,
   Instagram,
   Eye,
-  EyeOff
+  EyeOff,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
 import toast from 'react-hot-toast';
+import { generateSystemPassword } from '@/utils/passwordGenerator';
+import { useFranqueadosUnidades } from '@/hooks/useFranqueadosUnidades';
 
 interface UnidadeEditModalProps {
   open: boolean;
   onClose: () => void;
   unidade: any;
-  onUpdate: () => void;
+  onUpdate: (id: string, data: any) => Promise<void>;
 }
 
 export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
@@ -144,7 +150,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         password_instagram: (unidade as any).password_instagram || '',
         bearer: (unidade as any).bearer || ''
       });
-      // Reset group code validation states
       setGroupCodeLoading(false);
       setGroupCodeError(null);
       setGroupCodeValid(null);
@@ -184,7 +189,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     try {
       const numericCode = Number(code);
       
-      // Verificar se existe outro registro com o mesmo código (excluindo a unidade atual)
       const { data, error } = await supabase
         .from('unidades')
         .select('id, group_name')
@@ -206,15 +210,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     }
   };
 
-  // Hook para debounce da validação do código
   useEffect(() => {
-    // Só executar se unidade existir
     if (!unidade?.id) return;
     
     const validateGroupCode = async () => {
       const code = formData.group_code.trim();
       
-      // Reset states se o campo estiver vazio
       if (!code) {
         setGroupCodeLoading(false);
         setGroupCodeError(null);
@@ -222,7 +223,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         return;
       }
 
-      // Validar se tem 4 dígitos
       if (code.length !== 4 || !/^\d{4}$/.test(code)) {
         setGroupCodeLoading(false);
         setGroupCodeError('O código deve ter exatamente 4 dígitos numéricos');
@@ -230,7 +230,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         return;
       }
 
-      // Se o código é o mesmo da unidade atual, não validar
       if (Number(code) === unidade?.group_code) {
         setGroupCodeLoading(false);
         setGroupCodeError(null);
@@ -263,21 +262,17 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
       
-      // Se desmarcar "has_partner_parking", limpar o endereço do estacionamento parceiro
       if (field === 'has_partner_parking' && !value) {
         newData.partner_parking_address = '';
       }
       
-      // Se o campo for CNPJ, aplicar máscara e validar
       if (field === 'cnpj') {
         newData.cnpj = applyCnpjMask(value);
         const error = getCnpjValidationError(value);
         setCnpjError(error);
       }
 
-      // Se o campo for group_code, limitar a 4 dígitos numéricos
       if (field === 'group_code') {
-        // Permitir apenas números e limitar a 4 dígitos
         const numericValue = value.replace(/\D/g, '').slice(0, 4);
         newData.group_code = numericValue;
       }
@@ -285,7 +280,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       return newData;
     });
 
-    // Se o campo for CEP e tiver 8 dígitos, buscar endereço
     if (field === 'postal_code') {
       const cleanCEP = value.replace(/\D/g, '');
       if (cleanCEP.length === 8) {
@@ -295,13 +289,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   };
 
   const validateForm = () => {
-    // Validar código da unidade
     if (groupCodeError || groupCodeLoading) {
       if (groupCodeError) toast.error(groupCodeError);
       return false;
     }
 
-    // Validar se o código foi alterado e é válido
     const currentCode = formData.group_code.trim();
     if (currentCode && currentCode !== unidade?.group_code?.toString()) {
       if (!groupCodeValid) {
@@ -310,13 +302,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       }
     }
 
-    // Validar CNPJ se preenchido
     if (formData.cnpj && cnpjError) {
       toast.error(cnpjError);
       return false;
     }
     
-    // Validar constraint do estacionamento parceiro
     if (formData.has_partner_parking && !formData.partner_parking_address?.trim()) {
       toast.error('Quando "Possui Estacionamento Parceiro" está marcado, é obrigatório informar o endereço do estacionamento parceiro.');
       return false;
@@ -331,14 +321,12 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   };
 
   const handleSave = async () => {
-    // Validar antes de enviar
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      // Mapear apenas os campos que existem na tabela unidades
       const updateData = {
         group_code: formData.group_code ? Number(formData.group_code) : unidade?.group_code,
         group_name: formData.group_name,
@@ -350,7 +338,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         address_complement: formData.address_complement,
         neighborhood: formData.neighborhood,
         city: formData.city,
-        state: formData.state, // Este campo agora será salvo corretamente
+        state: formData.state,
         uf: formData.uf,
         postal_code: formData.postal_code,
         phone: formData.phone,
@@ -383,35 +371,14 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
         bearer: formData.bearer || null
       };
 
-      const { error } = await supabase
-        .from('unidades')
-        .update(updateData)
-        .eq('id', unidade?.id);
-
-      if (error) throw error;
-
-      toast.success('Unidade atualizada com sucesso!');
-      onUpdate();
-      onClose();
-    } catch (error: any) {
-      console.error('Erro ao salvar:', error);
-      
-      // Tratar erros específicos do banco
-      if (error.message?.includes('chk_partner_parking_address_when_flag')) {
-        toast.error('Erro de validação: Se "Possui Estacionamento Parceiro" estiver marcado, é obrigatório informar o endereço. Se não estiver marcado, o endereço deve ficar vazio.');
-      } else if (error.message?.includes('violates check constraint')) {
-        toast.error('Erro de validação: Verifique se todos os campos obrigatórios estão preenchidos corretamente.');
-      } else if (error.message?.includes('duplicate key') || error.message?.includes('unique constraint')) {
-        toast.error('Este código de unidade já está sendo utilizado. Por favor, escolha outro código.');
-      } else {
-        toast.error('Erro ao atualizar unidade: ' + error.message);
-      }
+      await onUpdate(unidade.id, updateData);
+    } catch (error) {
+      // Error is handled in the hook
     } finally {
       setLoading(false);
     }
   };
 
-  // Se unidade não existir, não renderizar o modal
   if (!unidade) {
     return null;
   }

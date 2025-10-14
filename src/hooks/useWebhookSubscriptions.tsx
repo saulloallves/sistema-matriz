@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface WebhookSubscription {
   id: string;
@@ -13,11 +14,14 @@ export interface WebhookSubscription {
   updated_at: string;
 }
 
+const queryKey = ['webhook-subscriptions'];
+
 export const useWebhookSubscriptions = () => {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('webhook_subscriptions', queryKey);
 
   const { data: webhooks = [], isLoading } = useQuery({
-    queryKey: ['webhook-subscriptions'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('webhook_subscriptions')
@@ -41,7 +45,6 @@ export const useWebhookSubscriptions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
       toast.success('Webhook criado com sucesso!');
     },
     onError: (error: Error) => {
@@ -63,7 +66,6 @@ export const useWebhookSubscriptions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
       toast.success('Webhook atualizado com sucesso!');
     },
     onError: (error: Error) => {
@@ -82,7 +84,6 @@ export const useWebhookSubscriptions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
       toast.success('Webhook removido com sucesso!');
     },
     onError: (error: Error) => {
@@ -104,7 +105,6 @@ export const useWebhookSubscriptions = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
       toast.success(`Webhook ${data.enabled ? 'ativado' : 'desativado'} com sucesso!`);
     },
     onError: (error: Error) => {

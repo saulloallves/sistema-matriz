@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface ColaboradorInterno {
   id: string;
@@ -43,11 +44,14 @@ export interface ColaboradorInterno {
   updated_at: string;
 }
 
+const queryKey = ['colaboradores_interno'];
+
 export function useColaboradoresInterno() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('colaboradores_interno', queryKey);
 
   const { data: colaboradores = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['colaboradores_interno'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('colaboradores_interno')
@@ -71,7 +75,6 @@ export function useColaboradoresInterno() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_interno'] });
       toast.success('Colaborador interno criado com sucesso');
     },
     onError: (error: any) => {
@@ -92,7 +95,6 @@ export function useColaboradoresInterno() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_interno'] });
       toast.success('Colaborador interno atualizado com sucesso');
     },
     onError: (error: any) => {
@@ -110,7 +112,6 @@ export function useColaboradoresInterno() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_interno'] });
       toast.success('Colaborador interno removido com sucesso');
     },
     onError: (error: any) => {

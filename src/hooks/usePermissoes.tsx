@@ -1,17 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface Permissao {
   id: string;
   level: string;
 }
 
+const queryKey = ['permissoes'];
+
 export function usePermissoes() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('permissoes', queryKey);
 
   const { data: permissoes = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['permissoes'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('permissoes')
@@ -35,7 +39,6 @@ export function usePermissoes() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissoes'] });
       toast.success('Permissão criada com sucesso');
     },
     onError: (error: any) => {
@@ -56,7 +59,6 @@ export function usePermissoes() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissoes'] });
       toast.success('Permissão atualizada com sucesso');
     },
     onError: (error: any) => {
@@ -74,7 +76,6 @@ export function usePermissoes() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissoes'] });
       toast.success('Permissão removida com sucesso');
     },
     onError: (error: any) => {

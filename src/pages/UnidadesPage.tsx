@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { 
   Box, 
   Typography, 
@@ -31,7 +31,7 @@ import { UnidadeViewModal } from "@/components/modals/UnidadeViewModal";
 import { UnidadeEditModal } from "@/components/modals/UnidadeEditModal";
 import { UnidadeAddModal } from "@/components/modals/UnidadeAddModal";
 import { UnidadeFilterDrawer } from "@/components/modals/UnidadeFilterDrawer";
-import { supabase } from "@/integrations/supabase/client";
+import { useUnidades } from "@/hooks/useUnidades";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 
@@ -47,7 +47,7 @@ interface FilterState {
   cnpj?: string;
 }
 
-const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void; onDelete: (unidade: Unidade) => void }) => {
+const ActionCell = ({ row, onView, onEdit, onToggleStatus }: { row: any; onView: (unidade: Unidade) => void; onEdit: (unidade: Unidade) => void; onToggleStatus: (unidade: Unidade) => void }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -56,21 +56,6 @@ const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unid
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleView = () => {
-    onView(row);
-    handleClose();
-  };
-
-  const handleDelete = () => {
-    onDelete(row);
-    handleClose();
-  };
-
-  const handleEdit = () => {
-    onEdit(row);
-    handleClose();
   };
 
   return (
@@ -89,15 +74,15 @@ const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unid
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleView}>
+        <MenuItem onClick={() => { onView(row); handleClose(); }}>
           <Eye size={18} style={{ marginRight: 8 }} />
           Visualizar
         </MenuItem>
-        <MenuItem onClick={handleEdit}>
+        <MenuItem onClick={() => { onEdit(row); handleClose(); }}>
           <Edit size={18} style={{ marginRight: 8 }} />
           Editar
         </MenuItem>
-        <MenuItem onClick={handleDelete}>
+        <MenuItem onClick={() => { onToggleStatus(row); handleClose(); }}>
           <Trash2 size={18} style={{ marginRight: 8 }} />
           {row.is_active ? 'Inativar' : 'Ativar'}
         </MenuItem>
@@ -106,7 +91,7 @@ const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (unid
   );
 };
 
-const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Unidade) => void, onDelete: (unidade: Unidade) => void): GridColDef[] => [
+const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Unidade) => void, onToggleStatus: (unidade: Unidade) => void): GridColDef[] => [
   {
     field: "group_code",
     headerName: "Código",
@@ -252,13 +237,11 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
     headerAlign: 'center',
     sortable: false,
     filterable: false,
-    renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onDelete={onDelete} />,
+    renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onToggleStatus={onToggleStatus} />,
   },
 ];
 
 export default function UnidadesPage() {
-  const [data, setData] = useState<Unidade[]>([]);
-  const [loading, setLoading] = useState(true);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -266,33 +249,19 @@ export default function UnidadesPage() {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
 
-  useEffect(() => {
-    loadUnidades();
-  }, []);
-
-  const loadUnidades = async () => {
-    try {
-      setLoading(true);
-      const { data: unidades, error } = await supabase
-        .from("unidades")
-        .select("*")
-        .order("group_code", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      setData(unidades || []);
-    } catch (error) {
-      console.error("Erro ao carregar unidades:", error);
-      toast.error("Erro ao carregar unidades");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    unidades, 
+    isLoading, 
+    toggleUnidadeStatus, 
+    isToggling,
+    createUnidade,
+    isCreating,
+    updateUnidade,
+    isUpdating
+  } = useUnidades();
 
   const filteredData = useMemo(() => {
-    return data.filter(unidade => {
+    return unidades.filter(unidade => {
       return (
         (!filters.store_model || unidade.store_model === filters.store_model) &&
         (!filters.store_phase || unidade.store_phase === filters.store_phase) &&
@@ -303,15 +272,15 @@ export default function UnidadesPage() {
         (!filters.cnpj || unidade.cnpj?.includes(filters.cnpj))
       );
     });
-  }, [data, filters]);
+  }, [unidades, filters]);
 
   const statsCards = useMemo(() => {
-    const totalUnidades = data.length;
-    const unidadesOperacao = data.filter(u => u.store_phase === 'operacao').length;
-    const unidadesImplantacao = data.filter(u => u.store_phase === 'implantacao').length;
-    const unidadesPadrao = data.filter(u => u.store_model === 'padrao').length;
-    const unidadesMegaStore = data.filter(u => u.store_model === 'mega store').length;
-    const unidadesAtivas = data.filter(u => u.sales_active || u.purchases_active).length;
+    const totalUnidades = unidades.length;
+    const unidadesOperacao = unidades.filter(u => u.store_phase === 'operacao').length;
+    const unidadesImplantacao = unidades.filter(u => u.store_phase === 'implantacao').length;
+    const unidadesPadrao = unidades.filter(u => u.store_model === 'padrao').length;
+    const unidadesMegaStore = unidades.filter(u => u.store_model === 'mega store').length;
+    const unidadesAtivas = unidades.filter(u => u.sales_active || u.purchases_active).length;
 
     const cardData = [
       {
@@ -476,7 +445,14 @@ export default function UnidadesPage() {
         })}
       </Box>
     );
-  }, [data]);
+  }, [unidades]);
+
+  const handleToggleStatus = async (unidade: Unidade) => {
+    const action = unidade.is_active ? 'inativar' : 'ativar';
+    if (window.confirm(`Tem certeza que deseja ${action} a unidade "${unidade.group_name}"?`)) {
+      await toggleUnidadeStatus({ id: unidade.id, currentStatus: unidade.is_active });
+    }
+  };
 
   const handleView = (unidade: Unidade) => {
     setSelectedUnidade(unidade);
@@ -488,28 +464,18 @@ export default function UnidadesPage() {
     setEditModalOpen(true);
   };
 
-  const handleDelete = async (unidade: Unidade) => {
-    try {
-      const newStatus = !unidade.is_active;
-      const { error } = await supabase
-        .from("unidades")
-        .update({ is_active: newStatus })
-        .eq("id", unidade.id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success(`Unidade ${newStatus ? 'ativada' : 'inativada'} com sucesso!`);
-      loadUnidades();
-    } catch (error) {
-      console.error("Erro ao alterar status da unidade:", error);
-      toast.error("Erro ao alterar status da unidade");
-    }
-  };
-
   const handleAdd = () => {
     setAddModalOpen(true);
+  };
+
+  const handleSaveNew = async (data: any) => {
+    await createUnidade(data);
+    setAddModalOpen(false);
+  };
+
+  const handleSaveUpdate = async (id: string, data: any) => {
+    await updateUnidade({ id, updates: data });
+    setEditModalOpen(false);
   };
 
   const handleApplyFilters = (newFilters: FilterState) => {
@@ -520,10 +486,10 @@ export default function UnidadesPage() {
     setFilters({});
   };
 
-  const columns = createColumns(handleView, handleEdit, handleDelete);
+  const columns = createColumns(handleView, handleEdit, handleToggleStatus);
   const activeFilterCount = Object.values(filters).filter(v => v !== '' && v !== undefined).length;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />
@@ -541,7 +507,7 @@ export default function UnidadesPage() {
         title="Unidades"
         titleIcon={<Building2 size={32} color="#1976d2" />}
         description="Gerencie todas as unidades do sistema"
-        loading={loading}
+        loading={isLoading || isToggling}
         customCards={statsCards}
         filterComponent={
           <Badge badgeContent={activeFilterCount} color="primary">
@@ -566,13 +532,13 @@ export default function UnidadesPage() {
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         unidade={selectedUnidade}
-        onUpdate={loadUnidades}
+        onUpdate={(id, data) => handleSaveUpdate(id, data)}
       />
       
       <UnidadeAddModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onAdd={loadUnidades}
+        onAdd={handleSaveNew}
       />
 
       <UnidadeFilterDrawer

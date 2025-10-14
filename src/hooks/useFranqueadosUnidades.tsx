@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 // Types
 export type FranqueadoUnidade = {
@@ -32,8 +33,11 @@ export type CreateFranqueadoUnidadeData = {
   unidade_id: string;
 };
 
+const queryKey = ['franqueados-unidades'];
+
 export const useFranqueadosUnidades = () => {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('franqueados_unidades', queryKey);
 
   // Buscar todos os vínculos
   const {
@@ -42,7 +46,7 @@ export const useFranqueadosUnidades = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['franqueados-unidades'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_franqueados_unidades_secure');
       

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export type ShirtNumber = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15' | '16' | 'PP' | 'P' | 'M' | 'G' | 'GG' | 'XG';
 
@@ -26,11 +27,14 @@ export interface ClienteFilho {
   updated_at: string;
 }
 
+const queryKey = ['clientes_filhos'];
+
 export function useClientesFilhos() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('clientes_filhos', queryKey);
 
   const { data: clientesFilhos = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['clientes_filhos'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clientes_filhos')
@@ -54,7 +58,6 @@ export function useClientesFilhos() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes_filhos'] });
       toast.success('Filho de cliente criado com sucesso');
     },
     onError: (error: any) => {
@@ -75,7 +78,6 @@ export function useClientesFilhos() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes_filhos'] });
       toast.success('Filho de cliente atualizado com sucesso');
     },
     onError: (error: any) => {
@@ -93,7 +95,6 @@ export function useClientesFilhos() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes_filhos'] });
       toast.success('Filho de cliente removido com sucesso');
     },
     onError: (error: any) => {

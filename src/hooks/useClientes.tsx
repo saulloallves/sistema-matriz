@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface Cliente {
   id: number;
@@ -23,11 +24,14 @@ export interface Cliente {
   updated_at: string;
 }
 
+const queryKey = ['clientes'];
+
 export function useClientes() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('clientes', queryKey);
 
   const { data: clientes = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['clientes'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clientes')
@@ -51,7 +55,6 @@ export function useClientes() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast.success('Cliente criado com sucesso');
     },
     onError: (error: any) => {
@@ -72,7 +75,6 @@ export function useClientes() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast.success('Cliente atualizado com sucesso');
     },
     onError: (error: any) => {
@@ -90,7 +92,6 @@ export function useClientes() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast.success('Cliente removido com sucesso');
     },
     onError: (error: any) => {

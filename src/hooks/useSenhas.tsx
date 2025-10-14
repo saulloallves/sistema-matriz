@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface Senha {
   id: string;
@@ -15,11 +16,14 @@ export interface Senha {
   updated_at: string;
 }
 
+const queryKey = ['senhas'];
+
 export function useSenhas() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('senhas', queryKey);
 
   const { data: senhas = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['senhas'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('senhas')
@@ -43,7 +47,6 @@ export function useSenhas() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['senhas'] });
       toast.success('Senha criada com sucesso');
     },
     onError: (error: any) => {
@@ -64,7 +67,6 @@ export function useSenhas() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['senhas'] });
       toast.success('Senha atualizada com sucesso');
     },
     onError: (error: any) => {
@@ -82,7 +84,6 @@ export function useSenhas() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['senhas'] });
       toast.success('Senha removida com sucesso');
     },
     onError: (error: any) => {

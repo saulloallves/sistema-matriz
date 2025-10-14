@@ -2,12 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/types/user';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
+
+const queryKey = ['users'];
 
 export const useUsers = () => {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('profiles', queryKey);
 
   const usersQuery = useQuery({
-    queryKey: ['users'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .rpc('get_users_with_emails');
@@ -37,7 +41,6 @@ export const useUsers = () => {
     },
     onSuccess: () => {
       toast.success('Usuário atualizado com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: Error) => {
       console.error('Erro ao atualizar usuário:', error);
@@ -59,7 +62,6 @@ export const useUsers = () => {
     onSuccess: (_, { newStatus }) => {
       const action = newStatus === 'ativo' ? 'ativado' : 'inativado';
       toast.success(`Usuário ${action} com sucesso!`);
-      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: Error) => {
       console.error('Erro ao alterar status do usuário:', error);

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import toast from 'react-hot-toast';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 export interface ColaboradorLoja {
   id: string;
@@ -42,11 +43,14 @@ export interface ColaboradorLoja {
   updated_at: string;
 }
 
+const queryKey = ['colaboradores_loja'];
+
 export function useColaboradoresLoja() {
   const queryClient = useQueryClient();
+  useRealtimeSubscription('colaboradores_loja', queryKey);
 
   const { data: colaboradores = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['colaboradores_loja'],
+    queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('colaboradores_loja')
@@ -70,7 +74,6 @@ export function useColaboradoresLoja() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_loja'] });
       toast.success('Colaborador de loja criado com sucesso');
     },
     onError: (error: any) => {
@@ -91,7 +94,6 @@ export function useColaboradoresLoja() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_loja'] });
       toast.success('Colaborador de loja atualizado com sucesso');
     },
     onError: (error: any) => {
@@ -109,7 +111,6 @@ export function useColaboradoresLoja() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['colaboradores_loja'] });
       toast.success('Colaborador de loja removido com sucesso');
     },
     onError: (error: any) => {

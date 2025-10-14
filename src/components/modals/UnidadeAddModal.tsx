@@ -28,14 +28,13 @@ import {
   Car, 
   Clock 
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
 import toast from 'react-hot-toast';
 
 interface UnidadeAddModalProps {
   open: boolean;
   onClose: () => void;
-  onAdd: () => void;
+  onAdd: (data: any) => Promise<void>;
 }
 
 export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
@@ -118,19 +117,16 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
       
-      // Se desmarcar "has_partner_parking", limpar o endereço do estacionamento parceiro
       if (field === 'has_partner_parking' && !value) {
         newData.partner_parking_address = '';
       }
       
-      // Se o campo for CNPJ, aplicar máscara e validar
       if (field === 'cnpj') {
         newData.cnpj = applyCnpjMask(value);
         const error = getCnpjValidationError(value);
         setCnpjError(error);
       }
       
-      // Se mudar a fase da loja para "operacao", limpar a fase de implantação
       if (field === 'store_phase' && value !== 'implantacao') {
         newData.store_imp_phase = '';
       }
@@ -138,7 +134,6 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
       return newData;
     });
 
-    // Se o campo for CEP e tiver 8 dígitos, buscar endereço
     if (field === 'postal_code') {
       const cleanCEP = value.replace(/\D/g, '');
       if (cleanCEP.length === 8) {
@@ -148,19 +143,16 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
   };
 
   const validateForm = () => {
-    // Validar campos obrigatórios
     if (!formData.group_code || !formData.group_name || !formData.store_model) {
       toast.error('Código, Nome e Modelo da Loja são obrigatórios');
       return false;
     }
 
-    // Validar CNPJ se preenchido
     if (formData.cnpj && cnpjError) {
       toast.error(cnpjError);
       return false;
     }
 
-    // Validar constraint do estacionamento parceiro
     if (formData.has_partner_parking && !formData.partner_parking_address?.trim()) {
       toast.error('Quando "Possui Estacionamento Parceiro" está marcado, é obrigatório informar o endereço do estacionamento parceiro.');
       return false;
@@ -175,14 +167,12 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
   };
 
   const handleSave = async () => {
-    // Validar antes de enviar
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      // Mapear apenas os campos que existem na tabela unidades
       const insertData = {
         group_code: Number(formData.group_code),
         group_name: formData.group_name,
@@ -223,17 +213,8 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         docs_folder_link: formData.docs_folder_link || null
       };
 
-      const { error } = await supabase
-        .from('unidades')
-        .insert([insertData]);
-
-      if (error) throw error;
-
-      toast.success('Unidade criada com sucesso!');
-      onAdd();
-      onClose();
+      await onAdd(insertData);
       
-      // Limpar o formulário
       setFormData({
         group_code: '',
         group_name: '',
@@ -273,19 +254,8 @@ export const UnidadeAddModal: React.FC<UnidadeAddModalProps> = ({
         operation_sun: '',
         operation_hol: ''
       });
-    } catch (error: any) {
-      console.error('Erro ao salvar:', error);
-      
-      // Tratar erros específicos do banco
-      if (error.message?.includes('duplicate key')) {
-        toast.error('Erro: Já existe uma unidade com este código.');
-      } else if (error.message?.includes('chk_partner_parking_address_when_flag')) {
-        toast.error('Erro de validação: Se "Possui Estacionamento Parceiro" estiver marcado, é obrigatório informar o endereço. Se não estiver marcado, o endereço deve ficar vazio.');
-      } else if (error.message?.includes('violates check constraint')) {
-        toast.error('Erro de validação: Verifique se todos os campos obrigatórios estão preenchidos corretamente.');
-      } else {
-        toast.error('Erro ao criar unidade: ' + error.message);
-      }
+    } catch (error) {
+      // Error is handled in the hook
     } finally {
       setLoading(false);
     }
