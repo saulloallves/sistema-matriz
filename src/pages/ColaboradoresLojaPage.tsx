@@ -23,7 +23,7 @@ import { ColaboradorLojaEditModal } from '@/components/modals/ColaboradorLojaEdi
 import { ColaboradorLojaViewModal } from '@/components/modals/ColaboradorLojaViewModal';
 import { ColaboradorLojaFilterDrawer } from '@/components/modals/ColaboradorLojaFilterDrawer';
 import { format } from 'date-fns';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatCPF, formatPhone } from '@/utils/formatters';
 
 interface FilterState {
   position_id?: string;
@@ -102,6 +102,7 @@ function createColumns(
       field: 'cpf',
       headerName: 'CPF',
       width: 140,
+      valueFormatter: (value) => formatCPF(value),
     },
     {
       field: 'email',
@@ -113,6 +114,7 @@ function createColumns(
       field: 'phone',
       headerName: 'Telefone',
       width: 140,
+      valueFormatter: (value) => formatPhone(value),
     },
     {
       field: 'admission_date',
