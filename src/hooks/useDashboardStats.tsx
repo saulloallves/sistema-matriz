@@ -243,28 +243,3 @@ export const useTopUnits = () => {
     },
   });
 };
-
-export const useGeographicalDistribution = () => {
-  return useQuery({
-    queryKey: ['geographical-distribution'],
-    queryFn: async (): Promise<{ state: string; count: number }[]> => {
-      const { data, error } = await supabase
-        .from('unidades')
-        .select('uf');
-
-      if (error) throw error;
-
-      const distribution = (data || []).reduce((acc, unidade) => {
-        const state = unidade.uf?.toUpperCase() || 'N/A';
-        if (state) {
-          acc[state] = (acc[state] || 0) + 1;
-        }
-        return acc;
-      }, {} as Record<string, number>);
-
-      return Object.entries(distribution)
-        .map(([state, count]) => ({ state, count }))
-        .sort((a, b) => b.count - a.count);
-    },
-  });
-};
