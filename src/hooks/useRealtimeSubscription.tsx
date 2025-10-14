@@ -8,7 +8,7 @@ import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
  * período de tempo em uma única execução.
  */
 function debounce(func: () => void, delay: number) {
-  let timeoutId: number;
+  let timeoutId: ReturnType<typeof setTimeout>;
   return () => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
