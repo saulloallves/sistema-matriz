@@ -6,9 +6,11 @@ import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 type Franqueado = Tables<"franqueados">;
 
+// Mover a queryKey para fora da função garante que sua referência seja estável.
+const queryKey = ['franqueados'];
+
 export const useFranqueados = () => {
   const queryClient = useQueryClient();
-  const queryKey = ['franqueados'];
 
   // Habilita a atualização em tempo real para esta tabela
   useRealtimeSubscription('franqueados', queryKey);

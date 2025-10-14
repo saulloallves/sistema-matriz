@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -23,14 +23,13 @@ export function useRealtimeSubscription(
 ) {
   const queryClient = useQueryClient();
 
-  // Usamos useMemo para garantir que a função debounced seja criada apenas uma vez
-  // e não a cada renderização, evitando comportamentos inesperados.
-  const debouncedInvalidate = useMemo(
-    () =>
-      debounce(() => {
-        console.log(`[Realtime Debounced] Invalidando a query para a tabela: ${tableName}`, queryKey);
-        queryClient.invalidateQueries({ queryKey });
-      }, 500), // Agrupa todas as atualizações que ocorrerem em um intervalo de 500ms
+  // Usamos useCallback para garantir que a função debounced seja estável
+  // entre as renderizações, desde que suas dependências (queryKey, etc.) não mudem.
+  const debouncedInvalidate = useCallback(
+    debounce(() => {
+      console.log(`[Realtime Debounced] Invalidando a query para a tabela: ${tableName}`, queryKey);
+      queryClient.invalidateQueries({ queryKey });
+    }, 500), // Agrupa todas as atualizações que ocorrerem em um intervalo de 500ms
     [queryClient, queryKey, tableName]
   );
 
@@ -44,7 +43,7 @@ export function useRealtimeSubscription(
         { event: '*', schema: 'public', table: tableName },
         (payload: RealtimePostgresChangesPayload<any>) => {
           console.log(`[Realtime] Mudança recebida da tabela '${tableName}':`, payload.eventType);
-          // Chama a função debounced em vez de invalidar a query diretamente
+          // Chama a função debounced estável
           debouncedInvalidate();
         }
       )
@@ -69,5 +68,5 @@ export function useRealtimeSubscription(
       console.log(`[Realtime] Desconectando do canal da tabela: ${tableName}`);
       supabase.removeChannel(subscription);
     };
-  }, [tableName, queryKey, queryClient, debouncedInvalidate]);
+  }, [tableName, queryKey, debouncedInvalidate]);
 }
