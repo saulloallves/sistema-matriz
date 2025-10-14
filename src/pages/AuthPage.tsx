@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import logoPrincipal from '@/assets/logo-Principal.png';
+import logoPrincipal from '@/assets/logo-principal.png';
 
 const AuthPage = () => {
   const { user, loading, signIn } = useAuth();
