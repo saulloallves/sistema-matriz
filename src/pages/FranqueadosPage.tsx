@@ -37,6 +37,7 @@ import { FranqueadoFilterDrawer } from "@/components/modals/FranqueadoFilterDraw
 import { useFranqueados, useUserRole } from "@/hooks/useFranqueados";
 import { Tables } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
+import { formatPhone, formatCPF } from "@/utils/formatters";
 
 type Franqueado = Tables<"franqueados">;
 
@@ -414,7 +415,7 @@ export default function FranqueadosPage() {
                 {franqueado.full_name}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {franqueado.contact_masked || franqueado.contact}
+                {formatPhone(franqueado.contact_masked || franqueado.contact)}
               </Typography>
             </Box>
           </Box>
@@ -426,6 +427,7 @@ export default function FranqueadosPage() {
       headerName: "CPF/RNM",
       flex: 1.5,
       minWidth: 150,
+      valueFormatter: (value) => formatCPF(value || ''),
       renderCell: (params) => (
         <Typography 
           variant="body2" 
