@@ -16,7 +16,6 @@ import GruposWhatsAppPage from "./pages/GruposWhatsAppPage";
 import ClientesPage from "./pages/ClientesPage";
 import ClientesFilhosPage from "./pages/ClientesFilhosPage";
 import FranqueadosFilhosPage from "./pages/FranqueadosFilhosPage";
-import ColaboradoresInternoPage from "./pages/ColaboradoresInternoPage";
 import ColaboradoresLojaPage from "./pages/ColaboradoresLojaPage";
 import CargosLojaPage from "./pages/CargosLojaPage";
 import SenhasPage from "./pages/SenhasPage";
@@ -56,7 +55,6 @@ const App = () => (
                     <Route path="/franqueados-filhos" element={<FranqueadosFilhosPage />} />
                     <Route path="/clientes" element={<ClientesPage />} />
                     <Route path="/clientes-filhos" element={<ClientesFilhosPage />} />
-                    <Route path="/colaboradores-interno" element={<ColaboradoresInternoPage />} />
                     <Route path="/colaboradores-loja" element={<ColaboradoresLojaPage />} />
                     <Route path="/cargos-loja" element={<CargosLojaPage />} />
                     <Route path="/senhas" element={<SenhasPage />} />

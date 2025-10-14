@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   Box, 
   Typography, 
@@ -14,10 +14,32 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
+  Chip,
+  IconButton,
+  Alert
 } from '@mui/material';
-import { Chip } from '@mui/material';
-import { UserPlus, Settings, Shield, Mail, Users, Edit, UserX, UserCheck, Database, RefreshCw, Phone, Webhook, Power, Plus, Trash2 } from 'lucide-react';
+import { 
+  UserPlus, 
+  Settings, 
+  Shield, 
+  Mail, 
+  Users, 
+  Edit, 
+  UserX, 
+  UserCheck, 
+  Database, 
+  RefreshCw, 
+  Phone, 
+  Webhook, 
+  Power, 
+  Plus, 
+  Trash2,
+  UserCog,
+  Eye,
+  Check,
+  X
+} from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -39,6 +61,11 @@ import { RolePermissionsModal } from '@/components/modals/RolePermissionsModal';
 import { UserPermissionsModal } from '@/components/modals/UserPermissionsModal';
 import { useTablePermissions } from '@/hooks/useTablePermissions';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
+import { useColaboradoresInterno, ColaboradorInterno } from '@/hooks/useColaboradoresInterno';
+import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoViewModal';
+import { ColaboradorInternoAddModal } from '@/components/modals/ColaboradorInternoAddModal';
+import { ColaboradorInternoEditModal } from '@/components/modals/ColaboradorInternoEditModal';
+import toast from 'react-hot-toast';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -63,7 +90,6 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
   );
 };
 
-
 const GerenciamentoUsuariosTab = () => {
   const { users, isLoading, updateUser, isUpdating, toggleUserStatus, isTogglingStatus } = useUsers();
   const { createUser, isCreating, reset } = useUserManagement();
@@ -71,7 +97,6 @@ const GerenciamentoUsuariosTab = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
-  // Estados do formulário de criação
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -111,7 +136,6 @@ const GerenciamentoUsuariosTab = () => {
       return;
     }
 
-    // Limpar telefone (apenas números)
     const cleanPhone = formData.phone_number.replace(/\D/g, '');
     
     createUser({
@@ -136,7 +160,6 @@ const GerenciamentoUsuariosTab = () => {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Limpar erro do campo quando o usuário começar a digitar
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -283,7 +306,6 @@ const GerenciamentoUsuariosTab = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Seção de Listagem de Usuários */}
       <DataTable
         title="Usuários do Sistema"
         titleIcon={<Users size={20} />}
@@ -293,7 +315,6 @@ const GerenciamentoUsuariosTab = () => {
         loading={isLoading}
       />
 
-      {/* Seção de Criação de Usuário */}
       <Card>
         <CardContent>
           <Box sx={{ mb: 3 }}>
@@ -405,6 +426,354 @@ const GerenciamentoUsuariosTab = () => {
         onSave={handleEditSave}
         isLoading={isUpdating}
       />
+    </Box>
+  );
+};
+
+const GerenciamentoColaboradoresInternosTab = () => {
+  const { colaboradores, isLoading, deleteColaborador, createColaborador, updateColaborador, isCreating } = useColaboradoresInterno();
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedColaborador, setSelectedColaborador] = useState<ColaboradorInterno | null>(null);
+
+  const statsCards = useMemo(() => (
+    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+      <Card sx={{ flex: 1 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Typography variant="h5">{colaboradores.length}</Typography>
+          <Typography color="text.secondary" variant="body2">Total de Colaboradores</Typography>
+        </CardContent>
+      </Card>
+      <Card sx={{ flex: 1 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Typography variant="h5">
+            {colaboradores.filter(c => c.health_plan).length}
+          </Typography>
+          <Typography color="text.secondary" variant="body2">Com Plano de Saúde</Typography>
+        </CardContent>
+      </Card>
+      <Card sx={{ flex: 1 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Typography variant="h5">
+            {colaboradores.filter(c => c.meal_voucher_active).length}
+          </Typography>
+          <Typography color="text.secondary" variant="body2">Com Vale Refeição</Typography>
+        </CardContent>
+      </Card>
+    </Box>
+  ), [colaboradores]);
+
+  const handleView = (colab: ColaboradorInterno) => {
+    setSelectedColaborador(colab);
+    setViewModalOpen(true);
+  };
+
+  const handleEdit = (colab: ColaboradorInterno) => {
+    setSelectedColaborador(colab);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (colab: ColaboradorInterno) => {
+    if (window.confirm(`Tem certeza que deseja remover o colaborador ${colab.employee_name}?`)) {
+      deleteColaborador(colab.id);
+    }
+  };
+
+  const handleAdd = () => {
+    setAddModalOpen(true);
+  };
+
+  const handleSave = async (data: any) => {
+    await createColaborador(data);
+    setAddModalOpen(false);
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: 'employee_name',
+      headerName: 'Nome',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'cpf',
+      headerName: 'CPF',
+      width: 140,
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'phone',
+      headerName: 'Telefone',
+      width: 140,
+    },
+    {
+      field: 'admission_date',
+      headerName: 'Data Admissão',
+      width: 130,
+      renderCell: (params) => {
+        if (!params.value) return '-';
+        const [year, month, day] = params.value.split('-');
+        return `${day}/${month}/${year}`;
+      },
+    },
+    {
+      field: 'salary',
+      headerName: 'Salário',
+      width: 120,
+      renderCell: (params) => `R$ ${params.value}`,
+    },
+    {
+      field: 'health_plan',
+      headerName: 'Plano de Saúde',
+      width: 140,
+      renderCell: (params) => (
+        <Chip
+          icon={params.value ? <Check size={16} /> : <X size={16} />}
+          label={params.value ? 'Sim' : 'Não'}
+          color={params.value ? 'success' : 'default'}
+          size="small"
+        />
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Ações',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
+          <IconButton size="small" onClick={() => handleView(params.row)} sx={{ color: 'info.main' }}>
+            <Eye size={16} />
+          </IconButton>
+          <IconButton size="small" onClick={() => handleEdit(params.row)} sx={{ color: 'warning.main' }}>
+            <Edit size={16} />
+          </IconButton>
+          <IconButton size="small" onClick={() => handleDelete(params.row)} sx={{ color: 'error.main' }}>
+            <Trash2 size={16} />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
+
+  return (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <DataTable
+        columns={columns}
+        data={colaboradores}
+        onAdd={handleAdd}
+        searchPlaceholder="Pesquisar colaboradores internos..."
+        title="Colaboradores Internos"
+        titleIcon={<UserCog size={32} />}
+        description="Gerencie os funcionários da Cresci e Perdi"
+        loading={isLoading}
+        customCards={statsCards}
+      />
+      
+      <ColaboradorInternoViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedColaborador(null);
+        }}
+        colaborador={selectedColaborador}
+        onEdit={() => {
+          setViewModalOpen(false);
+          if (selectedColaborador) {
+            handleEdit(selectedColaborador);
+          }
+        }}
+      />
+
+      <ColaboradorInternoEditModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedColaborador(null);
+        }}
+        colaborador={selectedColaborador}
+        onUpdate={(id, data) => updateColaborador({ id, ...data })}
+      />
+
+      {addModalOpen && (
+        <ColaboradorInternoAddModal
+          open={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          onSave={handleSave}
+          isLoading={isCreating}
+        />
+      )}
+    </Box>
+  );
+};
+
+const PermissoesTab = () => {
+  const { users, isLoading: isLoadingUsers } = useUsers();
+  const { permissionTables, rolePermissions, isLoading: isLoadingPermissions } = useTablePermissions();
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [userPermModalOpen, setUserPermModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'operador' | 'user' | 'franqueado' | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const roles = [
+    { value: 'admin', label: 'Administrador', description: 'Acesso total ao sistema', color: 'error.main' },
+    { value: 'operador', label: 'Operador', description: 'Visualização de dados sem edição', color: 'info.main' },
+    { value: 'user', label: 'Usuário', description: 'Acesso limitado personalizado', color: 'success.main' },
+  ];
+
+  const handleConfigureRole = (role: 'admin' | 'operador' | 'user' | 'franqueado') => {
+    setSelectedRole(role);
+    setRoleModalOpen(true);
+  };
+
+  const handleConfigureUser = (user: User) => {
+    setSelectedUser(user);
+    setUserPermModalOpen(true);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Shield size={20} />
+              Permissões por Perfil
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure as permissões padrão para cada perfil de usuário no sistema.
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            {roles.map((role) => (
+              <Card variant="outlined" key={role.value}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" sx={{ color: role.color, mb: 0.5 }}>
+                          {role.label}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {role.description}
+                        </Typography>
+                      </Box>
+                      <Shield size={24} style={{ color: role.color }} />
+                    </Box>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => handleConfigureRole(role.value as any)}
+                      disabled={isLoadingPermissions}
+                    >
+                      Configurar Permissões
+                    </Button>
+                  </CardContent>
+                </Card>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users size={20} />
+              Permissões Específicas de Usuário
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure permissões individuais que sobrescrevem as permissões do perfil.
+            </Typography>
+          </Box>
+
+          <DataTable
+            title=""
+            data={users}
+            columns={[
+              {
+                field: 'full_name',
+                headerName: 'Nome',
+                flex: 1,
+                minWidth: 180,
+              },
+              {
+                field: 'email',
+                headerName: 'Email',
+                flex: 1,
+                minWidth: 200,
+              },
+              {
+                field: 'status',
+                headerName: 'Status',
+                flex: 0.4,
+                minWidth: 100,
+                align: 'center',
+                headerAlign: 'center',
+                renderCell: (params) => (
+                  <Chip
+                    label={params.value === 'ativo' ? 'Ativo' : 'Inativo'}
+                    color={params.value === 'ativo' ? 'success' : 'default'}
+                    size="small"
+                    variant={params.value === 'ativo' ? 'filled' : 'outlined'}
+                  />
+                ),
+              },
+              {
+                field: 'actions',
+                headerName: 'Ações',
+                flex: 0.6,
+                minWidth: 150,
+                align: 'center',
+                headerAlign: 'center',
+                sortable: false,
+                renderCell: (params) => (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Shield size={16} />}
+                    onClick={() => handleConfigureUser(params.row)}
+                  >
+                    Configurar
+                  </Button>
+                ),
+              },
+            ]}
+            loading={isLoadingUsers}
+            searchPlaceholder="Buscar usuário..."
+          />
+        </CardContent>
+      </Card>
+
+      {selectedRole && (
+        <RolePermissionsModal
+          open={roleModalOpen}
+          onClose={() => {
+            setRoleModalOpen(false);
+            setSelectedRole(null);
+          }}
+          role={selectedRole}
+          roleDisplayName={roles.find((r) => r.value === selectedRole)?.label || ''}
+        />
+      )}
+
+      {selectedUser && (
+        <UserPermissionsModal
+          open={userPermModalOpen}
+          onClose={() => {
+            setUserPermModalOpen(false);
+            setSelectedUser(null);
+          }}
+          userId={selectedUser.user_id}
+          userName={selectedUser.full_name}
+        />
+      )}
     </Box>
   );
 };
@@ -566,7 +935,6 @@ const RealtimeWebhooksTab = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Seção de Informações */}
       <Card>
         <CardContent>
           <Box sx={{ mb: 2 }}>
@@ -665,7 +1033,6 @@ const RealtimeWebhooksTab = () => {
         </CardContent>
       </Card>
 
-      {/* Tabela de Webhooks */}
       {realtimeSubTab === 0 && (
         <>
           <DataTable
@@ -677,7 +1044,6 @@ const RealtimeWebhooksTab = () => {
             loading={isLoading}
           />
 
-          {/* Modais */}
           <WebhookAddModal
             open={addModalOpen}
             onClose={() => setAddModalOpen(false)}
@@ -698,7 +1064,6 @@ const RealtimeWebhooksTab = () => {
         </>
       )}
 
-      {/* Tabela de Logs */}
       {realtimeSubTab === 1 && (
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -862,174 +1227,6 @@ const RealtimeWebhooksTab = () => {
   );
 };
 
-const PermissoesTab = () => {
-  const { users, isLoading: isLoadingUsers } = useUsers();
-  const { permissionTables, rolePermissions, isLoading: isLoadingPermissions } = useTablePermissions();
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [userPermModalOpen, setUserPermModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'operador' | 'user' | 'franqueado' | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-  const roles = [
-    { value: 'admin', label: 'Administrador', description: 'Acesso total ao sistema', color: 'error.main' },
-    { value: 'operador', label: 'Operador', description: 'Visualização de dados sem edição', color: 'info.main' },
-    { value: 'user', label: 'Usuário', description: 'Acesso limitado personalizado', color: 'success.main' },
-  ];
-
-  const handleConfigureRole = (role: 'admin' | 'operador' | 'user' | 'franqueado') => {
-    setSelectedRole(role);
-    setRoleModalOpen(true);
-  };
-
-  const handleConfigureUser = (user: User) => {
-    setSelectedUser(user);
-    setUserPermModalOpen(true);
-  };
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Seção de Permissões por Perfil */}
-      <Card>
-        <CardContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Shield size={20} />
-              Permissões por Perfil
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Configure as permissões padrão para cada perfil de usuário no sistema.
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-            {roles.map((role) => (
-              <Card variant="outlined" key={role.value}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" sx={{ color: role.color, mb: 0.5 }}>
-                          {role.label}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {role.description}
-                        </Typography>
-                      </Box>
-                      <Shield size={24} style={{ color: role.color }} />
-                    </Box>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      onClick={() => handleConfigureRole(role.value as any)}
-                      disabled={isLoadingPermissions}
-                    >
-                      Configurar Permissões
-                    </Button>
-                  </CardContent>
-                </Card>
-            ))}
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Seção de Permissões por Usuário */}
-      <Card>
-        <CardContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Users size={20} />
-              Permissões Específicas de Usuário
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Configure permissões individuais que sobrescrevem as permissões do perfil.
-            </Typography>
-          </Box>
-
-          <DataTable
-            title=""
-            data={users}
-            columns={[
-              {
-                field: 'full_name',
-                headerName: 'Nome',
-                flex: 1,
-                minWidth: 180,
-              },
-              {
-                field: 'email',
-                headerName: 'Email',
-                flex: 1,
-                minWidth: 200,
-              },
-              {
-                field: 'status',
-                headerName: 'Status',
-                flex: 0.4,
-                minWidth: 100,
-                align: 'center',
-                headerAlign: 'center',
-                renderCell: (params) => (
-                  <Chip
-                    label={params.value === 'ativo' ? 'Ativo' : 'Inativo'}
-                    color={params.value === 'ativo' ? 'success' : 'default'}
-                    size="small"
-                    variant={params.value === 'ativo' ? 'filled' : 'outlined'}
-                  />
-                ),
-              },
-              {
-                field: 'actions',
-                headerName: 'Ações',
-                flex: 0.6,
-                minWidth: 150,
-                align: 'center',
-                headerAlign: 'center',
-                sortable: false,
-                renderCell: (params) => (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<Shield size={16} />}
-                    onClick={() => handleConfigureUser(params.row)}
-                  >
-                    Configurar
-                  </Button>
-                ),
-              },
-            ]}
-            loading={isLoadingUsers}
-            searchPlaceholder="Buscar usuário..."
-          />
-        </CardContent>
-      </Card>
-
-      {/* Modais */}
-      {selectedRole && (
-        <RolePermissionsModal
-          open={roleModalOpen}
-          onClose={() => {
-            setRoleModalOpen(false);
-            setSelectedRole(null);
-          }}
-          role={selectedRole}
-          roleDisplayName={roles.find((r) => r.value === selectedRole)?.label || ''}
-        />
-      )}
-
-      {selectedUser && (
-        <UserPermissionsModal
-          open={userPermModalOpen}
-          onClose={() => {
-            setUserPermModalOpen(false);
-            setSelectedUser(null);
-          }}
-          userId={selectedUser.user_id}
-          userName={selectedUser.full_name}
-        />
-      )}
-    </Box>
-  );
-};
-
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
@@ -1045,7 +1242,6 @@ const ConfiguracoesPage = () => {
 
   return (
     <Box>
-      {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Settings size={32} color="#1976d2" />
@@ -1056,7 +1252,6 @@ const ConfiguracoesPage = () => {
         </Typography>
       </Box>
 
-      {/* Tabs Container */}
       <Paper sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs 
@@ -1068,6 +1263,12 @@ const ConfiguracoesPage = () => {
             <Tab 
               icon={<Users size={18} />} 
               label="Gerenciar Usuários" 
+              iconPosition="start"
+              sx={{ textTransform: 'none', fontWeight: 500 }}
+            />
+            <Tab 
+              icon={<UserCog size={18} />} 
+              label="Colab. Internos" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 500 }}
             />
@@ -1099,30 +1300,20 @@ const ConfiguracoesPage = () => {
           </Tabs>
         </Box>
 
-        {/* Tab Panels */}
         <Box sx={{ p: 3 }}>
-      <TabPanel value={tabValue} index={0}>
-        <GerenciamentoUsuariosTab />
-      </TabPanel>
+          <TabPanel value={tabValue} index={0}>
+            <GerenciamentoUsuariosTab />
+          </TabPanel>
 
-      <TabPanel value={tabValue} index={1}>
-        <PermissoesTab />
-      </TabPanel>
-
-          <TabPanel value={tabValue} index={2}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Gerenciamento de Permissões
-                </Typography>
-                <Typography color="text.secondary">
-                  Esta funcionalidade será implementada em breve.
-                </Typography>
-              </CardContent>
-            </Card>
+          <TabPanel value={tabValue} index={1}>
+            <GerenciamentoColaboradoresInternosTab />
           </TabPanel>
 
           <TabPanel value={tabValue} index={2}>
+            <PermissoesTab />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={3}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1135,9 +1326,8 @@ const ConfiguracoesPage = () => {
             </Card>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {/* Seção de Normalização de Nomes das Unidades */}
               <Card>
                 <CardContent>
                   <Box sx={{ mb: 3 }}>
@@ -1199,7 +1389,6 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Seção de Normalização de Contatos */}
               <Card>
                 <CardContent>
                   <Box sx={{ mb: 3 }}>
@@ -1261,7 +1450,6 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Seção de Normalização de Nomes de Pessoas */}
               <Card>
                 <CardContent>
                   <Box sx={{ mb: 3 }}>
@@ -1323,7 +1511,6 @@ const ConfiguracoesPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Outras configurações do sistema */}
               <Card>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1337,13 +1524,12 @@ const ConfiguracoesPage = () => {
             </Box>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={5}>
             <RealtimeWebhooksTab />
           </TabPanel>
         </Box>
       </Paper>
 
-      {/* Modais de Normalização */}
       <NormalizacaoNomesModal
         open={normalizacaoModalOpen}
         onClose={() => setNormalizacaoModalOpen(false)}

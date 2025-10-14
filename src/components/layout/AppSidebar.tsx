@@ -47,6 +47,7 @@ const menuItems: MenuItemType[] = [
     icon: Building2,
     children: [
       { text: 'Unidades', icon: Store, path: '/unidades' },
+      { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
     ]
   },
   { 
@@ -54,7 +55,6 @@ const menuItems: MenuItemType[] = [
     icon: UserCircle,
     children: [
       { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
-      { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
       { text: 'Filhos', icon: Baby, path: '/franqueados-filhos' },
     ]
   },
@@ -70,7 +70,6 @@ const menuItems: MenuItemType[] = [
     text: 'RH', 
     icon: UserCog,
     children: [
-      { text: 'Colab. Interno', icon: UserCog, path: '/colaboradores-interno' },
       { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja' },
       { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja' },
     ]
