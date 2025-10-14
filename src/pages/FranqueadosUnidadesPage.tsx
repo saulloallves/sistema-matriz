@@ -37,6 +37,7 @@ import VinculoEditModal from '@/components/modals/VinculoEditModal';
 import VinculoViewModal from '@/components/modals/VinculoViewModal';
 import { VinculoFilterDrawer } from '@/components/modals/VinculoFilterDrawer';
 import toast from 'react-hot-toast';
+import { formatPhone } from '@/utils/formatters';
 
 interface FilterState {
   franqueado_owner_type?: string;
@@ -407,7 +408,7 @@ const FranqueadosUnidadesPage = () => {
               {params.row.franqueado_full_name}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
-              {params.row.franqueado_contact_masked}
+              {formatPhone(params.row.franqueado_contact_masked)}
             </Typography>
           </Box>
         </Box>
