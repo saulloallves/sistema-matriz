@@ -1,0 +1,14 @@
+ALTER TABLE public.franqueados REPLICA IDENTITY FULL;
+ALTER TABLE public.unidades REPLICA IDENTITY FULL;
+ALTER TABLE public.franqueados_unidades REPLICA IDENTITY FULL;
+ALTER TABLE public.profiles REPLICA IDENTITY FULL;
+ALTER TABLE public.colaboradores_interno REPLICA IDENTITY FULL;
+ALTER TABLE public.colaboradores_loja REPLICA IDENTITY FULL;
+ALTER TABLE public.cargos_loja REPLICA IDENTITY FULL;
+ALTER TABLE public.clientes REPLICA IDENTITY FULL;
+ALTER TABLE public.clientes_filhos REPLICA IDENTITY FULL;
+ALTER TABLE public.franqueados_filhos REPLICA IDENTITY FULL;
+ALTER TABLE public.senhas REPLICA IDENTITY FULL;
+ALTER TABLE public.permissoes REPLICA IDENTITY FULL;
+ALTER TABLE public.unidades_grupos_whatsapp REPLICA IDENTITY FULL;
+ALTER TABLE public.webhook_subscriptions REPLICA IDENTITY FULL;
