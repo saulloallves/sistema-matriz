@@ -6,11 +6,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Arquivos de configuração do Docker e NGINX
+# Arquivos de configuração do Docker
 Dockerfile
 docker-compose.yml
 .dockerignore
-nginx/
 
 # Metadados do Git e do projeto
 .git

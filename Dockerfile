@@ -26,6 +26,10 @@ FROM nginx:1.25-alpine
 # para a pasta padrão do NGINX que serve conteúdo web.
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copia a nossa configuração customizada do NGINX para dentro do contêiner
+# Isso sobrescreve a configuração padrão e aplica nossa regra para SPAs
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expõe a porta 80 para que o NGINX possa receber tráfego
 EXPOSE 80
 
