@@ -150,6 +150,8 @@ const createColumns = (
     headerName: "ID do Grupo",
     flex: 2,
     minWidth: 180,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: (params) => (
       <Typography 
         variant="body2" 
@@ -157,8 +159,10 @@ const createColumns = (
           fontSize: '0.75rem',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           height: '100%',
-          wordBreak: 'break-all'
+          wordBreak: 'break-all',
+          textAlign: 'center'
         }}
       >
         {params.value}
@@ -178,6 +182,7 @@ const createColumns = (
         sx={{ 
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           height: '100%',
           fontSize: '0.875rem'
         }}
@@ -191,6 +196,7 @@ const createColumns = (
     headerName: "Ações",
     width: 80,
     headerAlign: 'center',
+    align: 'center',
     sortable: false,
     filterable: false,
     renderCell: (params) => <ActionCell row={params.row} onView={onView} onEdit={onEdit} onDelete={onDelete} />,
