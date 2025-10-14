@@ -428,18 +428,6 @@ export default function FranqueadosPage() {
       flex: 1.5,
       minWidth: 150,
       valueFormatter: (value) => formatCPF(value || ''),
-      renderCell: (params) => (
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            display: 'flex',
-            alignItems: 'center',
-            height: '100%'
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
     },
     {
       field: "owner_type",
