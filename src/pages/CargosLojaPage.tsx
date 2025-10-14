@@ -244,7 +244,7 @@ export default function CargosLojaPage() {
         onAdd={handleAdd}
         searchPlaceholder="Pesquisar cargos..."
         title="Cargos de Loja"
-        titleIcon={<Briefcase size={32} />}
+        titleIcon={<Briefcase size={32} color="#E3A024" />}
         description="Gerencie os cargos disponíveis para funcionários de loja"
         loading={isLoading}
         customCards={statsCards}
