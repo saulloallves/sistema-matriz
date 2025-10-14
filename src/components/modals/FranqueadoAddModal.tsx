@@ -34,7 +34,7 @@ const franqueadoSchema = z.object({
   birth_date: z.string().optional(),
   address: z.string().optional(),
   owner_type: z.enum(['Principal', 'Sócio'], {
-    required_error: "Tipo de proprietário é obrigatório"
+    required_error: "Tipo de proprietário(a) é obrigatório"
   }),
   contact: z.string().min(1, "Contato é obrigatório"),
   availability: z.string().optional(),
