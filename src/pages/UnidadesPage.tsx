@@ -118,7 +118,6 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
         label={params.value}
         variant="outlined"
         size="small"
-        sx={{ fontFamily: 'monospace' }}
       />
     ),
   },
@@ -163,7 +162,6 @@ const createColumns = (onView: (unidade: Unidade) => void, onEdit: (unidade: Uni
       <Typography 
         variant="body2" 
         sx={{ 
-          fontFamily: 'monospace',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -430,7 +430,6 @@ export default function FranqueadosPage() {
         <Typography 
           variant="body2" 
           sx={{ 
-            fontFamily: 'monospace',
             display: 'flex',
             alignItems: 'center',
             height: '100%'

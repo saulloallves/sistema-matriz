@@ -49,7 +49,6 @@ export function NormalizacaoContatosModal({ open, onClose }: NormalizacaoContato
           variant="body2"
           sx={{
             color: 'error.main',
-            fontFamily: 'monospace',
           }}
         >
           {params.value}
@@ -66,7 +65,6 @@ export function NormalizacaoContatosModal({ open, onClose }: NormalizacaoContato
           variant="body2"
           sx={{
             color: 'success.main',
-            fontFamily: 'monospace',
             fontWeight: 'bold',
           }}
         >

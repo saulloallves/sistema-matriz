@@ -199,7 +199,7 @@ const VinculoViewModal = ({ open, onClose, vinculo }: VinculoViewModalProps) => 
                         <Typography variant="body2" color="text.secondary">
                           CNPJ
                         </Typography>
-                        <Typography variant="body2" fontFamily="monospace">
+                        <Typography variant="body2">
                           {vinculo.unidade_cnpj}
                         </Typography>
                       </Box>
@@ -243,7 +243,7 @@ const VinculoViewModal = ({ open, onClose, vinculo }: VinculoViewModalProps) => 
                   <Typography variant="body2" color="text.secondary">
                     ID do Vínculo
                   </Typography>
-                  <Typography variant="body1" fontFamily="monospace">
+                  <Typography variant="body1">
                     #{vinculo.id}
                   </Typography>
                 </Box>

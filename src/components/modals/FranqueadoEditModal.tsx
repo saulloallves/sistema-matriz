@@ -915,7 +915,6 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                         InputProps={{
                           readOnly: true,
                           sx: { 
-                            fontFamily: 'monospace',
                             fontSize: '1.1rem',
                             letterSpacing: '0.1em'
                           }

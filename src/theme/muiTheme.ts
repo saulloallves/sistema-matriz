@@ -42,7 +42,7 @@ export const muiTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Poppins", "Helvetica", "Arial", sans-serif',
     h4: {
       fontWeight: 600,
       fontSize: '1.5rem',

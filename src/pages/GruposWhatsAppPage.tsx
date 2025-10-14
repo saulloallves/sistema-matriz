@@ -156,7 +156,6 @@ const createColumns = (
       <Typography 
         variant="body2" 
         sx={{ 
-          fontFamily: 'monospace',
           fontSize: '0.75rem',
           display: 'flex',
           alignItems: 'center',

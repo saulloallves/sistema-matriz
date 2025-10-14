@@ -88,7 +88,6 @@ export const WhatsAppGroupViewModal: React.FC<WhatsAppGroupViewModalProps> = ({
               variant="body1" 
               fontWeight="medium"
               sx={{ 
-                fontFamily: 'monospace',
                 backgroundColor: 'grey.100',
                 padding: 1,
                 borderRadius: 1,
