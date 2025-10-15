@@ -485,30 +485,37 @@ export default function FranqueadosPage() {
         const sortModel = cellParams1.api.getSortModel();
         const sortDirection = sortModel.length > 0 ? sortModel[0].sort : null;
     
-        // Use v1 and v2 which are the cell values (booleans)
-        const receives1 = v1 as boolean;
-        const receives2 = v2 as boolean;
+        const row1 = cellParams1.row;
+        const row2 = cellParams2.row;
     
-        // Rule 1: Those who receive pro-labore come first.
+        if (!row1 || !row2) {
+          return 0;
+        }
+    
+        const receives1 = row1.receives_prolabore as boolean;
+        const receives2 = row2.receives_prolabore as boolean;
+    
+        // Rule 1: Those who receive pro-labore always come first.
         if (receives1 && !receives2) return -1;
         if (!receives1 && receives2) return 1;
     
-        // Rule 2: If both receive, sort by value.
+        // Rule 2: If both (or neither) have the same 'receives' status, proceed.
         if (receives1 && receives2) {
-          // Safety check before accessing row data
-          if (!cellParams1.row || !cellParams2.row) {
-            return 0;
-          }
-          const value1 = Number(cellParams1.row.prolabore_value) || 0;
-          const value2 = Number(cellParams2.row.prolabore_value) || 0;
+          const value1 = Number(row1.prolabore_value) || 0;
+          const value2 = Number(row2.prolabore_value) || 0;
     
-          if (sortDirection === 'asc') {
-            return value1 - value2;
+          // Sub-rule 2a: Sort by pro-labore value.
+          if (value1 !== value2) {
+            return sortDirection === 'asc' ? value1 - value2 : value2 - value1;
           }
-          return value2 - value1; // 'desc' or default
+    
+          // Sub-rule 2b (Tie-breaker): If values are equal, sort by creation date (oldest first).
+          const date1 = new Date(row1.created_at).getTime();
+          const date2 = new Date(row2.created_at).getTime();
+          return date1 - date2;
         }
     
-        // Rule 3: If neither receives, they are equal.
+        // Rule 3: If neither receives pro-labore, they are considered equal.
         return 0;
       },
       renderCell: (params) => {
