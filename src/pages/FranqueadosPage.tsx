@@ -120,7 +120,7 @@ export default function FranqueadosPage() {
     deleteFranqueado,
     isDeleting 
   } = useFranqueados();
-  const { isAdmin, isFranqueado, userRole, isLoading: roleLoading } = useUserRole();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
   
   const [selectedFranqueado, setSelectedFranqueado] = useState<Franqueado | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -590,24 +590,8 @@ export default function FranqueadosPage() {
     );
   }
 
-  // Show security warning for non-admin users
-  const showSecurityAlert = !isAdmin() && userRole;
-
   return (
     <>
-      {showSecurityAlert && (
-        <Alert 
-          severity="info" 
-          icon={<Shield />}
-          sx={{ mb: 2 }}
-        >
-          {isFranqueado() 
-            ? "Você está visualizando dados com acesso restrito. Alguns campos sensíveis estão mascarados por segurança."
-            : "Acesso limitado: Você não tem permissão para visualizar todos os dados dos franqueados."
-          }
-        </Alert>
-      )}
-      
       <DataTable
         columns={columns}
         data={filteredData}

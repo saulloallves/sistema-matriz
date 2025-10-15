@@ -37,7 +37,7 @@ import VinculoEditModal from '@/components/modals/VinculoEditModal';
 import VinculoViewModal from '@/components/modals/VinculoViewModal';
 import { VinculoFilterDrawer } from '@/components/modals/VinculoFilterDrawer';
 import toast from 'react-hot-toast';
-import { formatPhone } from '@/utils/formatters';
+import { formatPhone } from "@/utils/formatters";
 
 interface FilterState {
   franqueado_owner_type?: string;
@@ -134,7 +134,7 @@ const FranqueadosUnidadesPage = () => {
     deleteVinculo, 
     isDeleting 
   } = useFranqueadosUnidades();
-  const { isAdmin, isFranqueado, userRole, isLoading: roleLoading } = useUserRole();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
 
   const filteredData = useMemo(() => {
     return vinculos.filter(vinculo => {
@@ -519,24 +519,8 @@ const FranqueadosUnidadesPage = () => {
     );
   }
 
-  // Show security warning for non-admin users
-  const showSecurityAlert = !isAdmin() && userRole;
-
   return (
     <>
-      {showSecurityAlert && (
-        <Alert 
-          severity="info" 
-          icon={<Shield />}
-          sx={{ mb: 2 }}
-        >
-          {isFranqueado() 
-            ? "Você está visualizando dados com acesso restrito. Alguns campos sensíveis estão mascarados por segurança."
-            : "Acesso limitado: Você não tem permissão para visualizar todos os dados dos vínculos."
-          }
-        </Alert>
-      )}
-      
       <DataTable
         columns={columns}
         data={filteredData}
