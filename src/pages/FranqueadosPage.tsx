@@ -14,7 +14,7 @@ import {
   Button,
   Badge
 } from '@mui/material';
-import { GridColDef, GridSortCellParams } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 import { 
   MoreHorizontal, 
   Edit, 
@@ -480,41 +480,6 @@ export default function FranqueadosPage() {
       minWidth: 140,
       align: "center",
       headerAlign: "center",
-      sortingOrder: ['desc', 'asc', null],
-      sortComparator: (v1, v2, cellParams1, cellParams2) => {
-        const row1 = cellParams1.row;
-        const row2 = cellParams2.row;
-    
-        if (!row1 || !row2) {
-          return 0;
-        }
-    
-        const receives1 = row1.receives_prolabore as boolean;
-        const receives2 = row2.receives_prolabore as boolean;
-    
-        // Rule 1: Those who receive pro-labore always come first.
-        if (receives1 && !receives2) return -1;
-        if (!receives1 && receives2) return 1;
-    
-        // Rule 2: If both receive, sort by value, then by date.
-        if (receives1 && receives2) {
-          const value1 = Number(row1.prolabore_value) || 0;
-          const value2 = Number(row2.prolabore_value) || 0;
-    
-          // Sub-rule 2a: Sort by pro-labore value (ascending).
-          if (value1 !== value2) {
-            return value1 - value2;
-          }
-    
-          // Sub-rule 2b (Tie-breaker): If values are equal, sort by creation date (oldest first).
-          const date1 = new Date(row1.created_at).getTime();
-          const date2 = new Date(row2.created_at).getTime();
-          return date1 - date2;
-        }
-    
-        // Rule 3: If neither receives pro-labore, they are considered equal.
-        return 0;
-      },
       renderCell: (params) => {
         const receives = params.value;
         const prolaboreValue = params.row.prolabore_value;
