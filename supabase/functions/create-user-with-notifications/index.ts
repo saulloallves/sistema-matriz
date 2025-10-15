@@ -164,11 +164,10 @@ serve(async (req) => {
     console.log('Usuário criado com sucesso:', newUser.user?.id);
 
     // O profile será criado automaticamente pelo trigger handle_new_user()
-    // Não precisamos criar manualmente aqui
     console.log('Profile será criado automaticamente pelo trigger');
 
-    // Criar role do usuário (padrão: admin se não especificado)
-    const userRole = role || 'admin';
+    // Criar role do usuário
+    const userRole = role || 'user';
     const { error: roleError } = await supabase
       .from('user_roles')
       .insert({
@@ -178,9 +177,27 @@ serve(async (req) => {
 
     if (roleError) {
       console.error('Erro ao criar role:', roleError);
-      // Não falhar a criação do usuário por causa do role, apenas logar
     } else {
       console.log('Role criado com sucesso:', userRole);
+    }
+
+    // **NOVA LÓGICA: Atribuir permissões padrão para operadores**
+    if (userRole === 'operador') {
+      console.log('Usuário é um operador. Atribuindo permissões padrão...');
+      const permissionsToInsert = [
+        { user_id: newUser.user!.id, table_name: 'franqueados', has_access: true, created_by: currentUserId },
+        { user_id: newUser.user!.id, table_name: 'unidades', has_access: true, created_by: currentUserId }
+      ];
+
+      const { error: permError } = await supabase
+        .from('user_table_permissions')
+        .insert(permissionsToInsert);
+
+      if (permError) {
+        console.error('Erro ao atribuir permissões padrão para operador:', permError);
+      } else {
+        console.log('Permissões padrão para operador atribuídas com sucesso.');
+      }
     }
 
     // Preparar mensagens

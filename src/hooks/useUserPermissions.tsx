@@ -6,10 +6,7 @@ export interface UserTablePermission {
   id: string;
   user_id: string;
   table_name: string;
-  can_create: boolean;
-  can_read: boolean;
-  can_update: boolean;
-  can_delete: boolean;
+  has_access: boolean;
   created_by?: string;
   created_at: string;
   updated_at: string;
@@ -38,17 +35,11 @@ export function useUserPermissions(userId?: string) {
     mutationFn: async ({
       user_id,
       table_name,
-      can_create,
-      can_read,
-      can_update,
-      can_delete,
+      has_access,
     }: {
       user_id: string;
       table_name: string;
-      can_create: boolean;
-      can_read: boolean;
-      can_update: boolean;
-      can_delete: boolean;
+      has_access: boolean;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -57,12 +48,9 @@ export function useUserPermissions(userId?: string) {
         .upsert({
           user_id,
           table_name,
-          can_create,
-          can_read,
-          can_update,
-          can_delete,
+          has_access,
           created_by: user?.id,
-        })
+        }, { onConflict: 'user_id, table_name' })
         .select()
         .single();
 

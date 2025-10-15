@@ -11,7 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Checkbox,
+  Switch,
   Box,
   Typography,
   CircularProgress,
@@ -35,49 +35,34 @@ export function RolePermissionsModal({
   const { permissionTables, rolePermissions, updateRolePermission, isUpdating, isLoading } =
     useTablePermissions();
 
-  const [localPermissions, setLocalPermissions] = useState<Record<string, any>>({});
+  const [localPermissions, setLocalPermissions] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (rolePermissions.length > 0 && permissionTables.length > 0) {
-      const perms: Record<string, any> = {};
+      const perms: Record<string, boolean> = {};
       permissionTables.forEach((table) => {
         const rolePerms = rolePermissions.find(
           (rp) => rp.role === role && rp.table_name === table.table_name
         );
-        perms[table.table_name] = {
-          can_create: rolePerms?.can_create || false,
-          can_read: rolePerms?.can_read || false,
-          can_update: rolePerms?.can_update || false,
-          can_delete: rolePerms?.can_delete || false,
-        };
+        perms[table.table_name] = rolePerms?.has_access || false;
       });
       setLocalPermissions(perms);
     }
   }, [rolePermissions, permissionTables, role]);
 
-  const handlePermissionChange = (
-    tableName: string,
-    permission: 'can_create' | 'can_read' | 'can_update' | 'can_delete',
-    value: boolean
-  ) => {
+  const handlePermissionChange = (tableName: string, value: boolean) => {
     setLocalPermissions((prev) => ({
       ...prev,
-      [tableName]: {
-        ...prev[tableName],
-        [permission]: value,
-      },
+      [tableName]: value,
     }));
   };
 
   const handleSave = () => {
-    Object.entries(localPermissions).forEach(([tableName, perms]) => {
+    Object.entries(localPermissions).forEach(([tableName, hasAccess]) => {
       updateRolePermission({
         role,
         table_name: tableName,
-        can_create: perms.can_create,
-        can_read: perms.can_read,
-        can_update: perms.can_update,
-        can_delete: perms.can_delete,
+        has_access: hasAccess,
       });
     });
     onClose();
@@ -93,7 +78,6 @@ export function RolePermissionsModal({
     );
   }
 
-  // Admin sempre tem acesso total - não pode ser editado
   if (role === 'admin') {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -114,7 +98,7 @@ export function RolePermissionsModal({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Shield size={24} />
         Configurar Permissões: {roleDisplayName}
@@ -128,10 +112,7 @@ export function RolePermissionsModal({
             <TableHead>
               <TableRow>
                 <TableCell><strong>Módulo</strong></TableCell>
-                <TableCell align="center"><strong>Criar</strong></TableCell>
-                <TableCell align="center"><strong>Visualizar</strong></TableCell>
-                <TableCell align="center"><strong>Editar</strong></TableCell>
-                <TableCell align="center"><strong>Excluir</strong></TableCell>
+                <TableCell align="center"><strong>Acesso Permitido</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -148,34 +129,10 @@ export function RolePermissionsModal({
                     )}
                   </TableCell>
                   <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_create || false}
+                    <Switch
+                      checked={localPermissions[table.table_name] || false}
                       onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_create', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_read || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_read', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_update || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_update', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_delete || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_delete', e.target.checked)
+                        handlePermissionChange(table.table_name, e.target.checked)
                       }
                     />
                   </TableCell>

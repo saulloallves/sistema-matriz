@@ -15,10 +15,7 @@ export interface RoleTablePermission {
   id: string;
   role: string;
   table_name: string;
-  can_create: boolean;
-  can_read: boolean;
-  can_update: boolean;
-  can_delete: boolean;
+  has_access: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -56,28 +53,19 @@ export function useTablePermissions() {
     mutationFn: async ({
       role,
       table_name,
-      can_create,
-      can_read,
-      can_update,
-      can_delete,
+      has_access,
     }: {
       role: string;
       table_name: string;
-      can_create: boolean;
-      can_read: boolean;
-      can_update: boolean;
-      can_delete: boolean;
+      has_access: boolean;
     }) => {
       const { data, error } = await supabase
         .from('role_table_permissions')
         .upsert({
           role: role as any,
           table_name,
-          can_create,
-          can_read,
-          can_update,
-          can_delete,
-        })
+          has_access,
+        }, { onConflict: 'role, table_name' })
         .select()
         .single();
 
@@ -86,7 +74,7 @@ export function useTablePermissions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['role-table-permissions'] });
-      toast.success('Permissão atualizada com sucesso');
+      toast.success('Permissão de perfil atualizada com sucesso');
     },
     onError: (error: any) => {
       toast.error(`Erro ao atualizar permissão: ${error.message}`);

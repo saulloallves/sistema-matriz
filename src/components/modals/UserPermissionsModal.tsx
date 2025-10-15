@@ -11,7 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Checkbox,
+  Switch,
   Box,
   Typography,
   CircularProgress,
@@ -44,18 +44,15 @@ export function UserPermissionsModal({
     isLoading: isLoadingPerms,
   } = useUserPermissions(userId);
 
-  const [localPermissions, setLocalPermissions] = useState<Record<string, any>>({});
+  const [localPermissions, setLocalPermissions] = useState<Record<string, { has_access: boolean; hasOverride: boolean }>>({});
 
   useEffect(() => {
     if (permissionTables.length > 0) {
-      const perms: Record<string, any> = {};
+      const perms: Record<string, { has_access: boolean; hasOverride: boolean }> = {};
       permissionTables.forEach((table) => {
         const userPerms = userPermissions.find((up) => up.table_name === table.table_name);
         perms[table.table_name] = {
-          can_create: userPerms?.can_create || false,
-          can_read: userPerms?.can_read || false,
-          can_update: userPerms?.can_update || false,
-          can_delete: userPerms?.can_delete || false,
+          has_access: userPerms?.has_access || false,
           hasOverride: !!userPerms,
         };
       });
@@ -63,16 +60,12 @@ export function UserPermissionsModal({
     }
   }, [userPermissions, permissionTables]);
 
-  const handlePermissionChange = (
-    tableName: string,
-    permission: 'can_create' | 'can_read' | 'can_update' | 'can_delete',
-    value: boolean
-  ) => {
+  const handlePermissionChange = (tableName: string, value: boolean) => {
     setLocalPermissions((prev) => ({
       ...prev,
       [tableName]: {
         ...prev[tableName],
-        [permission]: value,
+        has_access: value,
         hasOverride: true,
       },
     }));
@@ -83,10 +76,7 @@ export function UserPermissionsModal({
     setLocalPermissions((prev) => ({
       ...prev,
       [tableName]: {
-        can_create: false,
-        can_read: false,
-        can_update: false,
-        can_delete: false,
+        has_access: false,
         hasOverride: false,
       },
     }));
@@ -98,10 +88,7 @@ export function UserPermissionsModal({
         updateUserPermission({
           user_id: userId,
           table_name: tableName,
-          can_create: perms.can_create,
-          can_read: perms.can_read,
-          can_update: perms.can_update,
-          can_delete: perms.can_delete,
+          has_access: perms.has_access,
         });
       }
     });
@@ -119,24 +106,21 @@ export function UserPermissionsModal({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <User size={24} />
         Permissões Específicas: {userName}
       </DialogTitle>
       <DialogContent>
         <Typography sx={{ mb: 2 }} color="text.secondary">
-          Configure permissões específicas para este usuário. As permissões individuais substituem as permissões do perfil.
+          Configure permissões individuais para este usuário. As permissões individuais substituem as permissões do perfil.
         </Typography>
         <TableContainer>
           <Table size="small">
             <TableHead>
               <TableRow>
                 <TableCell><strong>Módulo</strong></TableCell>
-                <TableCell align="center"><strong>Criar</strong></TableCell>
-                <TableCell align="center"><strong>Visualizar</strong></TableCell>
-                <TableCell align="center"><strong>Editar</strong></TableCell>
-                <TableCell align="center"><strong>Excluir</strong></TableCell>
+                <TableCell align="center"><strong>Acesso Permitido</strong></TableCell>
                 <TableCell align="center"><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -161,34 +145,10 @@ export function UserPermissionsModal({
                     )}
                   </TableCell>
                   <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_create || false}
+                    <Switch
+                      checked={localPermissions[table.table_name]?.has_access || false}
                       onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_create', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_read || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_read', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_update || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_update', e.target.checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Checkbox
-                      checked={localPermissions[table.table_name]?.can_delete || false}
-                      onChange={(e) =>
-                        handlePermissionChange(table.table_name, 'can_delete', e.target.checked)
+                        handlePermissionChange(table.table_name, e.target.checked)
                       }
                     />
                   </TableCell>
