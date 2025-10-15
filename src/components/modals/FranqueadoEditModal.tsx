@@ -37,7 +37,7 @@ interface FranqueadoEditModalProps {
 
 const franqueadoSchema = z.object({
   full_name: z.string().min(1, "Nome completo é obrigatório"),
-  cpf_rnm: z.string().min(1, "CPF/RNM é obrigatório"),
+  cpf_rnm: z.string().optional(),
   nationality: z.string().optional(),
   birth_date: z.string().optional(),
   address: z.string().optional(),
@@ -71,7 +71,10 @@ const franqueadoSchema = z.object({
   confidentiality_term_accepted: z.boolean(),
   system_term_accepted: z.boolean(),
   is_active_system: z.boolean(),
-  systems_password: z.number().optional()
+  systems_password: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().optional()
+  ),
 });
 
 type FranqueadoFormData = z.infer<typeof franqueadoSchema>;
