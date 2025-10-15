@@ -14,7 +14,7 @@ import {
   Button,
   Badge
 } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridSortCellParams } from '@mui/x-data-grid';
 import { 
   MoreHorizontal, 
   Edit, 
@@ -480,6 +480,35 @@ export default function FranqueadosPage() {
       minWidth: 140,
       align: "center",
       headerAlign: "center",
+      sortingOrder: ['desc', 'asc', null],
+      sortComparator: (v1, v2, cellParams1, cellParams2) => {
+        const sortModel = cellParams1.api.getSortModel();
+        const sortDirection = sortModel.length > 0 ? sortModel[0].sort : null;
+
+        const row1 = cellParams1.row;
+        const row2 = cellParams2.row;
+
+        const receives1 = row1.receives_prolabore;
+        const receives2 = row2.receives_prolabore;
+
+        const value1 = Number(row1.prolabore_value) || 0;
+        const value2 = Number(row2.prolabore_value) || 0;
+
+        // Regra 1: Quem recebe pró-labore sempre vem primeiro.
+        if (receives1 && !receives2) return -1;
+        if (!receives1 && receives2) return 1;
+
+        // Regra 2: Se ambos recebem, ordena pelo valor.
+        if (receives1 && receives2) {
+          if (sortDirection === 'asc') {
+            return value1 - value2;
+          }
+          return value2 - value1; // 'desc' ou padrão
+        }
+
+        // Regra 3: Se nenhum recebe, são iguais.
+        return 0;
+      },
       renderCell: (params) => {
         const receives = params.value;
         const prolaboreValue = params.row.prolabore_value;
