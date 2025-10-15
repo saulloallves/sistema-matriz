@@ -66,6 +66,10 @@ import ColaboradorInternoViewModal from '@/components/modals/ColaboradorInternoV
 import { ColaboradorInternoAddModal } from '@/components/modals/ColaboradorInternoAddModal';
 import { ColaboradorInternoEditModal } from '@/components/modals/ColaboradorInternoEditModal';
 import toast from 'react-hot-toast';
+import { useAuditLogs, AuditLog } from '@/hooks/useAuditLogs';
+import { AuditLogViewModal } from '@/components/modals/AuditLogViewModal';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1227,6 +1231,95 @@ const RealtimeWebhooksTab = () => {
   );
 };
 
+const AuditLogsTab = () => {
+  const { logs, isLoading } = useAuditLogs();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+
+  const handleViewDetails = (log: AuditLog) => {
+    setSelectedLog(log);
+    setModalOpen(true);
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: 'timestamp',
+      headerName: 'Data/Hora',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => format(new Date(params.value), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }),
+    },
+    {
+      field: 'user_full_name',
+      headerName: 'Usuário',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => params.value || 'Sistema',
+    },
+    {
+      field: 'action',
+      headerName: 'Ação',
+      flex: 0.5,
+      minWidth: 120,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => {
+        const color = params.value === 'INSERT' ? 'success' : params.value === 'UPDATE' ? 'warning' : 'error';
+        return <Chip label={params.value} color={color} size="small" />;
+      },
+    },
+    {
+      field: 'table_name',
+      headerName: 'Módulo',
+      flex: 0.8,
+      minWidth: 150,
+    },
+    {
+      field: 'record_id',
+      headerName: 'ID do Registro',
+      flex: 1.5,
+      minWidth: 280,
+    },
+    {
+      field: 'actions',
+      headerName: 'Ações',
+      width: 150,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => (
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<Eye size={16} />}
+          onClick={() => handleViewDetails(params.row)}
+        >
+          Ver Detalhes
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <DataTable
+        title="Logs de Auditoria"
+        titleIcon={<Database size={20} color="#E3A024" />}
+        description="Visualize todas as alterações de dados realizadas no sistema."
+        data={logs}
+        columns={columns}
+        loading={isLoading}
+        searchPlaceholder="Buscar por usuário, módulo ou ação..."
+      />
+      <AuditLogViewModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        log={selectedLog}
+      />
+    </>
+  );
+};
+
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
@@ -1259,6 +1352,8 @@ const ConfiguracoesPage = () => {
             onChange={handleTabChange} 
             aria-label="configurações tabs"
             sx={{ px: 2 }}
+            variant="scrollable"
+            scrollButtons="auto"
           >
             <Tab 
               icon={<Users size={18} />} 
@@ -1294,6 +1389,12 @@ const ConfiguracoesPage = () => {
             <Tab 
               icon={<Webhook size={18} />} 
               label="Real-time" 
+              iconPosition="start"
+              sx={{ textTransform: 'none', fontWeight: 500 }}
+            />
+            <Tab 
+              icon={<Database size={18} />} 
+              label="Logs de Auditoria" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 500 }}
             />
@@ -1526,6 +1627,10 @@ const ConfiguracoesPage = () => {
 
           <TabPanel value={tabValue} index={5}>
             <RealtimeWebhooksTab />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={6}>
+            <AuditLogsTab />
           </TabPanel>
         </Box>
       </Paper>
