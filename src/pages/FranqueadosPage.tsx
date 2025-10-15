@@ -484,29 +484,31 @@ export default function FranqueadosPage() {
       sortComparator: (v1, v2, cellParams1, cellParams2) => {
         const sortModel = cellParams1.api.getSortModel();
         const sortDirection = sortModel.length > 0 ? sortModel[0].sort : null;
-
-        const row1 = cellParams1.row;
-        const row2 = cellParams2.row;
-
-        const receives1 = row1.receives_prolabore;
-        const receives2 = row2.receives_prolabore;
-
-        const value1 = Number(row1.prolabore_value) || 0;
-        const value2 = Number(row2.prolabore_value) || 0;
-
-        // Regra 1: Quem recebe pró-labore sempre vem primeiro.
+    
+        // Use v1 and v2 which are the cell values (booleans)
+        const receives1 = v1 as boolean;
+        const receives2 = v2 as boolean;
+    
+        // Rule 1: Those who receive pro-labore come first.
         if (receives1 && !receives2) return -1;
         if (!receives1 && receives2) return 1;
-
-        // Regra 2: Se ambos recebem, ordena pelo valor.
+    
+        // Rule 2: If both receive, sort by value.
         if (receives1 && receives2) {
+          // Safety check before accessing row data
+          if (!cellParams1.row || !cellParams2.row) {
+            return 0;
+          }
+          const value1 = Number(cellParams1.row.prolabore_value) || 0;
+          const value2 = Number(cellParams2.row.prolabore_value) || 0;
+    
           if (sortDirection === 'asc') {
             return value1 - value2;
           }
-          return value2 - value1; // 'desc' ou padrão
+          return value2 - value1; // 'desc' or default
         }
-
-        // Regra 3: Se nenhum recebe, são iguais.
+    
+        // Rule 3: If neither receives, they are equal.
         return 0;
       },
       renderCell: (params) => {
