@@ -19,7 +19,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Save, User, MapPin, RefreshCw } from 'lucide-react';
+import { X, Save, User, MapPin, RefreshCw, Search } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
@@ -140,15 +140,20 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
   const receives_prolabore = watch('receives_prolabore');
   const was_referred = watch('was_referred');
   const has_other_activities = watch('has_other_activities');
-  const postal_code = watch('postal_code');
 
   // API CEP integration
-  const fetchAddressByCep = useCallback(async (cep: string) => {
-    if (!cep || cep.length !== 8) return;
+  const fetchAddressByCep = useCallback(async () => {
+    const cep = watch('postal_code');
+    const cleanCEP = cep?.replace(/\D/g, '') || '';
+
+    if (cleanCEP.length !== 8) {
+      toast.error('Por favor, insira um CEP válido com 8 dígitos.');
+      return;
+    }
     
     try {
       setCepLoading(true);
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
       const data = await response.json();
       
       if (data.erro) {
@@ -170,18 +175,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     } finally {
       setCepLoading(false);
     }
-  }, [setValue]);
-
-  // Debounce CEP lookup
-  useEffect(() => {
-    if (postal_code && postal_code.length === 8) {
-      const timer = setTimeout(() => {
-        fetchAddressByCep(postal_code);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [postal_code, fetchAddressByCep]);
+  }, [watch, setValue]);
 
   useEffect(() => {
     if (franqueado && open) {
@@ -529,18 +523,20 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                           pattern: '[0-9]*'
                         }}
                         InputProps={{
-                          endAdornment: cepLoading ? (
+                          endAdornment: (
                             <InputAdornment position="end">
-                              <CircularProgress size={20} />
-                            </InputAdornment>
-                          ) : (
-                            <InputAdornment position="end">
-                              <MapPin size={20} />
+                              <IconButton
+                                onClick={fetchAddressByCep}
+                                edge="end"
+                                disabled={cepLoading}
+                              >
+                                {cepLoading ? <CircularProgress size={20} /> : <Search size={20} />}
+                              </IconButton>
                             </InputAdornment>
                           )
                         }}
                         error={!!errors.postal_code}
-                        helperText={errors.postal_code?.message || 'Digite apenas números'}
+                        helperText={errors.postal_code?.message || 'Digite 8 números e clique na lupa'}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, '');
                           field.onChange(value);
