@@ -21,7 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, User, MapPin, RefreshCw } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import toast from 'react-hot-toast';
 import { useFranqueadosUnidades } from '@/hooks/useFranqueadosUnidades';
 import { generateSystemPassword } from '@/utils/passwordGenerator';
@@ -228,45 +228,51 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     try {
       setLoading(true);
 
+      const updatePayload: TablesUpdate<'franqueados'> = {
+        full_name: data.full_name,
+        cpf_rnm: data.cpf_rnm || null,
+        nationality: data.nationality || null,
+        birth_date: data.birth_date || null,
+        address: data.address || null,
+        number_address: data.number_address || null,
+        address_complement: data.address_complement || null,
+        neighborhood: data.neighborhood || null,
+        city: data.city || null,
+        state: data.state || null,
+        uf: data.uf || null,
+        postal_code: data.postal_code || null,
+        owner_type: data.owner_type,
+        contact: data.contact,
+        availability: data.availability || null,
+        education: data.education || null,
+        previous_profession: data.previous_profession || null,
+        previous_salary_range: data.previous_salary_range || null,
+        discovery_source: data.discovery_source || null,
+        referrer_name: data.referrer_name || null,
+        referrer_unit_code: data.referrer_unit_code || null,
+        other_activities_description: data.other_activities_description || null,
+        prolabore_value: data.receives_prolabore ? data.prolabore_value : null,
+        profile_image: data.profile_image || null,
+        is_in_contract: data.is_in_contract,
+        receives_prolabore: data.receives_prolabore,
+        has_other_activities: data.has_other_activities,
+        was_entrepreneur: data.was_entrepreneur,
+        was_referred: data.was_referred,
+        lgpd_term_accepted: data.lgpd_term_accepted,
+        confidentiality_term_accepted: data.confidentiality_term_accepted,
+        system_term_accepted: data.system_term_accepted,
+        is_active_system: data.is_active_system,
+        updated_at: new Date().toISOString()
+      };
+
+      // Only include password if it has been changed
+      if (data.systems_password && data.systems_password !== franqueado.systems_password) {
+        updatePayload.systems_password = data.systems_password;
+      }
+
       const { error } = await supabase
         .from("franqueados")
-        .update({
-          full_name: data.full_name,
-          cpf_rnm: data.cpf_rnm || null,
-          nationality: data.nationality || null,
-          birth_date: data.birth_date || null,
-          address: data.address || null,
-          number_address: data.number_address || null,
-          address_complement: data.address_complement || null,
-          neighborhood: data.neighborhood || null,
-          city: data.city || null,
-          state: data.state || null,
-          uf: data.uf || null,
-          postal_code: data.postal_code || null,
-          owner_type: data.owner_type,
-          contact: data.contact,
-          availability: data.availability || null,
-          education: data.education || null,
-          previous_profession: data.previous_profession || null,
-          previous_salary_range: data.previous_salary_range || null,
-          discovery_source: data.discovery_source || null,
-          referrer_name: data.referrer_name || null,
-          referrer_unit_code: data.referrer_unit_code || null,
-          other_activities_description: data.other_activities_description || null,
-          prolabore_value: data.receives_prolabore ? data.prolabore_value : null,
-          profile_image: data.profile_image || null,
-          is_in_contract: data.is_in_contract,
-          receives_prolabore: data.receives_prolabore,
-          has_other_activities: data.has_other_activities,
-          was_entrepreneur: data.was_entrepreneur,
-          was_referred: data.was_referred,
-          lgpd_term_accepted: data.lgpd_term_accepted,
-          confidentiality_term_accepted: data.confidentiality_term_accepted,
-          system_term_accepted: data.system_term_accepted,
-          is_active_system: data.is_active_system,
-          systems_password: data.systems_password || null,
-          updated_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq("id", franqueado.id);
 
       if (error) {
