@@ -17,7 +17,8 @@ import {
   CircularProgress,
   Chip,
   IconButton,
-  Alert
+  Alert,
+  Tooltip
 } from '@mui/material';
 import { 
   UserPlus, 
@@ -56,7 +57,6 @@ import { useWebhookSubscriptions, WebhookSubscription } from '@/hooks/useWebhook
 import { useWebhookDeliveryLogs } from '@/hooks/useWebhookDeliveryLogs';
 import { WebhookAddModal } from '@/components/modals/WebhookAddModal';
 import { WebhookEditModal } from '@/components/modals/WebhookEditModal';
-import { Tooltip } from '@mui/material';
 import { RolePermissionsModal } from '@/components/modals/RolePermissionsModal';
 import { UserPermissionsModal } from '@/components/modals/UserPermissionsModal';
 import { useTablePermissions } from '@/hooks/useTablePermissions';
@@ -624,6 +624,7 @@ const PermissoesTab = () => {
   const [userPermModalOpen, setUserPermModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'admin' | 'operador' | 'user' | 'franqueado' | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { getRoleByUserId } = useUserRoles();
 
   const roles = [
     { value: 'admin', label: 'Administrador', description: 'Acesso total ao sistema', color: 'error.main' },
@@ -737,16 +738,32 @@ const PermissoesTab = () => {
                 align: 'center',
                 headerAlign: 'center',
                 sortable: false,
-                renderCell: (params) => (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<Shield size={16} />}
-                    onClick={() => handleConfigureUser(params.row)}
-                  >
-                    Configurar
-                  </Button>
-                ),
+                renderCell: (params) => {
+                  const role = getRoleByUserId(params.row.user_id);
+                  const isAdmin = role === 'admin';
+
+                  const button = (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Shield size={16} />}
+                      onClick={() => handleConfigureUser(params.row)}
+                      disabled={isAdmin}
+                    >
+                      Configurar
+                    </Button>
+                  );
+
+                  if (isAdmin) {
+                    return (
+                      <Tooltip title="Administradores já possuem acesso total a todos os módulos.">
+                        <span>{button}</span>
+                      </Tooltip>
+                    );
+                  }
+
+                  return button;
+                },
               },
             ]}
             loading={isLoadingUsers}
