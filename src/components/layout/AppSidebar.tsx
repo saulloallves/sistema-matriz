@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import {
   Box,
   Tooltip,
@@ -11,6 +12,7 @@ import {
   MenuItem,
   Divider,
   Collapse,
+  Skeleton
 } from '@mui/material';
 import {
   LayoutDashboard,
@@ -38,6 +40,7 @@ interface MenuItemType {
   icon: any;
   path?: string;
   children?: MenuItemType[];
+  permissionTable?: string;
 }
 
 const menuItems: MenuItemType[] = [
@@ -45,49 +48,55 @@ const menuItems: MenuItemType[] = [
   { 
     text: 'Unidades', 
     icon: Building2,
+    permissionTable: 'unidades',
     children: [
-      { text: 'Unidades', icon: Store, path: '/unidades' },
-      { text: 'Vínculos', icon: Users, path: '/franqueados-unidades' },
+      { text: 'Unidades', icon: Store, path: '/unidades', permissionTable: 'unidades' },
+      { text: 'Vínculos', icon: Users, path: '/franqueados-unidades', permissionTable: 'franqueados_unidades' },
     ]
   },
   { 
     text: 'Franqueados', 
     icon: UserCircle,
+    permissionTable: 'franqueados',
     children: [
-      { text: 'Franqueados', icon: UserIcon, path: '/franqueados' },
-      { text: 'Filhos', icon: Baby, path: '/franqueados-filhos' },
+      { text: 'Franqueados', icon: UserIcon, path: '/franqueados', permissionTable: 'franqueados' },
+      { text: 'Filhos', icon: Baby, path: '/franqueados-filhos', permissionTable: 'franqueados_filhos' },
     ]
   },
   { 
     text: 'Clientes', 
     icon: Users,
+    permissionTable: 'clientes',
     children: [
-      { text: 'Clientes', icon: Users, path: '/clientes' },
-      { text: 'Filhos', icon: Baby, path: '/clientes-filhos' },
+      { text: 'Clientes', icon: Users, path: '/clientes', permissionTable: 'clientes' },
+      { text: 'Filhos', icon: Baby, path: '/clientes-filhos', permissionTable: 'clientes_filhos' },
     ]
   },
   { 
     text: 'RH', 
     icon: UserCog,
+    permissionTable: 'colaboradores_loja',
     children: [
-      { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja' },
-      { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja' },
+      { text: 'Colab. Loja', icon: Users, path: '/colaboradores-loja', permissionTable: 'colaboradores_loja' },
+      { text: 'Cargos Loja', icon: Briefcase, path: '/cargos-loja', permissionTable: 'cargos_loja' },
     ]
   },
   { 
     text: 'Segurança', 
     icon: Lock,
+    permissionTable: 'senhas',
     children: [
-      { text: 'Senhas', icon: Key, path: '/senhas' },
-      { text: 'Permissões', icon: Shield, path: '/permissoes' },
+      { text: 'Senhas', icon: Key, path: '/senhas', permissionTable: 'senhas' },
+      { text: 'Permissões', icon: Shield, path: '/permissoes', permissionTable: 'permissoes' },
     ]
   },
   { 
     text: 'Comunicação', 
     icon: Radio,
+    permissionTable: 'unidades_grupos_whatsapp',
     children: [
-      { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp' },
-      { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores' },
+      { text: 'Grupos WhatsApp', icon: MessageCircle, path: '/grupos-whatsapp', permissionTable: 'unidades_grupos_whatsapp' },
+      { text: 'Evento Seguidores', icon: Calendar, path: '/evento-seguidores', permissionTable: 'evento_seguidores' },
     ]
   },
 ];
@@ -99,20 +108,28 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { data: profile } = useUserProfile();
+  const { getPermission, isLoading: isLoadingPermissions } = usePermissionCheck();
 
-  const toggleGroup = (groupText: string) => {
-    setExpandedGroups(prev => {
-      const isCurrentlyExpanded = prev[groupText];
-      // Se está fechando o grupo atual, apenas fecha ele
-      if (isCurrentlyExpanded) {
+  const visibleMenuItems = useMemo(() => {
+    if (isLoadingPermissions) {
+      return [];
+    }
+    return menuItems.filter(item => {
+      if (!item.permissionTable) return true; // Always show items without a permission requirement (like Dashboard)
+      return getPermission(item.permissionTable, 'read');
+    }).map(item => {
+      if (item.children) {
         return {
-          ...prev,
-          [groupText]: false
+          ...item,
+          children: item.children.filter(child => getPermission(child.permissionTable!, 'read'))
         };
       }
-      // Se está abrindo um grupo, fecha todos os outros e abre apenas o selecionado
-      return { [groupText]: true };
+      return item;
     });
+  }, [isLoadingPermissions, getPermission]);
+
+  const toggleGroup = (groupText: string) => {
+    setExpandedGroups(prev => ({ [groupText]: !prev[groupText] }));
   };
 
   const isActiveRoute = (path?: string, children?: MenuItemType[]) => {
@@ -259,30 +276,38 @@ const AppSidebar = () => {
             gap: '4px',
           }}
         >
-          {menuItems.map((item, index) => renderMenuItem(item, index))}
+          {isLoadingPermissions ? (
+            Array.from(new Array(7)).map((_, index) => (
+              <Skeleton key={index} variant="rectangular" width={56} height={56} sx={{ borderRadius: '12px' }} />
+            ))
+          ) : (
+            visibleMenuItems.map((item, index) => renderMenuItem(item, index))
+          )}
         </Box>
       </Box>
 
       <Divider sx={{ my: 2 }} />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Tooltip title="Configurações" placement="right" arrow>
-          <IconButton
-            onClick={() => navigate('/configuracoes')}
-            sx={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '12px',
-              color: location.pathname === '/configuracoes' ? '#fff' : 'text.secondary',
-              backgroundColor: location.pathname === '/configuracoes' ? 'primary.main' : 'transparent',
-              '&:hover': {
-                backgroundColor: location.pathname === '/configuracoes' ? 'primary.dark' : 'action.hover',
-              },
-            }}
-          >
-            <Settings size={20} />
-          </IconButton>
-        </Tooltip>
+        {!isLoadingPermissions && getPermission('permissoes', 'read') && (
+          <Tooltip title="Configurações" placement="right" arrow>
+            <IconButton
+              onClick={() => navigate('/configuracoes')}
+              sx={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '12px',
+                color: location.pathname === '/configuracoes' ? '#fff' : 'text.secondary',
+                backgroundColor: location.pathname === '/configuracoes' ? 'primary.main' : 'transparent',
+                '&:hover': {
+                  backgroundColor: location.pathname === '/configuracoes' ? 'primary.dark' : 'action.hover',
+                },
+              }}
+            >
+              <Settings size={20} />
+            </IconButton>
+          </Tooltip>
+        )}
 
         <Tooltip title={profile?.full_name || user?.email || 'Usuário'} placement="right" arrow>
           <IconButton
