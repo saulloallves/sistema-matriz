@@ -499,7 +499,7 @@ export default function FranqueadosPage() {
         if (receives1 && !receives2) return -1;
         if (!receives1 && receives2) return 1;
     
-        // Rule 2: If both (or neither) have the same 'receives' status, proceed.
+        // Rule 2: If both receive, sort by value, then by date.
         if (receives1 && receives2) {
           const value1 = Number(row1.prolabore_value) || 0;
           const value2 = Number(row2.prolabore_value) || 0;
