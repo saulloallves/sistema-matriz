@@ -482,9 +482,6 @@ export default function FranqueadosPage() {
       headerAlign: "center",
       sortingOrder: ['desc', 'asc', null],
       sortComparator: (v1, v2, cellParams1, cellParams2) => {
-        const sortModel = cellParams1.api.getSortModel();
-        const sortDirection = sortModel.length > 0 ? sortModel[0].sort : null;
-    
         const row1 = cellParams1.row;
         const row2 = cellParams2.row;
     
@@ -504,9 +501,9 @@ export default function FranqueadosPage() {
           const value1 = Number(row1.prolabore_value) || 0;
           const value2 = Number(row2.prolabore_value) || 0;
     
-          // Sub-rule 2a: Sort by pro-labore value.
+          // Sub-rule 2a: Sort by pro-labore value (ascending).
           if (value1 !== value2) {
-            return sortDirection === 'asc' ? value1 - value2 : value2 - value1;
+            return value1 - value2;
           }
     
           // Sub-rule 2b (Tie-breaker): If values are equal, sort by creation date (oldest first).
