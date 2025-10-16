@@ -18,7 +18,8 @@ import {
   Chip,
   IconButton,
   Alert,
-  Tooltip
+  Tooltip,
+  Stack
 } from '@mui/material';
 import { 
   UserPlus, 
@@ -332,34 +333,34 @@ const GerenciamentoUsuariosTab = () => {
           </Box>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-              <TextField
-                fullWidth
-                label="Nome Completo"
-                variant="outlined"
-                placeholder="Digite o nome completo"
-                value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
-                error={!!errors.full_name}
-                helperText={errors.full_name}
-                disabled={isCreating}
-                required
-              />
-              
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                variant="outlined"
-                placeholder="Digite o email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                error={!!errors.email}
-                helperText={errors.email}
-                disabled={isCreating}
-                required
-              />
+            <TextField
+              fullWidth
+              label="Nome Completo"
+              variant="outlined"
+              placeholder="Digite o nome completo"
+              value={formData.full_name}
+              onChange={(e) => handleInputChange('full_name', e.target.value)}
+              error={!!errors.full_name}
+              helperText={errors.full_name}
+              disabled={isCreating}
+              required
+            />
+            
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              variant="outlined"
+              placeholder="Digite o email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email}
+              disabled={isCreating}
+              required
+            />
 
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
               <TextField
                 fullWidth
                 label="Telefone (WhatsApp)"
