@@ -153,8 +153,11 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     
     try {
       setCepLoading(true);
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('cep-lookup', {
+        queryString: { cep: cleanCEP }
+      });
+
+      if (error) throw error;
       
       if (data.erro) {
         toast.error('CEP não encontrado');
@@ -169,9 +172,9 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
       setValue('uf', data.uf || '');
       
       toast.success('Endereço preenchido automaticamente!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar CEP:', error);
-      toast.error('Erro ao buscar informações do CEP');
+      toast.error('Erro ao buscar informações do CEP: ' + error.message);
     } finally {
       setCepLoading(false);
     }

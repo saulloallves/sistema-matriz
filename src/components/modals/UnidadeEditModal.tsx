@@ -161,8 +161,11 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       const cleanCEP = cep.replace(/\D/g, '');
       if (cleanCEP.length !== 8) return;
 
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('cep-lookup', {
+        queryString: { cep: cleanCEP }
+      });
+
+      if (error) throw error;
 
       if (data.erro) {
         toast.error('CEP não encontrado');
@@ -179,9 +182,9 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       }));
 
       toast.success('Endereço preenchido automaticamente');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar CEP:', error);
-      toast.error('Erro ao buscar informações do CEP');
+      toast.error('Erro ao buscar informações do CEP: ' + error.message);
     }
   };
 
