@@ -13,7 +13,9 @@ import {
   CircularProgress,
   Divider,
   InputAdornment,
-  Alert
+  Alert,
+  Grid,
+  Stack
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -63,6 +65,7 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isDirty },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
