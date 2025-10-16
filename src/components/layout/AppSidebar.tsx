@@ -34,6 +34,7 @@ import {
   Lock,
   Radio,
 } from 'lucide-react';
+import { UserProfileModal } from '../modals/UserProfileModal';
 
 interface MenuItemType {
   text: string;
@@ -104,6 +105,7 @@ const menuItems: MenuItemType[] = [
 const AppSidebar = () => {
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
@@ -116,12 +118,12 @@ const AppSidebar = () => {
     }
     return menuItems.filter(item => {
       if (!item.permissionTable) return true; // Always show items without a permission requirement (like Dashboard)
-      return getPermission(item.permissionTable, 'read');
+      return getPermission(item.permissionTable);
     }).map(item => {
       if (item.children) {
         return {
           ...item,
-          children: item.children.filter(child => getPermission(child.permissionTable!, 'read'))
+          children: item.children.filter(child => getPermission(child.permissionTable!))
         };
       }
       return item;
@@ -234,134 +236,144 @@ const AppSidebar = () => {
   };
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 16,
-        left: 16,
-        background: '#fff',
-        borderRadius: '10px',
-        padding: '16px',
-        boxShadow: '0 0 40px rgba(0,0,0,0.03)',
-        height: 'calc(100vh - 32px)',
-        width: '88px',
-        zIndex: 1200,
-        border: '1px solid rgba(0,0,0,0.05)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        '&::-webkit-scrollbar': {
-          width: '4px',
-        },
-        '&::-webkit-scrollbar-track': {
-          background: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          background: 'rgba(0,0,0,0.1)',
-          borderRadius: '4px',
-        },
-      }}
-    >
+    <>
       <Box
-        component="nav"
         sx={{
-          flex: 1,
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          background: '#fff',
+          borderRadius: '10px',
+          padding: '16px',
+          boxShadow: '0 0 40px rgba(0,0,0,0.03)',
+          height: 'calc(100vh - 32px)',
+          width: '88px',
+          zIndex: 1200,
+          border: '1px solid rgba(0,0,0,0.05)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          '&::-webkit-scrollbar': {
+            width: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,0.1)',
+            borderRadius: '4px',
+          },
         }}
       >
         <Box
+          component="nav"
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
+            flex: 1,
           }}
         >
-          {isLoadingPermissions ? (
-            Array.from(new Array(7)).map((_, index) => (
-              <Skeleton key={index} variant="rectangular" width={56} height={56} sx={{ borderRadius: '12px' }} />
-            ))
-          ) : (
-            visibleMenuItems.map((item, index) => renderMenuItem(item, index))
-          )}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}
+          >
+            {isLoadingPermissions ? (
+              Array.from(new Array(7)).map((_, index) => (
+                <Skeleton key={index} variant="rectangular" width={56} height={56} sx={{ borderRadius: '12px' }} />
+              ))
+            ) : (
+              visibleMenuItems.map((item, index) => renderMenuItem(item, index))
+            )}
+          </Box>
         </Box>
-      </Box>
 
-      <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {!isLoadingPermissions && getPermission('permissoes', 'read') && (
-          <Tooltip title="Configurações" placement="right" arrow>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {!isLoadingPermissions && getPermission('permissoes') && (
+            <Tooltip title="Configurações" placement="right" arrow>
+              <IconButton
+                onClick={() => navigate('/configuracoes')}
+                sx={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '12px',
+                  color: location.pathname === '/configuracoes' ? '#fff' : 'text.secondary',
+                  backgroundColor: location.pathname === '/configuracoes' ? 'primary.main' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: location.pathname === '/configuracoes' ? 'primary.dark' : 'action.hover',
+                  },
+                }}
+              >
+                <Settings size={20} />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          <Tooltip title={profile?.full_name || user?.email || 'Usuário'} placement="right" arrow>
             <IconButton
-              onClick={() => navigate('/configuracoes')}
+              onClick={handleUserMenu}
               sx={{
                 width: '56px',
                 height: '56px',
                 borderRadius: '12px',
-                color: location.pathname === '/configuracoes' ? '#fff' : 'text.secondary',
-                backgroundColor: location.pathname === '/configuracoes' ? 'primary.main' : 'transparent',
                 '&:hover': {
-                  backgroundColor: location.pathname === '/configuracoes' ? 'primary.dark' : 'action.hover',
+                  backgroundColor: 'action.hover',
                 },
               }}
             >
-              <Settings size={20} />
+              <Avatar
+                src={profile?.avatar_url || undefined}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  bgcolor: 'primary.main',
+                  fontSize: '1rem',
+                }}
+              >
+                {!(profile?.avatar_url) && (profile?.full_name || user?.email || 'U')[0].toUpperCase()}
+              </Avatar>
             </IconButton>
           </Tooltip>
-        )}
-
-        <Tooltip title={profile?.full_name || user?.email || 'Usuário'} placement="right" arrow>
-          <IconButton
-            onClick={handleUserMenu}
-            sx={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '12px',
-              '&:hover': {
-                backgroundColor: 'action.hover',
-              },
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseUserMenu}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
             }}
           >
-            <Avatar
-              sx={{
-                width: 40,
-                height: 40,
-                bgcolor: 'primary.main',
-                fontSize: '1rem',
-              }}
-            >
-              {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
-            </Avatar>
-          </IconButton>
-        </Tooltip>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleCloseUserMenu}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-        >
-          <MenuItem disabled>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ fontWeight: 600 }}>{profile?.full_name || 'Usuário'}</Box>
-              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{user?.email}</Box>
-            </Box>
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => {
-            signOut();
-            handleCloseUserMenu();
-          }}>
-            Sair
-          </MenuItem>
-        </Menu>
+            <MenuItem disabled>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ fontWeight: 600 }}>{profile?.full_name || 'Usuário'}</Box>
+                <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{user?.email}</Box>
+              </Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={() => {
+              setProfileModalOpen(true);
+              handleCloseUserMenu();
+            }}>
+              Gerenciar Perfil
+            </MenuItem>
+            <MenuItem onClick={() => {
+              signOut();
+              handleCloseUserMenu();
+            }}>
+              Sair
+            </MenuItem>
+          </Menu>
+        </Box>
       </Box>
-    </Box>
+      <UserProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
+    </>
   );
 };
 
