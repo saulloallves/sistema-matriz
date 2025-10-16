@@ -154,6 +154,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     try {
       setCepLoading(true);
       const { data, error } = await supabase.functions.invoke('cep-lookup', {
+        method: 'GET',
         queryString: { cep: cleanCEP }
       });
 

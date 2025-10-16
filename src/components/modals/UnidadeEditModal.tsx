@@ -162,6 +162,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       if (cleanCEP.length !== 8) return;
 
       const { data, error } = await supabase.functions.invoke('cep-lookup', {
+        method: 'GET',
         queryString: { cep: cleanCEP }
       });
 
