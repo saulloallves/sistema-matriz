@@ -33,7 +33,8 @@ import {
   Instagram,
   Eye,
   EyeOff,
-  RefreshCw
+  RefreshCw,
+  Search
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyCnpjMask, removeCnpjMask, getCnpjValidationError } from '@/utils/cnpjUtils';
@@ -98,6 +99,7 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     bearer: ''
   });
   const [loading, setLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
   const [groupCodeLoading, setGroupCodeLoading] = useState(false);
   const [groupCodeError, setGroupCodeError] = useState<string | null>(null);
@@ -157,10 +159,14 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
   }, [unidade]);
 
   const fetchAddressByCEP = async (cep: string) => {
-    try {
-      const cleanCEP = cep.replace(/\D/g, '');
-      if (cleanCEP.length !== 8) return;
+    const cleanCEP = cep.replace(/\D/g, '');
+    if (cleanCEP.length !== 8) {
+      toast.error('CEP deve ter 8 dígitos.');
+      return;
+    }
 
+    setCepLoading(true);
+    try {
       const { data, error } = await supabase.functions.invoke(`cep-lookup?cep=${cleanCEP}`, {
         method: 'GET',
       });
@@ -185,6 +191,8 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
     } catch (error: any) {
       console.error('Erro ao buscar CEP:', error);
       toast.error('Erro ao buscar informações do CEP: ' + error.message);
+    } finally {
+      setCepLoading(false);
     }
   };
 
@@ -282,13 +290,6 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
       
       return newData;
     });
-
-    if (field === 'postal_code') {
-      const cleanCEP = value.replace(/\D/g, '');
-      if (cleanCEP.length === 8) {
-        fetchAddressByCEP(cleanCEP);
-      }
-    }
   };
 
   const validateForm = () => {
@@ -627,7 +628,20 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
               label="CEP"
               value={formData.postal_code}
               onChange={(e) => handleInputChange('postal_code', e.target.value)}
-              helperText="Digite o CEP para preencher automaticamente os campos de endereço"
+              helperText="Digite 8 números e clique na lupa"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => fetchAddressByCEP(formData.postal_code)}
+                      edge="end"
+                      disabled={cepLoading}
+                    >
+                      {cepLoading ? <CircularProgress size={20} /> : <Search size={20} />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
             <TextField
               fullWidth
