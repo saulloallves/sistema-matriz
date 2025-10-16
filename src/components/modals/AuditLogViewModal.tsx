@@ -84,7 +84,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
       </DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <User size={18} />
               <Box>
@@ -93,7 +93,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Clock size={18} />
               <Box>
@@ -102,7 +102,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Database size={18} />
               <Box>
@@ -111,7 +111,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Edit size={18} />
               <Box>
@@ -123,7 +123,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
         </Grid>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Typography variant="h6" gutterBottom>Dados Anteriores</Typography>
             <Paper variant="outlined" sx={{ p: 2, minHeight: '300px', backgroundColor: 'grey.50' }}>
               {log.action !== 'INSERT' ? allKeys.map(key => {
@@ -136,7 +136,7 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
               }) : <Typography color="text.secondary">N/A (Registro novo)</Typography>}
             </Paper>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Typography variant="h6" gutterBottom>Novos Dados</Typography>
             <Paper variant="outlined" sx={{ p: 2, minHeight: '300px', backgroundColor: 'grey.50' }}>
               {log.action !== 'DELETE' ? allKeys.map(key => {
