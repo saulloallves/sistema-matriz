@@ -35,7 +35,7 @@ const DataField = ({ field, oldValue, newValue, isChanged }: { field: string; ol
   return (
     <Box sx={{ 
       p: 1.5, 
-      backgroundColor: isChanged ? theme.palette.warning.lighter : 'transparent',
+      backgroundColor: isChanged ? theme.palette.warning.light : 'transparent',
       border: `1px solid ${isChanged ? theme.palette.warning.light : theme.palette.divider}`,
       borderRadius: 1,
       mb: 1

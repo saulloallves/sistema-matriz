@@ -755,6 +755,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           created_by: string | null
           full_name: string
@@ -766,6 +767,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           created_by?: string | null
           full_name: string
@@ -777,6 +779,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           created_by?: string | null
           full_name?: string
@@ -791,10 +794,7 @@ export type Database = {
       }
       role_table_permissions: {
         Row: {
-          can_create: boolean | null
-          can_delete: boolean | null
-          can_read: boolean | null
-          can_update: boolean | null
+          has_access: boolean
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
@@ -802,10 +802,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
+          has_access?: boolean
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
@@ -813,10 +810,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
+          has_access?: boolean
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
@@ -1295,10 +1289,7 @@ export type Database = {
       }
       user_table_permissions: {
         Row: {
-          can_create: boolean | null
-          can_delete: boolean | null
-          can_read: boolean | null
-          can_update: boolean | null
+          has_access: boolean
           created_at: string
           created_by: string | null
           id: string
@@ -1307,10 +1298,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
+          has_access?: boolean
           created_at?: string
           created_by?: string | null
           id?: string
@@ -1319,10 +1307,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
+          has_access?: boolean
           created_at?: string
           created_by?: string | null
           id?: string
@@ -1513,6 +1498,20 @@ export type Database = {
           user_instagram: string | null
         }[]
       }
+      get_audit_logs_with_user_names: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          timestamp: string
+          user_id: string
+          user_full_name: string | null
+          action: Database["public"]["Enums"]["action_type"]
+          table_name: string
+          record_id: string
+          old_record_data: Json | null
+          new_record_data: Json | null
+        }[]
+      }
       get_contatos_para_normalizacao: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1589,11 +1588,8 @@ export type Database = {
       get_user_permissions: {
         Args: { _user_id: string }
         Returns: {
-          can_create: boolean
-          can_delete: boolean
-          can_read: boolean
-          can_update: boolean
           table_name: string
+          has_access: boolean
         }[]
       }
       get_users_with_emails: {
@@ -1672,6 +1668,7 @@ export type Database = {
       }
     }
     Enums: {
+      action_type: "INSERT" | "UPDATE" | "DELETE"
       app_role: "admin" | "franqueado" | "user" | "operador"
       gender_type: "Masculino" | "Feminino"
       permission_level:

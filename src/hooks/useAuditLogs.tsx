@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { action_type } from '@/integrations/supabase/types';
+import { Database, Json } from '@/integrations/supabase/types';
 
 export interface AuditLog {
   id: string;
   timestamp: string;
   user_id: string;
   user_full_name: string | null;
-  action: action_type;
+  action: Database["public"]["Enums"]["action_type"];
   table_name: string;
   record_id: string;
   old_record_data: Record<string, any> | null;
