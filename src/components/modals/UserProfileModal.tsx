@@ -192,7 +192,7 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
         <DialogContent dividers>
           {isLoadingProfile ? <CircularProgress /> : (
             <Grid container spacing={4}>
-              <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+              <Grid item xs={12} md={3} sx={{ textAlign: 'center' }}>
                 <Avatar src={avatarPreview || undefined} sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}>
                   <User size={60} />
                 </Avatar>
@@ -222,7 +222,7 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
                   JPG, PNG ou GIF. Máx 2MB.
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={8}>
+              <Grid item xs={12} md={9}>
                 <Stack spacing={3}>
                   <Controller
                     name="full_name"
