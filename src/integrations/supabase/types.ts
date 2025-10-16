@@ -14,18 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: Database["public"]["Enums"]["action_type"]
+          id: string
+          new_record_data: Json | null
+          old_record_data: Json | null
+          record_id: string | null
+          table_name: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["action_type"]
+          id?: string
+          new_record_data?: Json | null
+          old_record_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["action_type"]
+          id?: string
+          new_record_data?: Json | null
+          old_record_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cargos_loja: {
         Row: {
           id: string
-          role: Database["public"]["Enums"]["store_role_enum"]
+          role: string
         }
         Insert: {
           id?: string
-          role: Database["public"]["Enums"]["store_role_enum"]
+          role: string
         }
         Update: {
           id?: string
-          role?: Database["public"]["Enums"]["store_role_enum"]
+          role?: string
         }
         Relationships: []
       }

@@ -10,8 +10,8 @@ export interface AuditLog {
   action: Database["public"]["Enums"]["action_type"];
   table_name: string;
   record_id: string;
-  old_record_data: Record<string, any> | null;
-  new_record_data: Record<string, any> | null;
+  old_record_data: Json | null;
+  new_record_data: Json | null;
 }
 
 const queryKey = ['audit-logs'];

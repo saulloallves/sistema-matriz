@@ -59,8 +59,8 @@ const DataField = ({ field, oldValue, newValue, isChanged }: { field: string; ol
 export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps) => {
   if (!log) return null;
 
-  const oldData = log.old_record_data || {};
-  const newData = log.new_record_data || {};
+  const oldData = typeof log.old_record_data === 'object' && log.old_record_data !== null ? log.old_record_data : {};
+  const newData = typeof log.new_record_data === 'object' && log.new_record_data !== null ? log.new_record_data : {};
   const allKeys = Array.from(new Set([...Object.keys(oldData), ...Object.keys(newData)]));
 
   const getActionChip = () => {
