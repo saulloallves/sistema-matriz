@@ -183,7 +183,7 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6">Gerenciar Perfil</Typography>
         <IconButton onClick={onClose}><X size={20} /></IconButton>
