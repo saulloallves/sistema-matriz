@@ -1558,6 +1558,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_franqueados_audit_logs_with_user_names: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          user_id: string
+          user_full_name: string | null
+          franqueado_id: string | null
+          action: string
+          accessed_fields: string[] | null
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }[]
+      }
       get_franqueados_secure: {
         Args: Record<PropertyKey, never>
         Returns: {

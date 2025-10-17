@@ -21,7 +21,7 @@ export const useFranqueadosAuditLogs = () => {
 
   const { data: logs = [], isLoading, error, refetch } = useQuery<FranqueadoAuditLog[]>({
     queryKey,
-    queryFn: async (): Promise<FranqueadoAuditLog[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase.rpc('get_franqueados_audit_logs_with_user_names');
 
       if (error) {
