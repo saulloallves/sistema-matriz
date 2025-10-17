@@ -1251,90 +1251,71 @@ const RealtimeWebhooksTab = () => {
 };
 
 const AuditLogsTab = () => {
-  const { logs, isLoading } = useAuditLogs();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [subTabValue, setSubTabValue] = useState(0);
+  const { logs: auditLogs, isLoading: isLoadingAuditLogs } = useAuditLogs();
+  const { logs: franqueadoLogs, isLoading: isLoadingFranqueadoLogs } = useFranqueadosAuditLogs();
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
+  const [franqueadoLogModalOpen, setFranqueadoLogModalOpen] = useState(false);
+  const [selectedFranqueadoLog, setSelectedFranqueadoLog] = useState<FranqueadoAuditLog | null>(null);
 
-  const handleViewDetails = (log: AuditLog) => {
-    setSelectedLog(log);
-    setModalOpen(true);
+  const handleViewAuditDetails = (log: AuditLog) => {
+    setSelectedAuditLog(log);
+    setAuditModalOpen(true);
   };
 
-  const columns: GridColDef[] = [
-    {
-      field: 'timestamp',
-      headerName: 'Data/Hora',
-      flex: 1,
-      minWidth: 180,
-      renderCell: (params) => format(new Date(params.value), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }),
-    },
-    {
-      field: 'user_full_name',
-      headerName: 'Usuário',
-      flex: 1,
-      minWidth: 180,
-      renderCell: (params) => params.value || 'Sistema',
-    },
-    {
-      field: 'action',
-      headerName: 'Ação',
-      flex: 0.5,
-      minWidth: 120,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => {
-        const color = params.value === 'INSERT' ? 'success' : params.value === 'UPDATE' ? 'warning' : 'error';
-        return <Chip label={params.value} color={color} size="small" />;
-      },
-    },
-    {
-      field: 'table_name',
-      headerName: 'Módulo',
-      flex: 0.8,
-      minWidth: 150,
-    },
-    {
-      field: 'record_id',
-      headerName: 'ID do Registro',
-      flex: 1.5,
-      minWidth: 280,
-    },
-    {
-      field: 'actions',
-      headerName: 'Ações',
-      width: 150,
-      sortable: false,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => (
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<Eye size={16} />}
-          onClick={() => handleViewDetails(params.row)}
-        >
-          Ver Detalhes
-        </Button>
-      ),
-    },
+  const handleViewFranqueadoLogDetails = (log: FranqueadoAuditLog) => {
+    setSelectedFranqueadoLog(log);
+    setFranqueadoLogModalOpen(true);
+  };
+
+  const auditColumns: GridColDef[] = [
+    { field: 'timestamp', headerName: 'Data/Hora', flex: 1, minWidth: 180, renderCell: (params) => format(new Date(params.value), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }) },
+    { field: 'user_full_name', headerName: 'Usuário', flex: 1, minWidth: 180, renderCell: (params) => params.value || 'Sistema' },
+    { field: 'action', headerName: 'Ação', flex: 0.5, minWidth: 120, align: 'center', headerAlign: 'center', renderCell: (params) => { const color = params.value === 'INSERT' ? 'success' : params.value === 'UPDATE' ? 'warning' : 'error'; return <Chip label={params.value} color={color} size="small" />; } },
+    { field: 'table_name', headerName: 'Módulo', flex: 0.8, minWidth: 150 },
+    { field: 'record_id', headerName: 'ID do Registro', flex: 1.5, minWidth: 280 },
+    { field: 'actions', headerName: 'Ações', width: 150, sortable: false, align: 'center', headerAlign: 'center', renderCell: (params) => <Button variant="outlined" size="small" startIcon={<Eye size={16} />} onClick={() => handleViewAuditDetails(params.row)}>Ver Detalhes</Button> },
+  ];
+
+  const franqueadoLogColumns: GridColDef[] = [
+    { field: 'created_at', headerName: 'Data/Hora', flex: 1, minWidth: 180, renderCell: (params) => format(new Date(params.value), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }) },
+    { field: 'user_full_name', headerName: 'Usuário', flex: 1, minWidth: 180, renderCell: (params) => params.value || 'Sistema' },
+    { field: 'action', headerName: 'Ação', flex: 1.5, minWidth: 250 },
+    { field: 'franqueado_id', headerName: 'ID do Franqueado', flex: 1.5, minWidth: 280, renderCell: (params) => params.value || 'N/A' },
+    { field: 'actions', headerName: 'Ações', width: 150, sortable: false, align: 'center', headerAlign: 'center', renderCell: (params) => <Button variant="outlined" size="small" startIcon={<Eye size={16} />} onClick={() => handleViewFranqueadoLogDetails(params.row)}>Ver Detalhes</Button> },
   ];
 
   return (
     <>
-      <DataTable
-        title="Logs de Auditoria"
-        titleIcon={<Database size={20} color="#E3A024" />}
-        description="Visualize todas as alterações de dados realizadas no sistema."
-        data={logs}
-        columns={columns}
-        loading={isLoading}
-        searchPlaceholder="Buscar por usuário, módulo ou ação..."
-      />
-      <AuditLogViewModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        log={selectedLog}
-      />
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={subTabValue} onChange={(_, newValue) => setSubTabValue(newValue)}>
+          <Tab label="Auditoria de Dados" />
+          <Tab label="Log de Ações" />
+        </Tabs>
+      </Box>
+      <TabPanel value={subTabValue} index={0}>
+        <DataTable
+          title="Logs de Auditoria de Dados"
+          description="Visualize todas as alterações de dados (INSERT, UPDATE, DELETE) realizadas no sistema."
+          data={auditLogs}
+          columns={auditColumns}
+          loading={isLoadingAuditLogs}
+          searchPlaceholder="Buscar por usuário, módulo ou ação..."
+        />
+      </TabPanel>
+      <TabPanel value={subTabValue} index={1}>
+        <DataTable
+          title="Logs de Ações de Negócio"
+          description="Visualize ações específicas de alto nível executadas pelos usuários no sistema."
+          data={franqueadoLogs}
+          columns={franqueadoLogColumns}
+          loading={isLoadingFranqueadoLogs}
+          searchPlaceholder="Buscar por usuário ou ação..."
+        />
+      </TabPanel>
+      <AuditLogViewModal open={auditModalOpen} onClose={() => setAuditModalOpen(false)} log={selectedAuditLog} />
+      <FranqueadoAuditLogViewModal open={franqueadoLogModalOpen} onClose={() => setFranqueadoLogModalOpen(false)} log={selectedFranqueadoLog} />
     </>
   );
 };
