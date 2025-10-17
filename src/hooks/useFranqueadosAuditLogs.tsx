@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
@@ -23,33 +22,14 @@ export const useFranqueadosAuditLogs = () => {
   const { data: logs = [], isLoading, error, refetch } = useQuery<FranqueadoAuditLog[]>({
     queryKey,
     queryFn: async (): Promise<FranqueadoAuditLog[]> => {
-      const { data, error } = await supabase
-        .from('franqueados_audit_log')
-        .select(`
-          *,
-          user_full_name:users(full_name)
-        `)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_franqueados_audit_logs_with_user_names');
 
       if (error) {
         console.error('Erro ao buscar logs de auditoria de franqueados:', error);
         throw new Error(error.message);
       }
 
-      // Transformar os dados para o formato esperado
-      const transformedData: FranqueadoAuditLog[] = (data || []).map((item: any) => ({
-        id: item.id,
-        user_id: item.user_id,
-        user_full_name: item.user_full_name?.full_name || null,
-        franqueado_id: item.franqueado_id,
-        action: item.action,
-        accessed_fields: item.accessed_fields,
-        ip_address: item.ip_address,
-        user_agent: item.user_agent,
-        created_at: item.created_at,
-      }));
-
-      return transformedData;
+      return data || [];
     },
   });
 
