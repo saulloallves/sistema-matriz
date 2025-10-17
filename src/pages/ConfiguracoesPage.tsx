@@ -68,6 +68,8 @@ import { ColaboradorInternoEditModal } from '@/components/modals/ColaboradorInte
 import toast from 'react-hot-toast';
 import { useAuditLogs, AuditLog } from '@/hooks/useAuditLogs';
 import { AuditLogViewModal } from '@/components/modals/AuditLogViewModal';
+import { useFranqueadosAuditLogs, FranqueadoAuditLog } from '@/hooks/useFranqueadosAuditLogs';
+import { FranqueadoAuditLogViewModal } from '@/components/modals/FranqueadoAuditLogViewModal';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
