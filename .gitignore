@@ -27,3 +27,5 @@ dist-ssr
 Dockerfile
 docker-compose*.yml
 nginx
+.github
+public

@@ -21,6 +21,7 @@ README.md
 .idea
 .DS_Store
 *.local
+.github
 
 # Arquivos de ambiente (nunca devem ir para a imagem)
 .env

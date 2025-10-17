@@ -3,7 +3,7 @@
 Generated on: 15/10/2025, 11:15:14
 Root path: `c:\Users\Cresci e Perdi\dyad-apps\sistema-matriz`
 
-```
+```mardown
 ├── 📁 .git/ 🚫 (auto-hidden)
 ├── 📁 nginx/
 │   └── ⚙️ nginx.conf
