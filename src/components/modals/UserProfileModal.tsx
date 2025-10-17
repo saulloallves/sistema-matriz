@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
@@ -191,8 +192,8 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent dividers>
           {isLoadingProfile ? <CircularProgress /> : (
-            <Grid container spacing={4}>
-              <Grid xs={12} md={4} sx={{ textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+              <Box sx={{ flex: '0 0 auto', textAlign: 'center', minWidth: { md: 200 } }}>
                 <Avatar src={avatarPreview || undefined} sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}>
                   <User size={60} />
                 </Avatar>
@@ -221,8 +222,8 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
                 <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                   JPG, PNG ou GIF. Máx 2MB.
                 </Typography>
-              </Grid>
-              <Grid xs={12} md={8}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <Stack spacing={3}>
                   <Controller
                     name="full_name"
@@ -283,8 +284,8 @@ export const UserProfileModal = ({ open, onClose }: UserProfileModalProps) => {
                     )}
                   />
                 </Stack>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

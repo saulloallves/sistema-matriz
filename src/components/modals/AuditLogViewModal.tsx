@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Dialog,
   DialogTitle,
@@ -83,8 +84,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
         <IconButton onClick={onClose}><X size={20} /></IconButton>
       </DialogTitle>
       <DialogContent dividers>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid xs={12} sm={6} md={3}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
+          <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <User size={18} />
               <Box>
@@ -92,8 +93,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 <Typography>{log.user_full_name || 'Sistema'}</Typography>
               </Box>
             </Box>
-          </Grid>
-          <Grid xs={12} sm={6} md={3}>
+          </Box>
+          <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Clock size={18} />
               <Box>
@@ -101,8 +102,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 <Typography>{format(new Date(log.timestamp), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}</Typography>
               </Box>
             </Box>
-          </Grid>
-          <Grid xs={12} sm={6} md={3}>
+          </Box>
+          <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Database size={18} />
               <Box>
@@ -110,8 +111,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 <Typography>{log.table_name}</Typography>
               </Box>
             </Box>
-          </Grid>
-          <Grid xs={12} sm={6} md={3}>
+          </Box>
+          <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Edit size={18} />
               <Box>
@@ -119,11 +120,11 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 <Box>{getActionChip()}</Box>
               </Box>
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
-        <Grid container spacing={3}>
-          <Grid xs={12} md={6}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+          <Box>
             <Typography variant="h6" gutterBottom>Dados Anteriores</Typography>
             <Paper variant="outlined" sx={{ p: 2, minHeight: '300px', backgroundColor: 'grey.50' }}>
               {log.action !== 'INSERT' ? allKeys.map(key => {
@@ -135,8 +136,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 return null;
               }) : <Typography color="text.secondary">N/A (Registro novo)</Typography>}
             </Paper>
-          </Grid>
-          <Grid xs={12} md={6}>
+          </Box>
+          <Box>
             <Typography variant="h6" gutterBottom>Novos Dados</Typography>
             <Paper variant="outlined" sx={{ p: 2, minHeight: '300px', backgroundColor: 'grey.50' }}>
               {log.action !== 'DELETE' ? allKeys.map(key => {
@@ -148,8 +149,8 @@ export const AuditLogViewModal = ({ open, onClose, log }: AuditLogViewModalProps
                 return null;
               }) : <Typography color="text.secondary">N/A (Registro excluído)</Typography>}
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Fechar</Button>

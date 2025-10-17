@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from 'react';
 import { 
   Box, 
@@ -1253,7 +1254,7 @@ const RealtimeWebhooksTab = () => {
 const AuditLogsTab = () => {
   const [subTabValue, setSubTabValue] = useState(0);
   const { logs: auditLogs, isLoading: isLoadingAuditLogs } = useAuditLogs();
-  const { logs: franqueadoLogs, isLoading: isLoadingFranqueadoLogs } = useFranqueadosAuditLogs();
+  const { logs: franqueadoLogs = [], isLoading: isLoadingFranqueadoLogs } = useFranqueadosAuditLogs();
   const [auditModalOpen, setAuditModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
   const [franqueadoLogModalOpen, setFranqueadoLogModalOpen] = useState(false);
