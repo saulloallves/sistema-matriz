@@ -46,7 +46,8 @@ const UnidadesPorModeloModal = ({ open, onClose, modelo }: UnidadesPorModeloModa
         .select('id, group_name, group_code, city, state, store_phase, is_active');
 
       if (modelo === 'Não informado') {
-        query = query.is('store_model', null);
+        // Corrigido: Agora busca por nulo OU string vazia
+        query = query.or('store_model.is.null,store_model.eq.');
       } else {
         query = query.eq('store_model', modelo);
       }
