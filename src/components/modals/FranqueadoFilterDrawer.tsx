@@ -140,14 +140,19 @@ export const FranqueadoFilterDrawer = ({
           <Divider sx={{ my: 2 }} />
 
           <Typography variant="subtitle2" gutterBottom>Outros</Typography>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Disponibilidade"
-            placeholder="Ex: integral"
-            value={filters.availability || ''}
-            onChange={(e) => handleInputChange('availability', e.target.value)}
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Disponibilidade</InputLabel>
+            <Select
+              value={filters.availability || ''}
+              label="Disponibilidade"
+              onChange={(e) => handleInputChange('availability', e.target.value)}
+            >
+              <MenuItem value=""><em>Todos</em></MenuItem>
+              <MenuItem value="Integral">Integral</MenuItem>
+              <MenuItem value="Parcial">Parcial</MenuItem>
+              <MenuItem value="Apoio em Eventos">Apoio em Eventos</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
 
         <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>

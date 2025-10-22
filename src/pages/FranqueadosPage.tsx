@@ -138,7 +138,7 @@ export default function FranqueadosPage() {
         (filters.was_referred === undefined || franqueado.was_referred === filters.was_referred) &&
         (!filters.city || franqueado.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
         (!filters.uf || franqueado.uf?.toLowerCase().includes(filters.uf.toLowerCase())) &&
-        (!filters.availability || franqueado.availability?.toLowerCase().includes(filters.availability.toLowerCase()))
+        (!filters.availability || franqueado.availability === filters.availability)
       );
     });
   }, [franqueados, filters]);
@@ -377,6 +377,15 @@ export default function FranqueadosPage() {
       </Box>
     );
   }, [franqueados]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const columns: GridColDef[] = [
     {
