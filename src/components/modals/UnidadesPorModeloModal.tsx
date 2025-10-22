@@ -41,11 +41,17 @@ const UnidadesPorModeloModal = ({ open, onClose, modelo }: UnidadesPorModeloModa
     queryFn: async (): Promise<Unidade[]> => {
       if (!modelo) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('unidades')
-        .select('id, group_name, group_code, city, state, store_phase, is_active')
-        .eq('store_model', modelo)
-        .order('group_name');
+        .select('id, group_name, group_code, city, state, store_phase, is_active');
+
+      if (modelo === 'Não informado') {
+        query = query.is('store_model', null);
+      } else {
+        query = query.eq('store_model', modelo);
+      }
+
+      const { data, error } = await query.order('group_name');
 
       if (error) throw error;
       return data || [];
