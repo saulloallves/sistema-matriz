@@ -40,7 +40,8 @@ import {
   UserCog,
   Eye,
   Check,
-  X
+  X,
+  Key
 } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
@@ -73,6 +74,8 @@ import { useFranqueadosAuditLogs, FranqueadoAuditLog } from '@/hooks/useFranquea
 import { FranqueadoAuditLogViewModal } from '@/components/modals/FranqueadoAuditLogViewModal';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { GeracaoSenhasModal } from '@/components/modals/GeracaoSenhasModal';
+import { useGeracaoSenhas } from '@/hooks/useGeracaoSenhas';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1326,9 +1329,11 @@ const ConfiguracoesPage = () => {
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
   const [normalizacaoContatosModalOpen, setNormalizacaoContatosModalOpen] = useState(false);
   const [normalizacaoPessoasModalOpen, setNormalizacaoPessoasModalOpen] = useState(false);
+  const [geracaoSenhasModalOpen, setGeracaoSenhasModalOpen] = useState(false);
   const { unidadesParaNormalizacao, isLoading: isLoadingNormalizacao } = useNormalizacaoUnidades();
   const { contatosParaNormalizacao, isLoading: isLoadingNormalizacaoContatos } = useNormalizacaoContatos();
   const { pessoasParaNormalizacao, isLoading: isLoadingNormalizacaoPessoas } = useNormalizacaoPessoas();
+  const { franqueados: franqueadosParaGerarSenha, isLoading: isLoadingGeracaoSenhas } = useGeracaoSenhas();
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -1615,6 +1620,45 @@ const ConfiguracoesPage = () => {
 
               <Card>
                 <CardContent>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Key size={20} />
+                      Geração de Senhas de Franqueados
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Gere senhas de sistema para franqueados que ainda não possuem uma.
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Card variant="outlined" sx={{ flex: 1 }}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="error">
+                          {isLoadingGeracaoSenhas ? '-' : franqueadosParaGerarSenha.length}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Franqueados sem senha
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<RefreshCw size={18} />}
+                      onClick={() => setGeracaoSenhasModalOpen(true)}
+                      disabled={isLoadingGeracaoSenhas}
+                    >
+                      Verificar e Gerar Senhas
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent>
                   <Typography variant="h6" sx={{ mb: 2 }}>
                     Outras Configurações
                   </Typography>
@@ -1647,6 +1691,10 @@ const ConfiguracoesPage = () => {
       <NormalizacaoPessoasModal
         open={normalizacaoPessoasModalOpen}
         onClose={() => setNormalizacaoPessoasModalOpen(false)}
+      />
+      <GeracaoSenhasModal
+        open={geracaoSenhasModalOpen}
+        onClose={() => setGeracaoSenhasModalOpen(false)}
       />
     </Box>
   );
