@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,6 +34,7 @@ import {
   UserCircle,
   Lock,
   Radio,
+  FileCheck,
 } from 'lucide-react';
 import { UserProfileModal } from '../modals/UserProfileModal';
 
@@ -46,6 +48,7 @@ interface MenuItemType {
 
 const menuItems: MenuItemType[] = [
   { text: 'Dashboard', icon: LayoutDashboard, path: '/' },
+  { text: 'Aprovação de Cadastros', icon: FileCheck, path: '/onboarding', permissionTable: 'onboarding_requests' },
   { 
     text: 'Unidades', 
     icon: Building2,

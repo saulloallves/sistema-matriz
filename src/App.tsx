@@ -24,6 +24,7 @@ const ColaboradoresLojaPage = lazy(() => import("./pages/ColaboradoresLojaPage")
 const CargosLojaPage = lazy(() => import("./pages/CargosLojaPage"));
 const SenhasPage = lazy(() => import("./pages/SenhasPage"));
 const PermissoesPage = lazy(() => import("./pages/PermissoesPage"));
+const OnboardingRequestsPage = lazy(() => import("./pages/OnboardingRequestsPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -80,6 +81,7 @@ const App = () => (
                       <Route path="/cargos-loja" element={<CargosLojaPage />} />
                       <Route path="/senhas" element={<SenhasPage />} />
                       <Route path="/permissoes" element={<PermissoesPage />} />
+                      <Route path="/onboarding" element={<OnboardingRequestsPage />} />
                       <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
                       <Route path="/configuracoes" element={<ConfiguracoesPage />} />
                       <Route path="/evento-seguidores" element={
