@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Dialog,
   DialogTitle,
@@ -171,6 +172,7 @@ export const FranqueadoViewModal = ({ open, onClose, franqueado }: FranqueadoVie
             </Typography>
             
             <InfoItem label="Nome Completo" value={franqueado.full_name} fullWidth />
+            <InfoItem label="E-mail" value={(franqueado as any).email} fullWidth />
             <InfoItem label="Contato" value={franqueado.contact} />
             <InfoItem label="CPF/RNM" value={franqueado.cpf_rnm} />
             <InfoItem label="Nacionalidade" value={franqueado.nationality} />

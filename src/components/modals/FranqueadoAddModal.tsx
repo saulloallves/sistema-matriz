@@ -29,6 +29,7 @@ interface FranqueadoAddModalProps {
 
 const franqueadoSchema = z.object({
   full_name: z.string().min(1, "Nome completo é obrigatório"),
+  email: z.string().email("E-mail inválido").optional().or(z.literal('')),
   cpf_rnm: z.string().optional(),
   nationality: z.string().optional(),
   birth_date: z.string().optional(),
@@ -73,6 +74,7 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
     resolver: zodResolver(franqueadoSchema),
     defaultValues: {
       full_name: '',
+      email: '',
       cpf_rnm: '',
       nationality: '',
       birth_date: '',
@@ -114,6 +116,7 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
         .from("franqueados")
         .insert({
           full_name: data.full_name,
+          email: data.email || null,
           cpf_rnm: data.cpf_rnm || null,
           nationality: data.nationality || null,
           birth_date: data.birth_date || null,
@@ -211,6 +214,21 @@ export function FranqueadoAddModal({ open, onClose, onUpdate }: FranqueadoAddMod
                       error={!!errors.full_name}
                       helperText={errors.full_name?.message}
                       required
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="E-mail"
+                      type="email"
+                      fullWidth
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
                     />
                   )}
                 />

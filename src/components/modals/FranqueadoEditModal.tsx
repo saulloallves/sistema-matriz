@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Dialog,
@@ -37,6 +38,7 @@ interface FranqueadoEditModalProps {
 
 const franqueadoSchema = z.object({
   full_name: z.string().min(1, "Nome completo é obrigatório"),
+  email: z.string().email("E-mail inválido").optional().or(z.literal('')),
   cpf_rnm: z.string().optional(),
   nationality: z.string().optional(),
   birth_date: z.string().optional(),
@@ -101,6 +103,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     resolver: zodResolver(franqueadoSchema),
     defaultValues: {
       full_name: '',
+      email: '',
       cpf_rnm: '',
       nationality: '',
       birth_date: '',
@@ -184,6 +187,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
     if (franqueado && open) {
       reset({
         full_name: franqueado.full_name || '',
+        email: (franqueado as any).email || '',
         cpf_rnm: franqueado.cpf_rnm || '',
         nationality: franqueado.nationality || '',
         birth_date: franqueado.birth_date || '',
@@ -230,6 +234,7 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
 
       const updatePayload: TablesUpdate<'franqueados'> = {
         full_name: data.full_name,
+        email: data.email || null,
         cpf_rnm: data.cpf_rnm || null,
         nationality: data.nationality || null,
         birth_date: data.birth_date || null,
@@ -358,6 +363,21 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                       error={!!errors.full_name}
                       helperText={errors.full_name?.message}
                       required
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="E-mail"
+                      type="email"
+                      fullWidth
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
                     />
                   )}
                 />
@@ -557,20 +577,22 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
                 Contato
               </Typography>
               
-              <Controller
-                name="contact"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Telefone/WhatsApp"
-                    fullWidth
-                    required
-                    error={!!errors.contact}
-                    helperText={errors.contact?.message}
-                  />
-                )}
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Controller
+                  name="contact"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Telefone/WhatsApp"
+                      fullWidth
+                      required
+                      error={!!errors.contact}
+                      helperText={errors.contact?.message}
+                    />
+                  )}
+                />
+              </Box>
             </Box>
 
             {/* Dados Profissionais */}
