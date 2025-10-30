@@ -11,6 +11,79 @@ function cleanPhoneNumber(phone: string): string {
   return phone.replace(/\D/g, '');
 }
 
+// Função para enviar notificação via WhatsApp
+async function sendWhatsAppNotification(phone: string, message: string): Promise<boolean> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/zapi-send-text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        phone,
+        message,
+        logData: {
+          event_type: 'onboarding_notification',
+          user_action: 'system',
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('❌ Erro ao enviar WhatsApp:', await response.text());
+      return false;
+    }
+
+    console.log('✅ WhatsApp enviado com sucesso');
+    return true;
+  } catch (error) {
+    console.error('❌ Erro ao enviar WhatsApp:', error);
+    return false;
+  }
+}
+
+// Função para enviar notificação via Email
+async function sendEmailNotification(email: string, subject: string, html: string): Promise<boolean> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/brevo-send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        to: email,
+        subject,
+        html,
+        logData: {
+          event_type: 'onboarding_notification',
+          user_action: 'system',
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('❌ Erro ao enviar Email:', await response.text());
+      return false;
+    }
+
+    console.log('✅ Email enviado com sucesso');
+    return true;
+  } catch (error) {
+    console.error('❌ Erro ao enviar Email:', error);
+    return false;
+  }
+}
+
 /**
  * Gera senha do sistema baseada no código da unidade
  * @param groupCode - Código da unidade (sempre 4 dígitos)
@@ -392,6 +465,78 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
     console.log('✅ Aprovação concluída com sucesso!');
     console.log('📝 Histórico será registrado automaticamente por trigger');
     
+    // ===== 6. ENVIAR NOTIFICAÇÕES DE APROVAÇÃO =====
+    console.log('📧 Enviando notificações de aprovação...');
+    
+    const franchiseeName = formData.full_name || 'Franqueado';
+    const franchiseePhone = cleanPhoneNumber(formData.contact);
+    const franchiseeEmail = formData.franchisee_email || formData.email;
+    
+    // Mensagem de aprovação
+    const whatsappMessage = `🎉 *Parabéns, ${franchiseeName}!*
+
+Informamos que seu cadastro no *Girabot* foi *APROVADO* com sucesso! ✅
+
+Você já pode utilizar todos os nossos sistemas.
+
+*Dados de Acesso:*
+• Código da Unidade: ${unitGroupCode}
+• Senha do Sistema: ${systemPassword}
+
+Caso tenha alguma dúvida, entre em contato conosco.
+
+Bem-vindo(a) à família Cresci e Perdi! 🎊`;
+
+    const emailSubject = '🎉 Cadastro Aprovado - Girabot';
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #E3A024, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Cadastro Aprovado!</h1>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+            Olá, <strong>${franchiseeName}</strong>!
+          </p>
+          
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+            Informamos que seu cadastro no <strong>Girabot</strong> foi <strong style="color: #27ae60;">APROVADO</strong> com sucesso! ✅
+          </p>
+          
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #27ae60;">
+            <h3 style="color: #E3A024; margin-top: 0;">Dados de Acesso</h3>
+            <p style="margin: 10px 0;"><strong>Código da Unidade:</strong> ${unitGroupCode}</p>
+            <p style="margin: 10px 0;"><strong>Senha do Sistema:</strong> ${systemPassword}</p>
+          </div>
+          
+          <p style="font-size: 16px; color: #333; margin-top: 20px;">
+            Você já pode utilizar todos os nossos sistemas!
+          </p>
+          
+          <p style="font-size: 16px; color: #333; margin-top: 20px;">
+            Caso tenha alguma dúvida, entre em contato conosco.
+          </p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+            <p style="color: #666; font-size: 14px;">
+              Bem-vindo(a) à família <strong>Cresci e Perdi</strong>! 🎊
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Enviar notificações (não bloqueante - não falha se houver erro)
+    if (franchiseePhone) {
+      await sendWhatsAppNotification(franchiseePhone, whatsappMessage);
+    }
+    
+    if (franchiseeEmail) {
+      await sendEmailNotification(franchiseeEmail, emailSubject, emailHtml);
+    }
+    
+    console.log('✅ Processo de aprovação e notificação concluído!');
+    
     return processingResult;
     
   } catch (error: any) {
@@ -429,4 +574,71 @@ async function processRejection(supabaseAdmin: any, request: any, reviewerId: st
   
   console.log('✅ Rejeição processada com sucesso');
   console.log('📝 Histórico será registrado automaticamente por trigger');
+  
+  // ===== ENVIAR NOTIFICAÇÕES DE REJEIÇÃO =====
+  console.log('📧 Enviando notificações de rejeição...');
+  
+  const formData = request.form_data;
+  const franchiseeName = formData.full_name || 'Franqueado';
+  const franchiseePhone = cleanPhoneNumber(formData.contact);
+  const franchiseeEmail = formData.franchisee_email || formData.email;
+  
+  // Mensagem de rejeição
+  const whatsappMessage = `Olá, ${franchiseeName}.
+
+Informamos que seu cadastro no *Girabot* foi *REJEITADO*. ❌
+
+*Motivo da rejeição:*
+${reason}
+
+Para mais informações ou para esclarecer dúvidas, entre em contato conosco.
+
+Atenciosamente,
+Equipe Cresci e Perdi`;
+
+  const emailSubject = 'Cadastro Rejeitado - Girabot';
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">Cadastro Rejeitado</h1>
+      </div>
+      
+      <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+          Olá, <strong>${franchiseeName}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+          Informamos que seu cadastro no <strong>Girabot</strong> foi <strong style="color: #e74c3c;">REJEITADO</strong>. ❌
+        </p>
+        
+        <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e74c3c;">
+          <h3 style="color: #e74c3c; margin-top: 0;">Motivo da Rejeição</h3>
+          <p style="margin: 10px 0; color: #555; white-space: pre-wrap;">${reason}</p>
+        </div>
+        
+        <p style="font-size: 16px; color: #333; margin-top: 20px;">
+          Para mais informações ou para esclarecer dúvidas, entre em contato conosco.
+        </p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+          <p style="color: #666; font-size: 14px;">
+            Atenciosamente,<br/>
+            <strong>Equipe Cresci e Perdi</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Enviar notificações (não bloqueante - não falha se houver erro)
+  if (franchiseePhone) {
+    await sendWhatsAppNotification(franchiseePhone, whatsappMessage);
+  }
+  
+  if (franchiseeEmail) {
+    await sendEmailNotification(franchiseeEmail, emailSubject, emailHtml);
+  }
+  
+  console.log('✅ Processo de rejeição e notificação concluído!');
 }
