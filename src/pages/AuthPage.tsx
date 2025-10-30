@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import logoPrincipal from '@/assets/logo-principal.png';
 
 const AuthPage = () => {
@@ -21,6 +22,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   // Se já estiver logado, redireciona para o dashboard
   useEffect(() => {
@@ -225,6 +227,24 @@ const AuthPage = () => {
               />
             </Box>
 
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+              <Button
+                onClick={() => setForgotPasswordOpen(true)}
+                sx={{
+                  textTransform: 'none',
+                  color: '#f59e42',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  padding: '4px 8px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(245, 158, 66, 0.08)',
+                  },
+                }}
+              >
+                Esqueci minha senha
+              </Button>
+            </Box>
+
             <Button
               type="submit"
               fullWidth
@@ -271,6 +291,12 @@ const AuthPage = () => {
           </Typography>
         </CardContent>
       </Card>
+
+      {/* Modal de Esqueci Minha Senha */}
+      <ForgotPasswordModal
+        open={forgotPasswordOpen}
+        onClose={() => setForgotPasswordOpen(false)}
+      />
     </Box>
   );
 };
