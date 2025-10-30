@@ -26,12 +26,16 @@ const generateRandomPassword = (): string => {
 
 const sendWhatsApp = async (phone: string, message: string): Promise<boolean> => {
   try {
-    const response = await fetch('https://qrdewkryvpwvdxygtxve.supabase.co/functions/v1/zapi-send-text', {
+    // Usar Edge Function local do próprio sistema
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/zapi-send-text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc'
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`
       },
       body: JSON.stringify({
         phone: phone,
@@ -48,12 +52,16 @@ const sendWhatsApp = async (phone: string, message: string): Promise<boolean> =>
 
 const sendEmail = async (email: string, subject: string, html: string): Promise<boolean> => {
   try {
-    const response = await fetch('https://qrdewkryvpwvdxygtxve.supabase.co/functions/v1/brevo-send-email', {
+    // Usar Edge Function local do próprio sistema
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/brevo-send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGV3a3J5dnB3dmR4eWd0eHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MDAzOTksImV4cCI6MjA3MjQ3NjM5OX0.WLo3vRrsflLvqCu9a6qjo8QZerA9NqgpYaJuXbQNRFc'
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`
       },
       body: JSON.stringify({
         to: email,
