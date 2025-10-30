@@ -76,6 +76,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GeracaoSenhasModal } from '@/components/modals/GeracaoSenhasModal';
 import { useGeracaoSenhas } from '@/hooks/useGeracaoSenhas';
+import { NotificationsTab } from '@/components/configuracoes/NotificationsTab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1384,7 +1385,6 @@ const ConfiguracoesPage = () => {
               label="Notificações" 
               iconPosition="start"
               sx={{ textTransform: 'none', fontWeight: 500 }}
-              disabled
             />
             <Tab 
               icon={<Settings size={18} />} 
@@ -1421,16 +1421,7 @@ const ConfiguracoesPage = () => {
           </TabPanel>
 
           <TabPanel value={tabValue} index={3}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Configurações de Notificações
-                </Typography>
-                <Typography color="text.secondary">
-                  Esta funcionalidade será implementada em breve.
-                </Typography>
-              </CardContent>
-            </Card>
+            <NotificationsTab />
           </TabPanel>
 
           <TabPanel value={tabValue} index={4}>

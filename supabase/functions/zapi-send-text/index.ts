@@ -25,10 +25,26 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    const instanceId = Deno.env.get("ZAPI_INSTANCE_ID") || "";
-    const instanceToken = Deno.env.get("ZAPI_INSTANCE_TOKEN") || "";
-    const clientToken = Deno.env.get("ZAPI_CLIENT_TOKEN") || "";
-    const baseUrl = Deno.env.get("ZAPI_BASE_URL") || "https://api.z-api.io";
+
+    // Criar cliente Supabase para buscar credenciais do banco
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Buscar credenciais do banco de dados primeiro
+    const { data: credentials } = await supabase
+      .from('notification_credentials')
+      .select('zapi_instance_id, zapi_instance_token, zapi_client_token, zapi_base_url')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Usar credenciais do banco, com fallback para variáveis de ambiente
+    const instanceId = credentials?.zapi_instance_id || Deno.env.get("ZAPI_INSTANCE_ID") || "";
+    const instanceToken = credentials?.zapi_instance_token || Deno.env.get("ZAPI_INSTANCE_TOKEN") || "";
+    const clientToken = credentials?.zapi_client_token || Deno.env.get("ZAPI_CLIENT_TOKEN") || "";
+    const baseUrl = credentials?.zapi_base_url || Deno.env.get("ZAPI_BASE_URL") || "https://api.z-api.io";
+
     if (!instanceId || !instanceToken || !clientToken) {
       return new Response(JSON.stringify({
         error: "Z-API credentials not configured"

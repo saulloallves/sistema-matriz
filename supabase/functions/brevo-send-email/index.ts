@@ -25,9 +25,25 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-    const defaultFrom = Deno.env.get("BREVO_DEFAULT_FROM") || "noreply@crescieperdi.com.br";
-    const defaultFromName = Deno.env.get("BREVO_DEFAULT_FROM_NAME") || "Sistema Matriz - Cresci e Perdi";
+
+    // Criar cliente Supabase para buscar credenciais do banco
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Buscar credenciais do banco de dados primeiro
+    const { data: credentials } = await supabase
+      .from('notification_credentials')
+      .select('brevo_api_key, brevo_default_from, brevo_default_from_name')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Usar credenciais do banco, com fallback para variáveis de ambiente
+    const brevoApiKey = credentials?.brevo_api_key || Deno.env.get("BREVO_API_KEY");
+    const defaultFrom = credentials?.brevo_default_from || Deno.env.get("BREVO_DEFAULT_FROM") || "noreply@crescieperdi.com.br";
+    const defaultFromName = credentials?.brevo_default_from_name || Deno.env.get("BREVO_DEFAULT_FROM_NAME") || "Sistema Matriz - Cresci e Perdi";
+
     if (!brevoApiKey) {
       return new Response(JSON.stringify({
         error: "Brevo API key not configured"
