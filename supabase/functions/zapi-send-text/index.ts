@@ -76,22 +76,43 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    // **NOVO: Log de auditoria no sucesso**
-    if (logData) {
-      const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    
+    // Log de auditoria no sucesso
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '', 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
       const logEntry = {
-        ...logData,
+        event_type: logData?.event_type || 'whatsapp_message',
+        user_action: logData?.user_action || 'system',
         canal: 'whatsapp',
+        destinatario: phone,
         conteudo: message,
+        assunto: null,
         status: 'enviado',
-        external_id: zapiData?.id
+        external_id: zapiData?.id || zapiData?.messageId,
+        metadata: {
+          zapi_response: zapiData,
+          request_data: logData
+        }
       };
-      const { error: logError } = await supabaseAdmin.from('comunicacoes').insert(logEntry);
+      
+      const { error: logError } = await supabaseAdmin
+        .from('comunicacoes')
+        .insert(logEntry);
+      
       if (logError) {
-        console.error('Falha ao registrar log de comunicação:', logError);
-      // Não falha a requisição principal, apenas loga o erro
+        console.error('⚠️ Falha ao registrar log de comunicação:', logError);
+        // Não falha a requisição principal, apenas loga o erro
+      } else {
+        console.log('✅ Log de comunicação registrado com sucesso');
       }
+    } catch (logErr) {
+      console.error('⚠️ Erro ao tentar registrar log:', logErr);
     }
+    
     return new Response(JSON.stringify({
       success: true,
       data: zapiData

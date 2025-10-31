@@ -396,21 +396,33 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
     
     // ===== 3. GERAR SENHA DO SISTEMA =====
     console.log('🔐 Gerando senha do sistema...');
+    console.log('📊 Group Code para geração:', unitGroupCode);
+    
+    if (!unitGroupCode) {
+      console.error('❌ Group code não encontrado!');
+      throw new Error('Group code da unidade não encontrado para gerar senha');
+    }
+    
     const systemPassword = generateSystemPassword(unitGroupCode);
-    console.log('✅ Senha gerada:', systemPassword);
+    console.log('✅ Senha gerada com sucesso:', systemPassword);
+    console.log('📝 Tipo da senha:', typeof systemPassword);
     
     // Atualizar franqueado com a senha gerada
-    const { error: passwordError } = await supabaseAdmin
+    console.log('💾 Salvando senha no franqueado ID:', franchiseeId);
+    const { data: updatedFranchisee, error: passwordError } = await supabaseAdmin
       .from('franqueados')
       .update({ systems_password: systemPassword })
-      .eq('id', franchiseeId);
+      .eq('id', franchiseeId)
+      .select('id, systems_password')
+      .single();
     
     if (passwordError) {
-      console.error('⚠️ Erro ao salvar senha do franqueado:', passwordError);
-      // Não vamos falhar a aprovação por causa disso
-    } else {
-      console.log('✅ Senha salva no franqueado');
+      console.error('❌ Erro ao salvar senha do franqueado:', passwordError);
+      throw new Error(`Falha ao salvar senha: ${passwordError.message}`);
     }
+    
+    console.log('✅ Senha salva com sucesso no franqueado');
+    console.log('📋 Dados atualizados:', updatedFranchisee);
     
     // ===== 4. CRIAR VINCULAÇÃO FRANQUEADO-UNIDADE =====
     console.log('🔗 Verificando vinculação...');
