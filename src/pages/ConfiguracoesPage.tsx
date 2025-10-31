@@ -72,6 +72,8 @@ import { useAuditLogs, AuditLog } from '@/hooks/useAuditLogs';
 import { AuditLogViewModal } from '@/components/modals/AuditLogViewModal';
 import { useFranqueadosAuditLogs, FranqueadoAuditLog } from '@/hooks/useFranqueadosAuditLogs';
 import { FranqueadoAuditLogViewModal } from '@/components/modals/FranqueadoAuditLogViewModal';
+import { useComunicacaoLogs, ComunicacaoLog } from '@/hooks/useComunicacaoLogs';
+import { ComunicacaoLogViewModal } from '@/components/modals/ComunicacaoLogViewModal';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GeracaoSenhasModal } from '@/components/modals/GeracaoSenhasModal';
@@ -1259,10 +1261,13 @@ const AuditLogsTab = () => {
   const [subTabValue, setSubTabValue] = useState(0);
   const { logs: auditLogs, isLoading: isLoadingAuditLogs } = useAuditLogs();
   const { logs: franqueadoLogs = [], isLoading: isLoadingFranqueadoLogs } = useFranqueadosAuditLogs();
+  const { logs: comunicacaoLogs = [], isLoading: isLoadingComunicacao } = useComunicacaoLogs();
   const [auditModalOpen, setAuditModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
   const [franqueadoLogModalOpen, setFranqueadoLogModalOpen] = useState(false);
   const [selectedFranqueadoLog, setSelectedFranqueadoLog] = useState<FranqueadoAuditLog | null>(null);
+  const [comunicacaoModalOpen, setComunicacaoModalOpen] = useState(false);
+  const [selectedComunicacao, setSelectedComunicacao] = useState<ComunicacaoLog | null>(null);
 
   const handleViewAuditDetails = (log: AuditLog) => {
     setSelectedAuditLog(log);
@@ -1272,6 +1277,11 @@ const AuditLogsTab = () => {
   const handleViewFranqueadoLogDetails = (log: FranqueadoAuditLog) => {
     setSelectedFranqueadoLog(log);
     setFranqueadoLogModalOpen(true);
+  };
+
+  const handleViewComunicacaoDetails = (log: ComunicacaoLog) => {
+    setSelectedComunicacao(log);
+    setComunicacaoModalOpen(true);
   };
 
   const auditColumns: GridColDef[] = [
@@ -1291,12 +1301,34 @@ const AuditLogsTab = () => {
     { field: 'actions', headerName: 'Ações', width: 150, sortable: false, align: 'center', headerAlign: 'center', renderCell: (params) => <Button variant="outlined" size="small" startIcon={<Eye size={16} />} onClick={() => handleViewFranqueadoLogDetails(params.row)}>Ver Detalhes</Button> },
   ];
 
+  const comunicacaoColumns: GridColDef[] = [
+    { field: 'created_at', headerName: 'Data/Hora', flex: 1, minWidth: 180, renderCell: (params) => format(new Date(params.value), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }) },
+    { field: 'event_type', headerName: 'Tipo de Evento', flex: 1, minWidth: 200, renderCell: (params) => params.value || 'N/A' },
+    { field: 'canal', headerName: 'Canal', flex: 0.7, minWidth: 120, align: 'center', headerAlign: 'center', renderCell: (params) => {
+      const color = params.value === 'whatsapp' ? 'success' : params.value === 'email' ? 'primary' : 'default';
+      const label = params.value === 'whatsapp' ? 'WhatsApp' : params.value === 'email' ? 'E-mail' : params.value;
+      return <Chip label={label} color={color} size="small" />;
+    }},
+    { field: 'destinatario', headerName: 'Destinatário', flex: 1.2, minWidth: 180 },
+    { field: 'conteudo', headerName: 'Conteúdo', flex: 2, minWidth: 300, renderCell: (params) => {
+      const content = params.value || '';
+      const truncated = content.length > 80 ? content.substring(0, 80) + '...' : content;
+      return <Tooltip title={content}><span>{truncated}</span></Tooltip>;
+    }},
+    { field: 'status', headerName: 'Status', flex: 0.7, minWidth: 120, align: 'center', headerAlign: 'center', renderCell: (params) => {
+      const color = params.value === 'enviado' ? 'success' : params.value === 'erro' ? 'error' : 'warning';
+      return <Chip label={params.value?.toUpperCase()} color={color} size="small" />;
+    }},
+    { field: 'actions', headerName: 'Ações', width: 150, sortable: false, align: 'center', headerAlign: 'center', renderCell: (params) => <Button variant="outlined" size="small" startIcon={<Eye size={16} />} onClick={() => handleViewComunicacaoDetails(params.row)}>Ver Detalhes</Button> },
+  ];
+
   return (
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={subTabValue} onChange={(_, newValue) => setSubTabValue(newValue)}>
           <Tab label="Auditoria de Dados" />
           <Tab label="Log de Ações" />
+          <Tab label="Logs de Envio" />
         </Tabs>
       </Box>
       <TabPanel value={subTabValue} index={0}>
@@ -1319,8 +1351,19 @@ const AuditLogsTab = () => {
           searchPlaceholder="Buscar por usuário ou ação..."
         />
       </TabPanel>
+      <TabPanel value={subTabValue} index={2}>
+        <DataTable
+          title="Logs de Envio de Comunicações"
+          description="Visualize todas as comunicações enviadas via WhatsApp, Email e SMS pelo sistema."
+          data={comunicacaoLogs}
+          columns={comunicacaoColumns}
+          loading={isLoadingComunicacao}
+          searchPlaceholder="Buscar por canal, destinatário ou tipo de evento..."
+        />
+      </TabPanel>
       <AuditLogViewModal open={auditModalOpen} onClose={() => setAuditModalOpen(false)} log={selectedAuditLog} />
       <FranqueadoAuditLogViewModal open={franqueadoLogModalOpen} onClose={() => setFranqueadoLogModalOpen(false)} log={selectedFranqueadoLog} />
+      <ComunicacaoLogViewModal open={comunicacaoModalOpen} onClose={() => setComunicacaoModalOpen(false)} log={selectedComunicacao} />
     </>
   );
 };
