@@ -82,7 +82,8 @@ export const ComunicacaoLogViewModal = ({ open, onClose, log }: ComunicacaoLogVi
           justifyContent: 'space-between',
           alignItems: 'center',
           pb: 2,
-          background: 'linear-gradient(135deg, #E3A024, #42a5f5)',
+          mb: 3,
+          background: 'linear-gradient(135deg, #ffbe44ff, #ef9b00ff)',
           color: 'white',
         }}
       >
