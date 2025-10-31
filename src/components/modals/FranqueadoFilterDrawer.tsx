@@ -87,8 +87,8 @@ export const FranqueadoFilterDrawer = ({
               onChange={(e) => handleInputChange('is_in_contract', e.target.value === '' ? undefined : e.target.value === 'true')}
             >
               <MenuItem value=""><em>Todos</em></MenuItem>
-              <MenuItem value="true">Ativo</MenuItem>
-              <MenuItem value="false">Inativo</MenuItem>
+              <MenuItem value="true">Em Contrato</MenuItem>
+              <MenuItem value="false">Não está em Contrato</MenuItem>
             </Select>
           </FormControl>
 

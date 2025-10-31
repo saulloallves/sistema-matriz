@@ -266,7 +266,7 @@ export const FranqueadoViewModal = ({ open, onClose, franqueado }: FranqueadoVie
             
             <ChipItem 
               label="Status do Contrato" 
-              value={franqueado.is_in_contract ? "Ativo" : "Inativo"}
+              value={franqueado.is_in_contract ? "Em Contrato" : "Não está em Contrato"}
               color={franqueado.is_in_contract ? "success" : "error"}
             />
             <ChipItem 
