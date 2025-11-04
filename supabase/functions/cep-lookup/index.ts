@@ -1,57 +1,100 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
-
-serve(async (req) => {
-  console.log('--- CEP Lookup Function Invoked ---');
-  
-  // Handle CORS preflight requests
+serve(async (req)=>{
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', {
+      headers: corsHeaders
+    });
   }
-
   try {
-    const url = new URL(req.url);
-    console.log('Request URL:', url.href);
+    // Suporta tanto GET com query params quanto POST com body JSON
+    let cep: string | undefined;
     
-    const cep = url.searchParams.get('cep');
-    console.log('Extracted CEP:', cep);
-
-    if (!cep || !/^\d{8}$/.test(cep)) {
-      console.error('Validation failed: CEP is invalid or missing.');
-      return new Response(JSON.stringify({ error: 'CEP inválido. Forneça 8 dígitos numéricos.' }), {
+    if (req.method === 'GET') {
+      // Extrai CEP dos query parameters
+      const url = new URL(req.url);
+      cep = url.searchParams.get('cep') || undefined;
+    } else if (req.method === 'POST') {
+      // Extrai CEP do body JSON
+      const body = await req.json();
+      cep = body.cep;
+    }
+    
+    const cleanedCep = cep?.replace(/\D/g, '');
+    if (!cleanedCep) {
+      return new Response(JSON.stringify({
+        error: 'CEP é obrigatório'
+      }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       });
     }
-
-    const viaCepUrl = `https://viacep.com.br/ws/${cep}/json/`;
-    console.log('Calling ViaCEP with:', viaCepUrl);
-    
-    const response = await fetch(viaCepUrl);
-    console.log('ViaCEP response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`Erro na API ViaCEP: ${response.statusText}`);
+    console.log('Buscando CEP:', cleanedCep);
+    // Primeiro tenta BrasilAPI
+    let response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanedCep}`);
+    let data = null;
+    let mappedData = null;
+    if (response.ok) {
+      data = await response.json();
+      console.log('BrasilAPI response:', data);
+      // Mapeamento da resposta da BrasilAPI
+      mappedData = {
+        cep: data.cep,
+        logradouro: data.street,
+        complemento: data.complement || '',
+        bairro: data.neighborhood,
+        localidade: data.city,
+        uf: data.state
+      };
+    } else {
+      console.log('BrasilAPI falhou, tentando ViaCEP. Status:', response.status);
+      // Fallback para ViaCEP
+      response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
+      if (!response.ok) {
+        console.error('ViaCEP também falhou. Status:', response.status);
+        throw new Error('Falha ao consultar APIs de CEP.');
+      }
+      data = await response.json();
+      console.log('ViaCEP response:', data);
+      // Verifica se o CEP foi encontrado (ViaCEP retorna erro dentro do JSON)
+      if (data.erro) {
+        return new Response(JSON.stringify({
+          error: 'CEP não encontrado.'
+        }), {
+          status: 404,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      // ViaCEP já está no formato correto
+      mappedData = data;
     }
-
-    const data = await response.json();
-    console.log('ViaCEP response data:', data);
-
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+    return new Response(JSON.stringify(mappedData), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      },
+      status: 200
     });
-
   } catch (error) {
-    console.error('Error in CEP lookup function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('CEP Lookup Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro interno do servidor';
+    return new Response(JSON.stringify({
+      error: errorMessage
+    }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     });
   }
 });

@@ -167,8 +167,9 @@ export const UnidadeEditModal: React.FC<UnidadeEditModalProps> = ({
 
     setCepLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke(`cep-lookup?cep=${cleanCEP}`, {
-        method: 'GET',
+      const { data, error } = await supabase.functions.invoke('cep-lookup', {
+        method: 'POST',
+        body: { cep: cleanCEP },
       });
 
       if (error) throw error;
