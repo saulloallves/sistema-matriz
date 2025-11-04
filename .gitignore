@@ -29,3 +29,5 @@ docker-compose*.yml
 nginx
 .github
 public
+*.mjs
+*.ps1
