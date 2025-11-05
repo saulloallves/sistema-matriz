@@ -583,9 +583,14 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
       console.log('✅ Vinculação já existe');
     }
     
-    // ===== 4.1. CRIAR USUÁRIO NO SISTEMA DE TREINAMENTO (APENAS PARA FRANQUEADOS) =====
-    if (request.request_type === 'franchisee') {
-      console.log('🎓 Request do tipo FRANQUEADO - iniciando criação no sistema de treinamento...');
+    // ===== 4.1. CRIAR USUÁRIO NO SISTEMA DE TREINAMENTO (APENAS PARA NOVOS FRANQUEADOS) =====
+    // Criar no treinamento apenas quando for novo franqueado (não quando for franqueado existente)
+    const isNewFranchisee = request.request_type === 'new_franchisee_new_unit' || 
+                            request.request_type === 'new_franchisee_existing_unit';
+    
+    if (isNewFranchisee) {
+      console.log('🎓 Request de NOVO FRANQUEADO detectado - iniciando criação no sistema de treinamento...');
+      console.log('📋 Tipo do request:', request.request_type);
       
       // Buscar dados dos vínculos do franqueado
       const unitsData = await getFranchiseeUnitsData(supabaseAdmin, franchiseeId);
@@ -611,7 +616,8 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
         }
       }
     } else {
-      console.log('ℹ️ Request não é do tipo FRANQUEADO - pulando criação no treinamento');
+      console.log('ℹ️ Request é de FRANQUEADO EXISTENTE - pulando criação no treinamento');
+      console.log('📋 Tipo do request:', request.request_type);
     }
     
     // ===== 5. ATUALIZAR REQUEST PARA APPROVED =====
