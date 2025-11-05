@@ -105,6 +105,136 @@ function generateSystemPassword(groupCode: number): number {
   return parseInt(senha, 10);
 }
 
+/**
+ * Busca dados dos vínculos de um franqueado para cadastro no sistema de treinamento
+ * @param supabaseAdmin - Cliente Supabase com Service Role
+ * @param franchiseeId - ID do franqueado
+ * @returns Dados dos vínculos (unit_code mais recente, unit_codes array, nomes das unidades)
+ */
+async function getFranchiseeUnitsData(supabaseAdmin: any, franchiseeId: string) {
+  try {
+    console.log('🔍 Buscando vínculos do franqueado:', franchiseeId);
+    
+    // Buscar todos os vínculos do franqueado com dados das unidades
+    const { data: vinculos, error } = await supabaseAdmin
+      .from('franqueados_unidades')
+      .select(`
+        id,
+        created_at,
+        unidade_id,
+        unidades!inner (
+          id,
+          group_code,
+          group_name
+        )
+      `)
+      .eq('franqueado_id', franchiseeId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('❌ Erro ao buscar vínculos:', error);
+      throw error;
+    }
+    
+    if (!vinculos || vinculos.length === 0) {
+      console.warn('⚠️ Nenhum vínculo encontrado para o franqueado');
+      return null;
+    }
+    
+    console.log(`✅ Encontrados ${vinculos.length} vínculo(s)`);
+    
+    // Unidade mais recente (primeira no array pois já está ordenado DESC)
+    const mostRecentUnit = vinculos[0].unidades;
+    
+    // Arrays de códigos e nomes de todas as unidades
+    const unitCodes = vinculos.map((v: any) => String(v.unidades.group_code));
+    const unitNames = vinculos.map((v: any) => v.unidades.group_name).join(' / ');
+    
+    return {
+      unit_code: String(mostRecentUnit.group_code),
+      unit_codes: unitCodes,
+      nomes_unidades: unitNames
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados dos vínculos:', error);
+    return null;
+  }
+}
+
+/**
+ * Cria registro do franqueado no sistema de treinamento
+ * @param supabaseAdmin - Cliente Supabase com Service Role
+ * @param franchiseeData - Dados do franqueado
+ * @param unitsData - Dados das unidades vinculadas
+ * @param systemPassword - Senha do sistema
+ */
+async function createTrainingUser(
+  supabaseAdmin: any,
+  franchiseeData: any,
+  unitsData: any,
+  systemPassword: number
+) {
+  try {
+    console.log('🎓 Iniciando criação de usuário no sistema de treinamento...');
+    
+    if (!unitsData) {
+      console.warn('⚠️ Dados de unidades não disponíveis, pulando criação no treinamento');
+      return;
+    }
+    
+    // Preparar dados para inserção no treinamento.users
+    const trainingUserData = {
+      name: franchiseeData.full_name,
+      cpf: franchiseeData.cpf_rnm?.replace(/\D/g, '') || null,
+      email: franchiseeData.email,
+      phone: franchiseeData.contact?.replace(/\D/g, '') || null,
+      position: null,
+      user_type: 'Aluno',
+      active: true,
+      unit_code: unitsData.unit_code,
+      role: 'Franqueado',
+      approval_status: 'aprovado',
+      approved_by: null,
+      approved_at: null,
+      visible_password: String(systemPassword).padStart(2, '0'),
+      unit_codes: unitsData.unit_codes,
+      nomes_unidades: unitsData.nomes_unidades
+    };
+    
+    console.log('📝 Dados preparados para treinamento.users:', {
+      name: trainingUserData.name,
+      cpf: trainingUserData.cpf,
+      email: trainingUserData.email,
+      unit_code: trainingUserData.unit_code,
+      unit_codes_count: trainingUserData.unit_codes.length
+    });
+    
+    // Inserir no schema treinamento usando schema() e from()
+    const { data: insertedUser, error: insertError } = await supabaseAdmin
+      .schema('treinamento')
+      .from('users')
+      .insert([trainingUserData])
+      .select()
+      .single();
+    
+    if (insertError) {
+      console.error('❌ Erro ao inserir usuário no treinamento:', insertError);
+      throw insertError;
+    }
+    
+    console.log('✅ Usuário criado no sistema de treinamento com sucesso!');
+    console.log('📋 ID no treinamento:', insertedUser?.id);
+    
+    return insertedUser;
+    
+  } catch (error: any) {
+    console.error('❌ Erro ao criar usuário no treinamento:', error);
+    // Não propagar o erro para não falhar a aprovação principal
+    console.warn('⚠️ Continuando aprovação apesar do erro no treinamento');
+  }
+}
+
 serve(async (req: any) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -451,6 +581,37 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
       console.log('✅ Vinculação criada');
     } else {
       console.log('✅ Vinculação já existe');
+    }
+    
+    // ===== 4.1. CRIAR USUÁRIO NO SISTEMA DE TREINAMENTO (APENAS PARA FRANQUEADOS) =====
+    if (request.request_type === 'franchisee') {
+      console.log('🎓 Request do tipo FRANQUEADO - iniciando criação no sistema de treinamento...');
+      
+      // Buscar dados dos vínculos do franqueado
+      const unitsData = await getFranchiseeUnitsData(supabaseAdmin, franchiseeId);
+      
+      if (unitsData) {
+        // Buscar dados completos do franqueado
+        const { data: franchiseeFullData, error: franchiseeError } = await supabaseAdmin
+          .from('franqueados')
+          .select('*')
+          .eq('id', franchiseeId)
+          .single();
+        
+        if (franchiseeError) {
+          console.error('❌ Erro ao buscar dados do franqueado:', franchiseeError);
+        } else {
+          // Criar usuário no treinamento
+          await createTrainingUser(
+            supabaseAdmin,
+            franchiseeFullData,
+            unitsData,
+            systemPassword
+          );
+        }
+      }
+    } else {
+      console.log('ℹ️ Request não é do tipo FRANQUEADO - pulando criação no treinamento');
     }
     
     // ===== 5. ATUALIZAR REQUEST PARA APPROVED =====

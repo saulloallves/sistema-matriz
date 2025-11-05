@@ -74,7 +74,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger para criar profile automaticamente
-CREATE TRIGGER on_auth_user_created
+CREATE TRIGGER on_auth_user_created_Matriz
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
