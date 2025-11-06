@@ -116,13 +116,14 @@ async function getFranchiseeUnitsData(supabaseAdmin: any, franchiseeId: string) 
     console.log('🔍 Buscando vínculos do franqueado:', franchiseeId);
     
     // Buscar todos os vínculos do franqueado com dados das unidades
+    // Especificando o relacionamento correto para evitar ambiguidade
     const { data: vinculos, error } = await supabaseAdmin
       .from('franqueados_unidades')
       .select(`
         id,
         created_at,
         unidade_id,
-        unidades!inner (
+        unidades!franqueados_unidades_unidade_id_fkey (
           id,
           group_code,
           group_name
@@ -210,13 +211,14 @@ async function createTrainingUser(
       unit_codes_count: trainingUserData.unit_codes.length
     });
     
-    // Inserir no schema treinamento usando schema() e from()
-    const { data: insertedUser, error: insertError } = await supabaseAdmin
-      .schema('treinamento')
-      .from('users')
-      .insert([trainingUserData])
-      .select()
-      .single();
+    // Inserir no schema treinamento usando RPC (pois .schema() não funciona em Edge Functions)
+    // Vamos usar SQL direto via query do supabase
+    const { data: insertedUser, error: insertError } = await supabaseAdmin.rpc(
+      'insert_training_user',
+      {
+        user_data: trainingUserData
+      }
+    );
     
     if (insertError) {
       console.error('❌ Erro ao inserir usuário no treinamento:', insertError);
