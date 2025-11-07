@@ -25,6 +25,7 @@ const CargosLojaPage = lazy(() => import("./pages/CargosLojaPage"));
 const SenhasPage = lazy(() => import("./pages/SenhasPage"));
 const PermissoesPage = lazy(() => import("./pages/PermissoesPage"));
 const OnboardingRequestsPage = lazy(() => import("./pages/OnboardingRequestsPage"));
+const CorrecaoEstadosPage = lazy(() => import("./pages/CorrecaoEstadosPage")); // TEMPORÁRIO - Deletar após uso
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -84,6 +85,7 @@ const App = () => (
                       <Route path="/onboarding" element={<OnboardingRequestsPage />} />
                       <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
                       <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+                      <Route path="/admin/correcao-estados" element={<CorrecaoEstadosPage />} /> {/* TEMPORÁRIO - Deletar após uso */}
                       <Route path="/evento-seguidores" element={
                         <Box sx={{ p: 3, textAlign: 'center' }}>
                           <Typography color="text.secondary">Página em desenvolvimento</Typography>

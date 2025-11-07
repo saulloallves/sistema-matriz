@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from 'react';
 import { Box, Chip, IconButton, CircularProgress, Card, CardContent, Typography, Menu, MenuItem, Button, Badge } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';

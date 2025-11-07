@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/client';
+import { getRegiaoPorUF, getCorRegiao, getNomeEstado, type RegiaoNome } from '../utils/brazilRegions';
 
 interface DashboardStats {
   totalUnidades: number;
@@ -102,7 +104,7 @@ export const useUnidadesDistribution = () => {
       // Converter para formato do gráfico
       return Object.entries(distribution).map(([model, count]) => ({
         month: model, // Reutilizando campo month para modelo
-        unidades: count,
+        unidades: count as number,
         franqueados: 0, // Não usado neste contexto
       }));
     },
@@ -240,6 +242,251 @@ export const useTopUnits = () => {
           score: vinculosCount,
         };
       });
+    },
+  });
+};
+
+// ========================================
+// HOOK: GEOLOCALIZAÇÃO DE UNIDADES
+// ========================================
+
+export interface CityData {
+  cidade: string;
+  quantidade: number;
+  unidades: UnidadeBasic[];
+}
+
+export interface GeolocationData {
+  estado: string;
+  uf: string;
+  quantidade: number;
+  cidades: CityData[];
+}
+
+export interface UnidadeBasic {
+  id: string;
+  group_name: string;
+  group_code: number;
+  store_model: string;
+  store_phase: string;
+  city: string;
+  address: string;
+  is_active: boolean;
+}
+
+// ========================================
+// TIPOS: ESTRUTURA DE REGIÕES
+// ========================================
+
+export interface RegionData {
+  regiao: RegiaoNome;
+  quantidade: number;
+  estados: GeolocationData[];
+  cor: string;
+}
+
+export interface GeolocationStats {
+  totalUnidades: number;
+  unidadesComLocalizacao: number;
+  unidadesSemLocalizacao: number;
+  totalEstados: number;
+  totalRegioes: number;
+}
+
+export const useUnidadesGeolocation = () => {
+  return useQuery({
+    queryKey: ['unidades-geolocation'],
+    queryFn: async (): Promise<GeolocationData[]> => {
+      const { data: unidades, error } = await supabase
+        .from('unidades')
+        .select('id, group_name, group_code, store_model, store_phase, city, state, uf, address, is_active')
+        .order('state');
+
+      if (error) throw error;
+
+      // Filtrar unidades sem estado definido
+      const unidadesValidas = (unidades || []).filter(u => u.state && u.uf);
+
+      // Agrupar por estado
+      const porEstado = unidadesValidas.reduce((acc, unidade) => {
+        const estado = unidade.state!;
+        const uf = unidade.uf!;
+        const cidade = unidade.city || 'Cidade não informada';
+
+        if (!acc[uf]) {
+          acc[uf] = {
+            estado,
+            uf,
+            quantidade: 0,
+            cidadesMap: {} as Record<string, CityData>,
+          };
+        }
+
+        acc[uf].quantidade++;
+
+        // Agrupar por cidade
+        if (!acc[uf].cidadesMap[cidade]) {
+          acc[uf].cidadesMap[cidade] = {
+            cidade,
+            quantidade: 0,
+            unidades: [],
+          };
+        }
+
+        acc[uf].cidadesMap[cidade].quantidade++;
+        acc[uf].cidadesMap[cidade].unidades.push({
+          id: unidade.id,
+          group_name: unidade.group_name,
+          group_code: unidade.group_code,
+          store_model: unidade.store_model,
+          store_phase: unidade.store_phase,
+          city: cidade,
+          address: unidade.address || 'Endereço não informado',
+          is_active: unidade.is_active,
+        });
+
+        return acc;
+      }, {} as Record<string, { estado: string; uf: string; quantidade: number; cidadesMap: Record<string, CityData> }>);
+
+      // Converter para array e ordenar por quantidade (maior para menor)
+      return Object.values(porEstado)
+        .map(item => ({
+          estado: item.estado,
+          uf: item.uf,
+          quantidade: item.quantidade,
+          cidades: Object.values(item.cidadesMap).sort((a, b) => b.quantidade - a.quantidade) as CityData[],
+        }))
+        .sort((a, b) => b.quantidade - a.quantidade);
+    },
+  });
+};
+
+// ========================================
+// HOOK: GEOLOCALIZAÇÃO POR REGIÃO
+// ========================================
+
+export const useUnidadesGeolocationByRegion = () => {
+  return useQuery({
+    queryKey: ['unidades-geolocation-region'],
+    queryFn: async (): Promise<{ regioes: RegionData[]; stats: GeolocationStats }> => {
+      const { data: unidades, error } = await supabase
+        .from('unidades')
+        .select('id, group_name, group_code, store_model, store_phase, city, state, uf, address, is_active')
+        .order('state');
+
+      if (error) throw error;
+
+      const totalUnidades = unidades?.length || 0;
+      
+      // Filtrar unidades sem estado definido
+      const unidadesValidas = (unidades || []).filter(u => u.state && u.uf);
+      const unidadesSemLocalizacao = totalUnidades - unidadesValidas.length;
+
+      // Primeiro: agrupar por estado
+      const porEstado = unidadesValidas.reduce((acc, unidade) => {
+        const uf = unidade.uf!;
+        const estado = getNomeEstado(uf); // Obter nome completo do estado a partir da UF
+        const cidade = unidade.city || 'Cidade não informada';
+
+        if (!acc[uf]) {
+          acc[uf] = {
+            estado,
+            uf,
+            quantidade: 0,
+            cidadesMap: {} as Record<string, CityData>,
+          };
+        }
+
+        acc[uf].quantidade++;
+
+        // Agrupar por cidade
+        if (!acc[uf].cidadesMap[cidade]) {
+          acc[uf].cidadesMap[cidade] = {
+            cidade,
+            quantidade: 0,
+            unidades: [],
+          };
+        }
+
+        acc[uf].cidadesMap[cidade].quantidade++;
+        acc[uf].cidadesMap[cidade].unidades.push({
+          id: unidade.id,
+          group_name: unidade.group_name,
+          group_code: unidade.group_code,
+          store_model: unidade.store_model,
+          store_phase: unidade.store_phase,
+          city: cidade,
+          address: unidade.address || 'Endereço não informado',
+          is_active: unidade.is_active,
+        });
+
+        return acc;
+      }, {} as Record<string, { estado: string; uf: string; quantidade: number; cidadesMap: Record<string, CityData> }>);
+
+      // Converter estados para array com GeolocationData
+      const estadosData: GeolocationData[] = Object.values(porEstado).map(item => ({
+        estado: item.estado,
+        uf: item.uf,
+        quantidade: item.quantidade,
+        cidades: Object.values(item.cidadesMap).sort((a, b) => b.quantidade - a.quantidade) as CityData[],
+      }));
+
+      // Segundo: agrupar estados por região
+      const porRegiao = estadosData.reduce((acc, estadoData) => {
+        const regiao = getRegiaoPorUF(estadoData.uf);
+        
+        if (!regiao) return acc; // Pular se região não encontrada
+
+        if (!acc[regiao]) {
+          acc[regiao] = {
+            regiao,
+            quantidade: 0,
+            estados: [],
+            cor: getCorRegiao(regiao),
+          };
+        }
+
+        acc[regiao].quantidade += estadoData.quantidade;
+        acc[regiao].estados.push(estadoData);
+
+        return acc;
+      }, {} as Record<RegiaoNome, RegionData>);
+
+      // Ordenar estados dentro de cada região
+      Object.values(porRegiao).forEach(regiao => {
+        regiao.estados.sort((a, b) => b.quantidade - a.quantidade);
+      });
+
+      // Converter para array e ordenar por quantidade
+      const regioesArray = Object.values(porRegiao).sort((a, b) => b.quantidade - a.quantidade);
+
+      // Calcular estatísticas
+      const totalEstados = new Set(estadosData.map(e => e.uf)).size;
+      const totalRegioes = regioesArray.length;
+
+      const stats: GeolocationStats = {
+        totalUnidades,
+        unidadesComLocalizacao: unidadesValidas.length,
+        unidadesSemLocalizacao,
+        totalEstados,
+        totalRegioes,
+      };
+
+      const result = {
+        regioes: regioesArray,
+        stats,
+      };
+
+      // Debug log
+      console.log('useUnidadesGeolocationByRegion - Result:', {
+        totalUnidades,
+        unidadesValidas: unidadesValidas.length,
+        unidadesSemLocalizacao,
+        regioesCount: regioesArray.length,
+        regioes: regioesArray.map(r => ({ nome: r.regiao, quantidade: r.quantidade, estados: r.estados.length })),
+      });
+
+      return result;
     },
   });
 };

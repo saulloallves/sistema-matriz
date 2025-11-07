@@ -11,11 +11,12 @@ import ActivityFeed from '../components/dashboard/ActivityFeed';
 import PerformanceChart from '../components/dashboard/PerformanceChart';
 import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
 import FinancialMetrics from '../components/dashboard/FinancialMetrics';
+import GeolocationChart from '../components/dashboard/GeolocationChart';
 import { 
   useDashboardStats, 
   useUnidadesDistribution, 
   useRecentActivity, 
-  useTopUnits 
+  useTopUnits
 } from '../hooks/useDashboardStats';
 
 const DashboardPage = () => {
@@ -84,23 +85,28 @@ const DashboardPage = () => {
         />
       </Box>
 
-      {/* Main Content Area */}
+      {/* Distribuição Geográfica - Linha Inteira */}
+      <Box sx={{ mb: 4 }}>
+        <GeolocationChart />
+      </Box>
+
+      {/* Distribution by Model + Activity Feed - 2 Column Grid */}
       <Box sx={{ 
         display: 'grid', 
-        gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, 
+        gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, 
         gap: 3, 
         mb: 4 
       }}>
+        {/* Distribution by Model */}
+        <PerformanceChart 
+          data={chartData || []} 
+          loading={chartLoading} 
+        />
+        
         {/* Activity Feed */}
         <ActivityFeed 
           activities={activities || []} 
           loading={activitiesLoading} 
-        />
-        
-        {/* Performance Chart */}
-        <PerformanceChart 
-          data={chartData || []} 
-          loading={chartLoading} 
         />
       </Box>
 
