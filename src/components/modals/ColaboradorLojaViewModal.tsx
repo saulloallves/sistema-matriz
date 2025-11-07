@@ -57,6 +57,7 @@ export const ColaboradorLojaViewModal = ({ open, onClose, colaborador, onEdit }:
         {tab === 1 && (
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <InfoItem label="Cargo" value={cargo?.role} />
+            <InfoItem label="Código da Unidade" value={colaborador.unit_code} />
             <InfoItem label="Data de Admissão" value={formatDate(colaborador.admission_date)} />
             <InfoItem label="Salário" value={`R$ ${colaborador.salary}`} />
           </Box>

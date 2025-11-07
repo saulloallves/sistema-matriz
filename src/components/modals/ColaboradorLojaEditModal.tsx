@@ -34,6 +34,7 @@ const colaboradorSchema = z.object({
   admission_date: z.string().min(1),
   salary: z.string().min(1),
   web_password: z.string().min(6),
+  unit_code: z.string().length(4, 'Código da unidade deve ter 4 dígitos').optional().or(z.literal('')),
   instagram_profile: z.string().optional(),
   address: z.string().optional(),
   number_address: z.string().optional(),
@@ -104,6 +105,7 @@ export const ColaboradorLojaEditModal = ({
         admission_date: colaborador.admission_date,
         salary: colaborador.salary,
         web_password: colaborador.web_password,
+        unit_code: colaborador.unit_code || '',
         instagram_profile: colaborador.instagram_profile || '',
         address: colaborador.address || '',
         number_address: colaborador.number_address || '',
@@ -213,6 +215,25 @@ export const ColaboradorLojaEditModal = ({
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
             <Controller name="position_id" control={control} render={({ field }) => <TextField {...field} select label="Cargo" fullWidth required>{cargos?.map((cargo) => <MenuItem key={cargo.id} value={cargo.id}>{cargo.role}</MenuItem>)}</TextField>} />
+            <Controller 
+              name="unit_code" 
+              control={control} 
+              render={({ field }) => (
+                <TextField 
+                  {...field} 
+                  label="Código da Unidade" 
+                  fullWidth 
+                  inputProps={{ maxLength: 4 }}
+                  placeholder="0000"
+                  error={!!errors.unit_code}
+                  helperText={errors.unit_code?.message || '4 dígitos'}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    field.onChange(value);
+                  }}
+                />
+              )} 
+            />
             <Controller name="admission_date" control={control} render={({ field }) => <TextField {...field} label="Data de Admissão" type="date" fullWidth required InputLabelProps={{ shrink: true }} />} />
             <Controller name="salary" control={control} render={({ field }) => <TextField {...field} label="Salário" fullWidth required onChange={(e) => field.onChange(formatMoneyInput(e.target.value))} InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }} />} />
             <Controller name="web_password" control={control} render={({ field }) => <TextField {...field} label="Senha do Sistema" type="password" fullWidth required />} />

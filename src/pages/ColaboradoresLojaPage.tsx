@@ -99,6 +99,29 @@ function createColumns(
       minWidth: 200,
     },
     {
+      field: 'unit_code',
+      headerName: 'Unidade',
+      width: 110,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => params.value ? (
+        <Chip
+          label={params.value}
+          size="small"
+          color="primary"
+          variant="outlined"
+          sx={{ fontWeight: 600 }}
+        />
+      ) : (
+        <Chip
+          label="N/A"
+          size="small"
+          color="default"
+          variant="outlined"
+        />
+      ),
+    },
+    {
       field: 'cpf',
       headerName: 'CPF',
       width: 140,

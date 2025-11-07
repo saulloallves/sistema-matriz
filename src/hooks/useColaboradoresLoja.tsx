@@ -14,6 +14,7 @@ export interface ColaboradorLoja {
   admission_date: string;
   salary: string;
   web_password: string;
+  unit_code?: string;
   instagram_profile?: string;
   address?: string;
   number_address?: string;
