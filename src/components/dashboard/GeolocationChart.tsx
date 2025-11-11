@@ -195,7 +195,6 @@ const GeolocationChart = () => {
     <>
       <Card sx={{ 
         height: '100%', 
-        minHeight: '600px',
         transition: 'all 0.3s ease',
         '&:hover': {
           boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
