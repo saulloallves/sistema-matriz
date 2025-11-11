@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, Typography, Box, IconButton, Breadcrumbs, Link, Alert, Chip } from '@mui/material';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { MapPin, ChevronLeft, AlertCircle } from 'lucide-react';
+import { MapPin, ChevronLeft, AlertCircle, Bold } from 'lucide-react';
 import { useUnidadesGeolocationByRegion, type RegionData, type GeolocationData } from '../../hooks/useDashboardStats';
 import GeolocationDetailModal from '../modals/GeolocationDetailModal';
 
@@ -365,12 +365,12 @@ const GeolocationChart = () => {
           {/* Instruções */}
           <Box sx={{ 
             mt: 2, 
-            pt: 2, 
+            pt: 2,
             borderTop: '1px solid',
             borderColor: 'divider',
             textAlign: 'center'
           }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" fontWeight="Bold">
               {isRegionView 
                 ? 'Clique em uma região para ver a distribuição por estado' 
                 : 'Clique em um estado para ver a distribuição por cidade'
