@@ -13,11 +13,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Divider,
   Breadcrumbs,
-  Link,
 } from '@mui/material';
-import { X, MapPin, Building2, TrendingUp, Package } from 'lucide-react';
+import { X, MapPin, Building2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { GeolocationData } from '../../hooks/useDashboardStats';
 import { getRegiaoPorUF } from '../../utils/brazilRegions';
@@ -133,14 +131,14 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
         display: 'flex', 
         flexDirection: 'column',
         gap: 1,
-        pb: 2,
+        pb: 1,
         borderBottom: '1px solid',
         borderColor: 'divider'
       }}>
         {/* Header com botão fechar */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MapPin size={24} color="#E3A024" />
+            <MapPin size={30} color="#E3A024" />
             <Box>
               <Typography variant="h6">
                 {estadoData.estado} ({estadoData.uf})
@@ -151,7 +149,7 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
             </Box>
           </Box>
           <IconButton onClick={onClose} size="small">
-            <X size={20} />
+            <X size={25} />
           </IconButton>
         </Box>
 
@@ -180,7 +178,8 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
           mb: 3 
         }}>
           <Paper sx={{ 
-            p: 2, 
+            p: 2,
+            mt: 3, 
             borderLeft: '4px solid #E3A024',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -192,7 +191,8 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
             <Typography variant="h5" sx={{ fontWeight: 600 }}>{totalUnidades}</Typography>
           </Paper>
           <Paper sx={{ 
-            p: 2, 
+            p: 2,
+            mt: 3, 
             borderLeft: '4px solid #4caf50',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -204,7 +204,8 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
             <Typography variant="h5" sx={{ fontWeight: 600 }}>{unidadesAtivas}</Typography>
           </Paper>
           <Paper sx={{ 
-            p: 2, 
+            p: 2,
+            mt: 3, 
             borderLeft: '4px solid #2196f3',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -231,10 +232,10 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
             Top {cityChartData.length} Cidades
           </Typography>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={cityChartData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+            <BarChart data={cityChartData} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis type="number" />
-              <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 12 }} />
+              <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(227, 160, 36, 0.1)' }} />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                 {cityChartData.map((entry, index) => (
@@ -244,59 +245,6 @@ const GeolocationDetailModal = ({ open, onClose, estadoData }: GeolocationDetail
             </BarChart>
           </ResponsiveContainer>
         </Paper>
-
-        {/* Estatísticas por Fase e Modelo */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2, mb: 3 }}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingUp size={18} />
-              Distribuição por Fase
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {Object.entries(porFase).map(([fase, count]) => (
-                <Box key={fase} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Chip 
-                    label={fase} 
-                    size="small" 
-                    sx={{ 
-                      backgroundColor: getPhaseColor(fase),
-                      color: 'white',
-                      fontWeight: 500,
-                      minWidth: 100
-                    }}
-                  />
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Package size={18} />
-              Distribuição por Modelo
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {Object.entries(porModelo).map(([modelo, count]) => (
-                <Box key={modelo} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Chip 
-                    label={modelo} 
-                    size="small" 
-                    sx={{ 
-                      backgroundColor: getModelColor(modelo),
-                      color: 'white',
-                      fontWeight: 500,
-                      minWidth: 100
-                    }}
-                  />
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
 
         {/* Lista de Todas as Unidades */}
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
