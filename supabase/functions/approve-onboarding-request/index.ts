@@ -1,3 +1,7 @@
+// Ambient declarations to satisfy TypeScript in non-Deno tooling
+declare var Deno: any;
+declare module "https://esm.sh/@supabase/supabase-js@2.39.3";
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const corsHeaders = {
@@ -6,11 +10,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 // Função auxiliar para limpar telefone (apenas números)
-function cleanPhoneNumber(phone) {
+function cleanPhoneNumber(phone: any) {
   return phone.replace(/\D/g, "");
 }
 // Função para enviar notificação via WhatsApp
-async function sendWhatsAppNotification(phone, message) {
+async function sendWhatsAppNotification(phone: any, message: any) {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -42,7 +46,7 @@ async function sendWhatsAppNotification(phone, message) {
   }
 }
 // Função para enviar notificação via Email
-async function sendEmailNotification(email, subject, html) {
+async function sendEmailNotification(email: any, subject: any, html: any) {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -81,7 +85,7 @@ async function sendEmailNotification(email, subject, html) {
  * Gera senha do sistema baseada no código da unidade
  * @param groupCode - Código da unidade (sempre 4 dígitos)
  * @returns Senha numérica de 8 dígitos
- */ function generateSystemPassword(groupCode) {
+ */ function generateSystemPassword(groupCode: any) {
   // Código da unidade com 4 dígitos
   const codigo = String(groupCode).padStart(4, "0");
   // Número aleatório de 4 dígitos
@@ -93,7 +97,51 @@ async function sendEmailNotification(email, subject, html) {
   }
   return parseInt(senha, 10);
 }
-serve(async (req) => {
+
+// =====================================================
+// HELPER: CRIAR USER NO AUTH (idempotente)
+// =====================================================
+async function createAuthUserIfNeeded(supabaseAdmin: any, franchisee: any, formData: any, systemPassword: any) {
+  try {
+    const rawEmail = formData?.franchisee_email || formData?.email;
+    if (!rawEmail || String(rawEmail).trim() === "") {
+      console.warn("⚠️ Sem email para criar auth user (franqueado)");
+      return null;
+    }
+    const email = String(rawEmail).trim().toLowerCase();
+    const full_name = franchisee?.full_name || formData?.full_name || "Franqueado";
+    const password = String(systemPassword);
+
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name,
+        role: "franqueado",
+        franqueado_id: franchisee?.id || null,
+      },
+    });
+
+    if (error) {
+      // Se o usuário já existir para este email, tratamos como idempotente e seguimos
+      const msg = (error?.message || "").toLowerCase();
+      if (msg.includes("already registered") || msg.includes("user already registered")) {
+        console.log("ℹ️ Auth user já existia para email:", email);
+        return { id: null, existed: true };
+      }
+      console.error("❌ Erro ao criar auth user:", error);
+      throw error;
+    }
+
+    console.log("👤 Auth user criado com ID:", data?.user?.id, "| email:", email);
+    return { id: data?.user?.id || null, existed: false };
+  } catch (err) {
+    console.error("❌ Exceção ao criar auth user:", err);
+    throw err;
+  }
+}
+serve(async (req: any) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -102,11 +150,11 @@ serve(async (req) => {
   }
   try {
     console.log("🚀 Iniciando approve-onboarding-request");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     // Cliente com Service Role para bypass de RLS
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
-    const { requestId, action, rejectionReason, reviewerId } = await req.json();
+  const { requestId, action, rejectionReason, reviewerId } = await req.json();
     console.log("📥 Dados recebidos:", {
       requestId,
       action,
@@ -242,10 +290,11 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error("❌ Erro inesperado na Edge Function:", error);
+    const errMsg = (error as any)?.message || "Erro inesperado ao processar requisição";
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Erro inesperado ao processar requisição",
+        error: errMsg,
       }),
       {
         status: 500,
@@ -260,7 +309,7 @@ serve(async (req) => {
 // =====================================================
 // FUNÇÃO: PROCESSAR APROVAÇÃO
 // =====================================================
-async function processApproval(supabaseAdmin, request, reviewerId) {
+async function processApproval(supabaseAdmin: any, request: any, reviewerId: any) {
   console.log("✅ Iniciando processo de aprovação...");
   // Atualizar status para processing
   await supabaseAdmin
@@ -457,6 +506,22 @@ async function processApproval(supabaseAdmin, request, reviewerId) {
       );
       console.log("📋 Tipo do request:", request.request_type);
     }
+
+    // ===== 4.1 CRIAR USUÁRIO DE AUTH QUANDO NOVO FRANQUEADO =====
+    if (isNewFranchisee) {
+      try {
+        await createAuthUserIfNeeded(
+          supabaseAdmin,
+          { id: franchiseeId, full_name: formData.full_name },
+          formData,
+          systemPassword,
+        );
+      } catch (authErr) {
+        // Não bloquear fluxo de aprovação por falha na criação do auth user
+        const authMsg = (authErr as any)?.message || authErr;
+        console.error("⚠️ Falha ao criar usuário de autenticação (não bloqueante):", authMsg);
+      }
+    }
     // ===== 5. ATUALIZAR REQUEST PARA APPROVED =====
     console.log("📝 Atualizando status do request...");
     const processingResult = {
@@ -546,12 +611,13 @@ Bem-vindo(a) à família Cresci e Perdi! 🎊`;
     return processingResult;
   } catch (error) {
     console.error("❌ Erro durante aprovação:", error);
+    const errMsg = (error as any)?.message || "Erro ao processar";
     // Rollback: atualizar para erro
     await supabaseAdmin
       .from("onboarding_requests")
       .update({
         status: "error",
-        rejection_reason: `Erro ao processar: ${error.message}`,
+        rejection_reason: `Erro ao processar: ${errMsg}`,
       })
       .eq("id", request.id);
     throw error;
@@ -560,7 +626,7 @@ Bem-vindo(a) à família Cresci e Perdi! 🎊`;
 // =====================================================
 // FUNÇÃO: PROCESSAR REJEIÇÃO
 // =====================================================
-async function processRejection(supabaseAdmin, request, reviewerId, reason) {
+async function processRejection(supabaseAdmin: any, request: any, reviewerId: any, reason: any) {
   console.log("❌ Processando rejeição...");
   // Atualizar request para rejected
   await supabaseAdmin
