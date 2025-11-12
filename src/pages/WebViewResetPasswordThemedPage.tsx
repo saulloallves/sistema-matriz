@@ -14,32 +14,37 @@ import {
   CssBaseline,
 } from '@mui/material';
 import { Mail, KeyRound, CheckCircle } from 'lucide-react';
+import Logo from '@/assets/logo-principal.png';
 import toast, { Toaster } from 'react-hot-toast';
 
 const lightTheme = createTheme({
   palette: {
     mode: 'light',
     background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
+      default: 'linear-gradient(135deg, #FFF5E6 0%, #FFE1BF 50%, #FFD199 100%)',
+      paper: 'rgba(255,255,255,0.9)',
     },
     primary: {
       main: '#f59e42',
     },
   },
+  shape: { borderRadius: 16 },
+  typography: { fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' },
 });
 
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     background: {
-      default: '#121212',
-      paper: '#1e1e1e',
+      default: 'radial-gradient(1200px 800px at 10% 10%, #2A2A2A 0%, #121212 60%)',
+      paper: 'rgba(30,30,30,0.9)',
     },
     primary: {
       main: '#f59e42',
     },
   },
+  shape: { borderRadius: 16 },
+  typography: { fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' },
 });
 
 interface WebViewResetPasswordThemedPageProps {
@@ -98,27 +103,44 @@ export default function WebViewResetPasswordThemedPage({ themeMode }: WebViewRes
       <Toaster position="top-center" />
       <Box
         sx={{
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          p: 2,
+          p: { xs: 2, md: 4 },
+          overflow: 'hidden',
         }}
       >
+        {/* Decorative blur blobs */}
+        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <Box sx={{ position: 'absolute', width: 280, height: 280, filter: 'blur(90px)', background: '#f59e42', opacity: 0.25, top: -40, right: -40, borderRadius: '50%' }} />
+          <Box sx={{ position: 'absolute', width: 220, height: 220, filter: 'blur(90px)', background: '#FF6B6B', opacity: 0.15, bottom: -30, left: -30, borderRadius: '50%' }} />
+        </Box>
         <Paper
           elevation={3}
           sx={{
-            padding: 4,
+            backdropFilter: 'saturate(160%) blur(6px)',
+            border: '1px solid',
+            borderColor: 'divider',
+            padding: { xs: 3, md: 4 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            maxWidth: '450px',
+            maxWidth: 480,
             width: '100%',
-            borderRadius: '20px',
+            borderRadius: 4,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.10)'
           }}
         >
-          <KeyRound size={40} color={selectedTheme.palette.primary.main} style={{ marginBottom: '16px' }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Box component="img" src={Logo} alt="Logo" sx={{ width: 120, height: 'auto' }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main' }}>
+              <KeyRound size={24} />
+              <Typography variant="overline" sx={{ letterSpacing: 1.2, fontWeight: 700 }}>ACESSO SEGURO</Typography>
+            </Box>
+          </Box>
           <Typography variant="h5" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
             Resetar Senha
           </Typography>
@@ -139,7 +161,7 @@ export default function WebViewResetPasswordThemedPage({ themeMode }: WebViewRes
           ) : (
             <>
               <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                Digite seu e-mail cadastrado para receber uma nova senha gerada automaticamente.
+                Informe seu e-mail cadastrado para receber uma nova senha gerada automaticamente.
               </Typography>
               <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
                 <TextField
@@ -154,6 +176,7 @@ export default function WebViewResetPasswordThemedPage({ themeMode }: WebViewRes
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
+                  aria-label="Endereço de e-mail"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -166,10 +189,21 @@ export default function WebViewResetPasswordThemedPage({ themeMode }: WebViewRes
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2, py: 1.5, borderRadius: '12px' }}
+                  sx={{
+                    mt: 3,
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    letterSpacing: 0.2,
+                    transition: 'all .2s ease',
+                    boxShadow: '0 6px 16px rgba(245,158,66,0.35)',
+                    '&:hover': { transform: 'translateY(-1px)', boxShadow: '0 10px 20px rgba(245,158,66,0.45)' },
+                  }}
                   disabled={isSubmitting || !email}
                 >
-                  {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Enviar Nova Senha'}
+                  {isSubmitting ? <CircularProgress size={22} color="inherit" /> : 'Enviar Nova Senha'}
                 </Button>
               </Box>
             </>
