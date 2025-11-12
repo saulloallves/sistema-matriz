@@ -12,6 +12,7 @@ import PerformanceChart from '../components/dashboard/PerformanceChart';
 import TopUnitsPerformance from '../components/dashboard/TopUnitsPerformance';
 import FinancialMetrics from '../components/dashboard/FinancialMetrics';
 import GeolocationChart from '../components/dashboard/GeolocationChart';
+import FranqueadosGeolocationChart from '@/components/dashboard/FranqueadosGeolocationChart';
 import { 
   useDashboardStats, 
   useUnidadesDistribution, 
@@ -85,9 +86,15 @@ const DashboardPage = () => {
         />
       </Box>
 
-      {/* Distribuição Geográfica - Linha Inteira */}
-      <Box sx={{ mb: 4 }}>
+      {/* Distribuição Geográfica - 2 Colunas (Unidades à esquerda, Franqueados à direita) */}
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+        gap: 3,
+        mb: 4,
+      }}>
         <GeolocationChart />
+        <FranqueadosGeolocationChart />
       </Box>
 
       {/* Distribution by Model + Activity Feed - 2 Column Grid */}

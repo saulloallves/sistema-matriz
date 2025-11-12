@@ -94,7 +94,7 @@ const GeolocationChart = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <MapPin size={24} color="#E3A024" />
             <Typography variant="h6">
-              Distribuição Geográfica
+              Distribuição Geográfica de Unidades
             </Typography>
           </Box>
           <Box sx={{ 
@@ -133,7 +133,7 @@ const GeolocationChart = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <MapPin size={24} color="#E3A024" />
             <Typography variant="h6">
-              Distribuição Geográfica
+              Distribuição Geográfica de Unidades
             </Typography>
           </Box>
           <Box sx={{ 
@@ -207,7 +207,7 @@ const GeolocationChart = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <MapPin size={24} color="#E3A024" />
                 <Typography variant="h6">
-                  Distribuição Geográfica
+                  Distribuição Geográfica de Unidades
                 </Typography>
               </Box>
               

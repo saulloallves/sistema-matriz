@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { muiTheme } from './theme/muiTheme';
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -25,7 +25,7 @@ const CargosLojaPage = lazy(() => import("./pages/CargosLojaPage"));
 const SenhasPage = lazy(() => import("./pages/SenhasPage"));
 const PermissoesPage = lazy(() => import("./pages/PermissoesPage"));
 const OnboardingRequestsPage = lazy(() => import("./pages/OnboardingRequestsPage"));
-const CorrecaoEstadosPage = lazy(() => import("./pages/CorrecaoEstadosPage")); // TEMPORÁRIO - Deletar após uso
+// Rota antiga de correção de estados descontinuada - redireciona para Configurações > Sistema
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));

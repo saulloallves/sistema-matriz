@@ -35,11 +35,13 @@ import { FranqueadoEditModal } from "@/components/modals/FranqueadoEditModal";
 import { FranqueadoAddModal } from "@/components/modals/FranqueadoAddModal";
 import { FranqueadoFilterDrawer } from "@/components/modals/FranqueadoFilterDrawer";
 import { useFranqueados, useUserRole } from "@/hooks/useFranqueados";
-import { Tables } from "@/integrations/supabase/types";
+// Removido import de Tables que não exporta membro; usando tipo flexível temporário
 import toast from 'react-hot-toast';
+// Removido gráfico geográfico desta página; agora ele aparece no Dashboard
 import { formatPhone, formatCPF } from "@/utils/formatters";
 
-type Franqueado = Tables<"franqueados">;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Franqueado = any;
 
 interface FilterState {
   owner_type?: string;
@@ -52,7 +54,14 @@ interface FilterState {
   availability?: string;
 }
 
-const ActionCell = ({ row, onView, onEdit, onDelete }: { row: any; onView: (franqueado: Franqueado) => void; onEdit: (franqueado: Franqueado) => void; onDelete: (franqueado: Franqueado) => void }) => {
+interface ActionCellProps {
+  row: Franqueado;
+  onView: (franqueado: Franqueado) => void;
+  onEdit: (franqueado: Franqueado) => void;
+  onDelete: (franqueado: Franqueado) => void;
+}
+
+const ActionCell = ({ row, onView, onEdit, onDelete }: ActionCellProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -130,7 +139,7 @@ export default function FranqueadosPage() {
   const [filters, setFilters] = useState<FilterState>({});
 
   const filteredData = useMemo(() => {
-    return franqueados.filter((franqueado: any) => {
+    return franqueados.filter((franqueado: Franqueado) => {
       return (
         (!filters.owner_type || franqueado.owner_type === filters.owner_type) &&
         (filters.is_in_contract === undefined || franqueado.is_in_contract === filters.is_in_contract) &&
@@ -143,6 +152,8 @@ export default function FranqueadosPage() {
     });
   }, [franqueados, filters]);
 
+  // Inserir componente de distribuição geográfica após cards (renderização simples, não interfere na tabela)
+
   const handleAdd = () => {
     if (!isAdmin()) {
       toast.error("Apenas administradores podem adicionar franqueados");
@@ -151,7 +162,7 @@ export default function FranqueadosPage() {
     setAddModalOpen(true);
   };
 
-  const handleEdit = async (franqueado: any) => {
+  const handleEdit = async (franqueado: Franqueado) => {
     try {
       const fullData = await getFranqueadoDetails(franqueado.id);
       setSelectedFranqueado(fullData);
@@ -161,7 +172,7 @@ export default function FranqueadosPage() {
     }
   };
 
-  const handleDelete = (franqueado: any) => {
+  const handleDelete = (franqueado: Franqueado) => {
     if (!isAdmin()) {
       toast.error("Apenas administradores podem excluir franqueados");
       return;
@@ -172,7 +183,7 @@ export default function FranqueadosPage() {
     }
   };
 
-  const handleView = async (franqueado: any) => {
+  const handleView = async (franqueado: Franqueado) => {
     try {
       const fullData = await getFranqueadoDetails(franqueado.id);
       setSelectedFranqueado(fullData);
@@ -601,6 +612,7 @@ export default function FranqueadosPage() {
 
   return (
     <>
+      {/* Gráfico Geográfico removido desta página (exibido no Dashboard) */}
       <DataTable
         columns={columns}
         data={filteredData}

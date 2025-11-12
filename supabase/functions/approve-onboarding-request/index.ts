@@ -1,279 +1,282 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
-
 // Função auxiliar para limpar telefone (apenas números)
-function cleanPhoneNumber(phone: string): string {
-  return phone.replace(/\D/g, '');
+function cleanPhoneNumber(phone) {
+  return phone.replace(/\D/g, "");
 }
-
 // Função para enviar notificação via WhatsApp
-async function sendWhatsAppNotification(phone: string, message: string): Promise<boolean> {
+async function sendWhatsAppNotification(phone, message) {
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     const response = await fetch(`${supabaseUrl}/functions/v1/zapi-send-text`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        "Content-Type": "application/json",
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify({
         phone,
         message,
         logData: {
-          event_type: 'onboarding_notification',
-          user_action: 'system',
+          event_type: "onboarding_notification",
+          user_action: "system",
         },
       }),
     });
-
     if (!response.ok) {
-      console.error('❌ Erro ao enviar WhatsApp:', await response.text());
+      console.error("❌ Erro ao enviar WhatsApp:", await response.text());
       return false;
     }
-
-    console.log('✅ WhatsApp enviado com sucesso');
+    console.log("✅ WhatsApp enviado com sucesso");
     return true;
   } catch (error) {
-    console.error('❌ Erro ao enviar WhatsApp:', error);
+    console.error("❌ Erro ao enviar WhatsApp:", error);
     return false;
   }
 }
-
 // Função para enviar notificação via Email
-async function sendEmailNotification(email: string, subject: string, html: string): Promise<boolean> {
+async function sendEmailNotification(email, subject, html) {
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    
-    const response = await fetch(`${supabaseUrl}/functions/v1/brevo-send-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-      },
-      body: JSON.stringify({
-        to: email,
-        subject,
-        html,
-        logData: {
-          event_type: 'onboarding_notification',
-          user_action: 'system',
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/brevo-send-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
         },
-      }),
-    });
-
+        body: JSON.stringify({
+          to: email,
+          subject,
+          html,
+          logData: {
+            event_type: "onboarding_notification",
+            user_action: "system",
+          },
+        }),
+      }
+    );
     if (!response.ok) {
-      console.error('❌ Erro ao enviar Email:', await response.text());
+      console.error("❌ Erro ao enviar Email:", await response.text());
       return false;
     }
-
-    console.log('✅ Email enviado com sucesso');
+    console.log("✅ Email enviado com sucesso");
     return true;
   } catch (error) {
-    console.error('❌ Erro ao enviar Email:', error);
+    console.error("❌ Erro ao enviar Email:", error);
     return false;
   }
 }
-
 /**
  * Gera senha do sistema baseada no código da unidade
  * @param groupCode - Código da unidade (sempre 4 dígitos)
  * @returns Senha numérica de 8 dígitos
- */
-function generateSystemPassword(groupCode: number): number {
+ */ function generateSystemPassword(groupCode) {
   // Código da unidade com 4 dígitos
   const codigo = String(groupCode).padStart(4, "0");
-  
   // Número aleatório de 4 dígitos
   const random = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-  
   // Intercala: random[0] + codigo[0] + random[1] + codigo[1] + ...
   let senha = "";
   for (let i = 0; i < 4; i++) {
     senha += random[i] + codigo[i];
   }
-  
   return parseInt(senha, 10);
 }
-
-serve(async (req)=>{
+serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, {
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
-  
   try {
-    console.log('🚀 Iniciando approve-onboarding-request');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
+    console.log("🚀 Iniciando approve-onboarding-request");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     // Cliente com Service Role para bypass de RLS
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
     const { requestId, action, rejectionReason, reviewerId } = await req.json();
-    
-    console.log('📥 Dados recebidos:', {
+    console.log("📥 Dados recebidos:", {
       requestId,
       action,
-      reviewerId
+      reviewerId,
     });
-    
     // Validações
     if (!requestId) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'requestId é obrigatório'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "requestId é obrigatório",
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     }
-    
-    if (!action || !['approve', 'reject'].includes(action)) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'action deve ser "approve" ou "reject"'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+    if (!action || !["approve", "reject"].includes(action)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'action deve ser "approve" ou "reject"',
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     }
-    
-    if (action === 'reject' && !rejectionReason) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'rejectionReason é obrigatório para rejeição'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+    if (action === "reject" && !rejectionReason) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "rejectionReason é obrigatório para rejeição",
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     }
-    
     // 1. Buscar request
-    console.log('🔍 Buscando request:', requestId);
+    console.log("🔍 Buscando request:", requestId);
     const { data: request, error: fetchError } = await supabaseAdmin
-      .from('onboarding_requests')
-      .select('*')
-      .eq('id', requestId)
+      .from("onboarding_requests")
+      .select("*")
+      .eq("id", requestId)
       .single();
-    
     if (fetchError || !request) {
-      console.error('❌ Request não encontrado:', fetchError);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Request não encontrado'
-      }), {
-        status: 404,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+      console.error("❌ Request não encontrado:", fetchError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Request não encontrado",
+        }),
+        {
+          status: 404,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     }
-    
     // 2. Validar status
-    if (request.status !== 'pending') {
-      console.error('❌ Status inválido:', request.status);
-      return new Response(JSON.stringify({
-        success: false,
-        error: `Request já está no status: ${request.status}`
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+    if (request.status !== "pending") {
+      console.error("❌ Status inválido:", request.status);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Request já está no status: ${request.status}`,
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     }
-    
-    console.log('✅ Request encontrado:', request.request_number);
-    console.log('📋 Tipo:', request.request_type);
-    
+    console.log("✅ Request encontrado:", request.request_number);
+    console.log("📋 Tipo:", request.request_type);
     // 3. Processar aprovação ou rejeição
-    if (action === 'approve') {
+    if (action === "approve") {
       const result = await processApproval(supabaseAdmin, request, reviewerId);
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Request aprovado e dados inseridos com sucesso',
-        requestNumber: request.request_number,
-        data: result
-      }), {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Request aprovado e dados inseridos com sucesso",
+          requestNumber: request.request_number,
+          data: result,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
     } else {
-      await processRejection(supabaseAdmin, request, reviewerId, rejectionReason);
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Request rejeitado com sucesso',
-        requestNumber: request.request_number
-      }), {
-        status: 200,
+      await processRejection(
+        supabaseAdmin,
+        request,
+        reviewerId,
+        rejectionReason
+      );
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Request rejeitado com sucesso",
+          requestNumber: request.request_number,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+  } catch (error) {
+    console.error("❌ Erro inesperado na Edge Function:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || "Erro inesperado ao processar requisição",
+      }),
+      {
+        status: 500,
         headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
-  } catch (error: any) {
-    console.error('❌ Erro inesperado na Edge Function:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message || 'Erro inesperado ao processar requisição'
-    }), {
-      status: 500,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
+          "Content-Type": "application/json",
+        },
       }
-    });
+    );
   }
 });
-
 // =====================================================
 // FUNÇÃO: PROCESSAR APROVAÇÃO
 // =====================================================
-async function processApproval(supabaseAdmin: any, request: any, reviewerId: string) {
-  console.log('✅ Iniciando processo de aprovação...');
-  
+async function processApproval(supabaseAdmin, request, reviewerId) {
+  console.log("✅ Iniciando processo de aprovação...");
   // Atualizar status para processing
   await supabaseAdmin
-    .from('onboarding_requests')
-    .update({ status: 'processing' })
-    .eq('id', request.id);
-  
+    .from("onboarding_requests")
+    .update({
+      status: "processing",
+    })
+    .eq("id", request.id);
   const formData = request.form_data;
-  
   try {
     let franchiseeId = request.franchisee_id;
     let unitId = request.unit_id;
-    let unitGroupCode: number;
-    
+    let unitGroupCode;
     // ===== 1. CRIAR/ATUALIZAR FRANQUEADO SE NECESSÁRIO =====
     if (!request.franchisee_exists) {
-      console.log('👤 Criando novo franqueado...');
+      console.log("👤 Criando novo franqueado...");
       const franchiseeData = {
         cpf_rnm: formData.cpf_rnm,
         full_name: formData.full_name,
@@ -292,7 +295,8 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
         referrer_name: formData.referrer_name || null,
         referrer_unit_code: formData.referrer_unit_code || null,
         has_other_activities: formData.has_other_activities,
-        other_activities_description: formData.other_activities_description || null,
+        other_activities_description:
+          formData.other_activities_description || null,
         receives_prolabore: formData.receives_prolabore,
         prolabore_value: formData.prolabore_value || null,
         profile_image: formData.profile_image || null,
@@ -309,29 +313,26 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
         confidentiality_term_accepted: formData.confidentiality_term_accepted,
         lgpd_term_accepted: formData.lgpd_term_accepted,
         is_in_contract: false,
-        is_active_system: true
+        is_active_system: true,
       };
-      
-      const { data: newFranchisee, error: franchiseeError } = await supabaseAdmin
-        .from('franqueados')
-        .insert(franchiseeData)
-        .select()
-        .single();
-      
+      const { data: newFranchisee, error: franchiseeError } =
+        await supabaseAdmin
+          .from("franqueados")
+          .insert(franchiseeData)
+          .select()
+          .single();
       if (franchiseeError) {
-        console.error('❌ Erro ao criar franqueado:', franchiseeError);
+        console.error("❌ Erro ao criar franqueado:", franchiseeError);
         throw franchiseeError;
       }
-      
       franchiseeId = newFranchisee.id;
-      console.log('✅ Franqueado criado com ID:', franchiseeId);
+      console.log("✅ Franqueado criado com ID:", franchiseeId);
     } else {
-      console.log('👤 Franqueado já existe, ID:', franchiseeId);
+      console.log("👤 Franqueado já existe, ID:", franchiseeId);
     }
-    
     // ===== 2. CRIAR/ATUALIZAR UNIDADE SE NECESSÁRIO =====
     if (!request.unit_exists) {
-      console.log('🏢 Criando nova unidade...');
+      console.log("🏢 Criando nova unidade...");
       const unitData = {
         cnpj: formData.cnpj || null,
         fantasy_name: formData.fantasy_name || null,
@@ -346,7 +347,9 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
         has_parking: formData.has_parking,
         parking_spots: formData.parking_spots || null,
         has_partner_parking: formData.has_partner_parking,
-        partner_parking_address: formData.has_partner_parking ? formData.partner_parking_address : null,
+        partner_parking_address: formData.has_partner_parking
+          ? formData.partner_parking_address
+          : null,
         purchases_active: formData.purchases_active,
         sales_active: formData.sales_active,
         address: formData.unit_address || null,
@@ -365,133 +368,121 @@ async function processApproval(supabaseAdmin: any, request: any, reviewerId: str
         operation_sat: formData.operation_sat || null,
         operation_sun: formData.operation_sun || null,
         operation_hol: formData.operation_hol || null,
-        is_active: true
+        is_active: true,
       };
-      
       const { data: newUnit, error: unitError } = await supabaseAdmin
-        .from('unidades')
+        .from("unidades")
         .insert(unitData)
         .select()
         .single();
-      
       if (unitError) {
-        console.error('❌ Erro ao criar unidade:', unitError);
+        console.error("❌ Erro ao criar unidade:", unitError);
         throw unitError;
       }
-      
       unitId = newUnit.id;
       unitGroupCode = newUnit.group_code;
-      console.log('✅ Unidade criada com ID:', unitId);
+      console.log("✅ Unidade criada com ID:", unitId);
     } else {
-      console.log('🏢 Unidade já existe, ID:', unitId);
+      console.log("🏢 Unidade já existe, ID:", unitId);
       // Buscar o group_code da unidade existente
       const { data: existingUnit } = await supabaseAdmin
-        .from('unidades')
-        .select('group_code')
-        .eq('id', unitId)
+        .from("unidades")
+        .select("group_code")
+        .eq("id", unitId)
         .single();
-      
       unitGroupCode = existingUnit?.group_code || formData.group_code;
     }
-    
     // ===== 3. GERAR SENHA DO SISTEMA =====
-    console.log('🔐 Gerando senha do sistema...');
-    console.log('📊 Group Code para geração:', unitGroupCode);
-    
+    console.log("🔐 Gerando senha do sistema...");
+    console.log("📊 Group Code para geração:", unitGroupCode);
     if (!unitGroupCode) {
-      console.error('❌ Group code não encontrado!');
-      throw new Error('Group code da unidade não encontrado para gerar senha');
+      console.error("❌ Group code não encontrado!");
+      throw new Error("Group code da unidade não encontrado para gerar senha");
     }
-    
     const systemPassword = generateSystemPassword(unitGroupCode);
-    console.log('✅ Senha gerada com sucesso:', systemPassword);
-    console.log('📝 Tipo da senha:', typeof systemPassword);
-    
+    console.log("✅ Senha gerada com sucesso:", systemPassword);
+    console.log("📝 Tipo da senha:", typeof systemPassword);
     // Atualizar franqueado com a senha gerada
-    console.log('💾 Salvando senha no franqueado ID:', franchiseeId);
-    const { data: updatedFranchisee, error: passwordError } = await supabaseAdmin
-      .from('franqueados')
-      .update({ systems_password: systemPassword })
-      .eq('id', franchiseeId)
-      .select('id, systems_password')
-      .single();
-    
+    console.log("💾 Salvando senha no franqueado ID:", franchiseeId);
+    const { data: updatedFranchisee, error: passwordError } =
+      await supabaseAdmin
+        .from("franqueados")
+        .update({
+          systems_password: systemPassword,
+        })
+        .eq("id", franchiseeId)
+        .select("id, systems_password")
+        .single();
     if (passwordError) {
-      console.error('❌ Erro ao salvar senha do franqueado:', passwordError);
+      console.error("❌ Erro ao salvar senha do franqueado:", passwordError);
       throw new Error(`Falha ao salvar senha: ${passwordError.message}`);
     }
-    
-    console.log('✅ Senha salva com sucesso no franqueado');
-    console.log('📋 Dados atualizados:', updatedFranchisee);
-    
+    console.log("✅ Senha salva com sucesso no franqueado");
+    console.log("📋 Dados atualizados:", updatedFranchisee);
     // ===== 4. CRIAR VINCULAÇÃO FRANQUEADO-UNIDADE =====
-    console.log('🔗 Verificando vinculação...');
-    
+    console.log("🔗 Verificando vinculação...");
     // Verificar se já existe vinculação
     const { data: existingRelation } = await supabaseAdmin
-      .from('franqueados_unidades')
-      .select('id')
-      .eq('franqueado_id', franchiseeId)
-      .eq('unidade_id', unitId)
+      .from("franqueados_unidades")
+      .select("id")
+      .eq("franqueado_id", franchiseeId)
+      .eq("unidade_id", unitId)
       .maybeSingle();
-    
     if (!existingRelation) {
-      console.log('🔗 Criando vinculação...');
+      console.log("🔗 Criando vinculação...");
       const { error: relationError } = await supabaseAdmin
-        .from('franqueados_unidades')
+        .from("franqueados_unidades")
         .insert({
           franqueado_id: franchiseeId,
-          unidade_id: unitId
+          unidade_id: unitId,
         });
-      
       if (relationError) {
-        console.error('❌ Erro ao criar vinculação:', relationError);
+        console.error("❌ Erro ao criar vinculação:", relationError);
         throw relationError;
       }
-      console.log('✅ Vinculação criada');
+      console.log("✅ Vinculação criada");
     } else {
-      console.log('✅ Vinculação já existe');
+      console.log("✅ Vinculação já existe");
     }
-    // ===== 4.1. CRIAR USUÁRIO NO SISTEMA DE TREINAMENTO (APENAS PARA NOVOS FRANQUEADOS) =====
-    // Lógica removida pois o sistema de treinamento foi descontinuado.
-    const isNewFranchisee = request.request_type === 'new_franchisee_new_unit' || request.request_type === 'new_franchisee_existing_unit';
+    const isNewFranchisee =
+      request.request_type === "new_franchisee_new_unit" ||
+      request.request_type === "new_franchisee_existing_unit";
     if (isNewFranchisee) {
-      console.log('ℹ️ Request de NOVO FRANQUEADO detectado - criação no sistema de treinamento pulada (descontinuado).');
+      console.log(
+        "ℹ️ Request de NOVO FRANQUEADO detectado - criação no sistema de treinamento pulada (descontinuado)."
+      );
     } else {
-      console.log('ℹ️ Request é de FRANQUEADO EXISTENTE - pulando criação no treinamento');
-      console.log('📋 Tipo do request:', request.request_type);
+      console.log(
+        "ℹ️ Request é de FRANQUEADO EXISTENTE - pulando criação no treinamento"
+      );
+      console.log("📋 Tipo do request:", request.request_type);
     }
     // ===== 5. ATUALIZAR REQUEST PARA APPROVED =====
-    console.log('📝 Atualizando status do request...');
+    console.log("📝 Atualizando status do request...");
     const processingResult = {
       franchisee_id: franchiseeId,
       unit_id: unitId,
       system_password: systemPassword,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
-    
     await supabaseAdmin
-      .from('onboarding_requests')
+      .from("onboarding_requests")
       .update({
-        status: 'approved',
+        status: "approved",
         reviewed_by: reviewerId,
         reviewed_at: new Date().toISOString(),
         franchisee_id: franchiseeId,
         unit_id: unitId,
-        processing_result: processingResult
+        processing_result: processingResult,
       })
-      .eq('id', request.id);
-    
-    console.log('✅ Aprovação concluída com sucesso!');
-    console.log('📝 Histórico será registrado automaticamente por trigger');
-    
+      .eq("id", request.id);
+    console.log("✅ Aprovação concluída com sucesso!");
+    console.log("📝 Histórico será registrado automaticamente por trigger");
     // ===== 6. ENVIAR NOTIFICAÇÕES DE APROVAÇÃO =====
-    console.log('📧 Enviando notificações de aprovação...');
-    
-    const franchiseeName = formData.full_name || 'Franqueado';
+    console.log("📧 Enviando notificações de aprovação...");
+    const franchiseeName = formData.full_name || "Franqueado";
     const franchiseePhone = cleanPhoneNumber(formData.contact);
     const franchiseeEmail = formData.franchisee_email || formData.email;
-    
     // Mensagem de aprovação
     const whatsappMessage = `🎉 *Parabéns, ${franchiseeName}!*
 
@@ -506,8 +497,7 @@ Você já pode utilizar todos os nossos sistemas.
 Caso tenha alguma dúvida, entre em contato conosco.
 
 Bem-vindo(a) à família Cresci e Perdi! 🎊`;
-
-    const emailSubject = '🎉 Cadastro Aprovado - Girabot';
+    const emailSubject = "🎉 Cadastro Aprovado - Girabot";
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #E3A024, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -545,64 +535,51 @@ Bem-vindo(a) à família Cresci e Perdi! 🎊`;
         </div>
       </div>
     `;
-    
     // Enviar notificações (não bloqueante - não falha se houver erro)
     if (franchiseePhone) {
       await sendWhatsAppNotification(franchiseePhone, whatsappMessage);
     }
-    
     if (franchiseeEmail) {
       await sendEmailNotification(franchiseeEmail, emailSubject, emailHtml);
     }
-    
-    console.log('✅ Processo de aprovação e notificação concluído!');
-    
+    console.log("✅ Processo de aprovação e notificação concluído!");
     return processingResult;
-    
-  } catch (error: any) {
-    console.error('❌ Erro durante aprovação:', error);
-    
+  } catch (error) {
+    console.error("❌ Erro durante aprovação:", error);
     // Rollback: atualizar para erro
     await supabaseAdmin
-      .from('onboarding_requests')
+      .from("onboarding_requests")
       .update({
-        status: 'error',
-        rejection_reason: `Erro ao processar: ${error.message}`
+        status: "error",
+        rejection_reason: `Erro ao processar: ${error.message}`,
       })
-      .eq('id', request.id);
-    
+      .eq("id", request.id);
     throw error;
   }
 }
-
 // =====================================================
 // FUNÇÃO: PROCESSAR REJEIÇÃO
 // =====================================================
-async function processRejection(supabaseAdmin: any, request: any, reviewerId: string, reason: string) {
-  console.log('❌ Processando rejeição...');
-  
+async function processRejection(supabaseAdmin, request, reviewerId, reason) {
+  console.log("❌ Processando rejeição...");
   // Atualizar request para rejected
   await supabaseAdmin
-    .from('onboarding_requests')
+    .from("onboarding_requests")
     .update({
-      status: 'rejected',
+      status: "rejected",
       reviewed_by: reviewerId,
       reviewed_at: new Date().toISOString(),
-      rejection_reason: reason || 'Rejeitado sem motivo especificado'
+      rejection_reason: reason || "Rejeitado sem motivo especificado",
     })
-    .eq('id', request.id);
-  
-  console.log('✅ Rejeição processada com sucesso');
-  console.log('📝 Histórico será registrado automaticamente por trigger');
-  
+    .eq("id", request.id);
+  console.log("✅ Rejeição processada com sucesso");
+  console.log("📝 Histórico será registrado automaticamente por trigger");
   // ===== ENVIAR NOTIFICAÇÕES DE REJEIÇÃO =====
-  console.log('📧 Enviando notificações de rejeição...');
-  
+  console.log("📧 Enviando notificações de rejeição...");
   const formData = request.form_data;
-  const franchiseeName = formData.full_name || 'Franqueado';
+  const franchiseeName = formData.full_name || "Franqueado";
   const franchiseePhone = cleanPhoneNumber(formData.contact);
   const franchiseeEmail = formData.franchisee_email || formData.email;
-  
   // Mensagem de rejeição
   const whatsappMessage = `Olá, ${franchiseeName}.
 
@@ -615,8 +592,7 @@ Para mais informações ou para esclarecer dúvidas, entre em contato conosco.
 
 Atenciosamente,
 Equipe Cresci e Perdi`;
-
-  const emailSubject = 'Cadastro Rejeitado - Girabot';
+  const emailSubject = "Cadastro Rejeitado - Girabot";
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -650,15 +626,12 @@ Equipe Cresci e Perdi`;
       </div>
     </div>
   `;
-  
   // Enviar notificações (não bloqueante - não falha se houver erro)
   if (franchiseePhone) {
     await sendWhatsAppNotification(franchiseePhone, whatsappMessage);
   }
-  
   if (franchiseeEmail) {
     await sendEmailNotification(franchiseeEmail, emailSubject, emailHtml);
   }
-  
-  console.log('✅ Processo de rejeição e notificação concluído!');
+  console.log("✅ Processo de rejeição e notificação concluído!");
 }
