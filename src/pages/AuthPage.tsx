@@ -227,24 +227,6 @@ const AuthPage = () => {
               />
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-              <Button
-                onClick={() => setForgotPasswordOpen(true)}
-                sx={{
-                  textTransform: 'none',
-                  color: '#f59e42',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  padding: '4px 8px',
-                  '&:hover': {
-                    backgroundColor: 'rgba(245, 158, 66, 0.08)',
-                  },
-                }}
-              >
-                Esqueci minha senha
-              </Button>
-            </Box>
-
             <Button
               type="submit"
               fullWidth
@@ -271,28 +253,25 @@ const AuthPage = () => {
             >
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Typography
+                variant="body2"
+                color="primary"
+                onClick={() => setForgotPasswordOpen(true)}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Esqueceu a senha?
+              </Typography>
+            </Box>
           </form>
-
-          <Divider sx={{ margin: '24px 0', color: '#ddd' }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>
-              Sistema de Franquias
-            </Typography>
-          </Divider>
-
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              textAlign: 'center',
-              color: '#666',
-              fontSize: '0.875rem',
-            }}
-          >
-            Acesso restrito a usuários autorizados
-          </Typography>
-        </CardContent>
+          </CardContent>
+        
       </Card>
-
-      {/* Modal de Esqueci Minha Senha */}
       <ForgotPasswordModal
         open={forgotPasswordOpen}
         onClose={() => setForgotPasswordOpen(false)}

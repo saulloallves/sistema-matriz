@@ -27,6 +27,9 @@ const PermissoesPage = lazy(() => import("./pages/PermissoesPage"));
 const OnboardingRequestsPage = lazy(() => import("./pages/OnboardingRequestsPage"));
 const CorrecaoEstadosPage = lazy(() => import("./pages/CorrecaoEstadosPage")); // TEMPORÁRIO - Deletar após uso
 const AuthPage = lazy(() => import("./pages/AuthPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const WebViewResetPasswordThemedPage = lazy(() => import("./pages/WebViewResetPasswordThemedPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Componente de loading centralizado
@@ -58,48 +61,77 @@ const App = () => (
           },
         }}
       />
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
             <Route path="/auth" element={
               <Suspense fallback={<PageLoader />}>
                 <AuthPage />
               </Suspense>
             } />
-            <Route path="/*" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      <Route path="/" element={<DashboardPage />} />
-                      <Route path="/unidades" element={<UnidadesPage />} />
-                      <Route path="/franqueados" element={<FranqueadosPage />} />
-                      <Route path="/franqueados-unidades" element={<FranqueadosUnidadesPage />} />
-                      <Route path="/franqueados-filhos" element={<FranqueadosFilhosPage />} />
-                      <Route path="/clientes" element={<ClientesPage />} />
-                      <Route path="/clientes-filhos" element={<ClientesFilhosPage />} />
-                      <Route path="/colaboradores-loja" element={<ColaboradoresLojaPage />} />
-                      <Route path="/cargos-loja" element={<CargosLojaPage />} />
-                      <Route path="/senhas" element={<SenhasPage />} />
-                      <Route path="/permissoes" element={<PermissoesPage />} />
-                      <Route path="/onboarding" element={<OnboardingRequestsPage />} />
-                      <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
-                      <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-                      <Route path="/admin/correcao-estados" element={<CorrecaoEstadosPage />} /> {/* TEMPORÁRIO - Deletar após uso */}
-                      <Route path="/evento-seguidores" element={
-                        <Box sx={{ p: 3, textAlign: 'center' }}>
-                          <Typography color="text.secondary">Página em desenvolvimento</Typography>
-                        </Box>
-                      } />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </AppLayout>
-              </ProtectedRoute>
+            <Route path="/forgot-password" element={
+              <Suspense fallback={<PageLoader />}>
+                <ForgotPasswordPage />
+              </Suspense>
             } />
+            <Route path="/reset-password" element={
+              <Suspense fallback={<PageLoader />}>
+                <ResetPasswordPage />
+              </Suspense>
+            } />
+            <Route 
+              path="/webview/reset-password-light" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <WebViewResetPasswordThemedPage themeMode="light" />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/webview/reset-password-dark" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <WebViewResetPasswordThemedPage themeMode="dark" />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/*" 
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/unidades" element={<UnidadesPage />} />
+                        <Route path="/franqueados" element={<FranqueadosPage />} />
+                        <Route path="/franqueados-unidades" element={<FranqueadosUnidadesPage />} />
+                        <Route path="/franqueados-filhos" element={<FranqueadosFilhosPage />} />
+                        <Route path="/clientes" element={<ClientesPage />} />
+                        <Route path="/clientes-filhos" element={<ClientesFilhosPage />} />
+                        <Route path="/colaboradores-loja" element={<ColaboradoresLojaPage />} />
+                        <Route path="/cargos-loja" element={<CargosLojaPage />} />
+                        <Route path="/senhas" element={<SenhasPage />} />
+                        <Route path="/permissoes" element={<PermissoesPage />} />
+                        <Route path="/onboarding" element={<OnboardingRequestsPage />} />
+                        <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
+                        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+                        <Route path="/admin/correcao-estados" element={<CorrecaoEstadosPage />} /> {/* TEMPORÁRIO - Deletar após uso */}
+                        <Route path="/evento-seguidores" element={
+                          <Box sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">Página em desenvolvimento</Typography>
+                          </Box>
+                        } />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+          />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   </QueryClientProvider>
 );

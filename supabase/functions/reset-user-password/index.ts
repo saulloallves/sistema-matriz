@@ -106,12 +106,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { user_id, full_name, phone_number, email }: ResetPasswordRequest = await req.json();
+    const { email }: { email: string } = await req.json();
 
-    if (!user_id || !full_name || !phone_number) {
+    if (!email) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Dados obrigatórios não fornecidos: user_id, full_name, phone_number'
+        error: 'Dados obrigatórios não fornecidos: email'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -124,95 +124,118 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Gerar nova senha
-    const newPassword = generateRandomPassword(8);
-    console.log(`Nova senha gerada para usuário ${user_id}: ${newPassword}`);
+    // 1. Buscar o usuário pelo email
+    const { data: usersWithEmails, error: searchError } = await supabaseAdmin
+      .rpc('get_users_with_emails');
 
-    // Atualizar a senha do usuário no auth.users
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
-      password: newPassword
-    });
-
-    if (updateError) {
-      console.error('Erro ao atualizar senha no Auth:', updateError);
-      return new Response(JSON.stringify({
-        success: false,
-        error: `Erro ao atualizar senha: ${updateError.message}`
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (searchError) {
+      // Log detalhado do erro que vem do Supabase
+      console.error('Erro detalhado da RPC get_users_with_emails:', JSON.stringify(searchError, null, 2));
+      throw new Error('Erro ao executar a RPC get_users_with_emails.');
     }
 
-    console.log('Senha atualizada com sucesso no Auth');
+    const user = usersWithEmails?.find(
+      (u: { email?: string; user_id: string; full_name: string; phone_number: string }) =>
+        u.email?.toLowerCase().trim() === email.toLowerCase().trim()
+    );
 
-    // Preparar mensagens
-    const whatsappMessage = `Olá ${full_name}! 🔐
+    if (!user) {
+      throw new Error('Email não encontrado no sistema.');
+    }
 
-Sua nova senha de acesso foi gerada:
+    // Log de Diagnóstico: Exibe os dados do usuário encontrado.
+    console.log('Dados do usuário encontrados:', JSON.stringify(user, null, 2));
 
-*Senha:* ${newPassword}
+    // 2. Gerar nova senha
+    const newPassword = Math.random().toString(36).slice(-8);
 
-⚠️ Por segurança, recomendamos que você altere sua senha após o primeiro login.
+    // 3. Atualizar a senha do usuário no Auth
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.user_id,
+      { password: newPassword }
+    );
 
-Qualquer dúvida, estamos à disposição!`;
+    if (updateError) {
+      throw new Error('Erro ao atualizar a senha.');
+    }
+    console.log(`Senha para o usuário ${user.user_id} atualizada com sucesso no Auth.`);
 
-    const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">
-          🔐 Nova Senha de Acesso
-        </h1>
-      </div>
-      
-      <div style="padding: 40px 30px;">
-        <h2 style="color: #333; margin-bottom: 20px;">Olá, ${full_name}!</h2>
-        
-        <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-          Uma nova senha foi gerada para sua conta no sistema. Use as credenciais abaixo para fazer login:
-        </p>
-        
-        <div style="background: #f8f9ff; border: 2px solid #667eea; padding: 25px; border-radius: 12px; margin: 25px 0;">
-          <p style="margin: 0 0 15px 0; color: #333;"><strong>Nova Senha:</strong></p>
-          <p style="font-family: 'Courier New', monospace; font-size: 18px; color: #667eea; font-weight: bold; margin: 0; letter-spacing: 2px;">
-            ${newPassword}
-          </p>
-        </div>
-        
-        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0; color: #856404;">
-            <strong>⚠️ Importante:</strong> Por segurança, recomendamos que você altere sua senha após o primeiro login.
-          </p>
-        </div>
-        
-        <p style="color: #666; margin-top: 25px;">
-          Se você tiver alguma dúvida ou precisar de ajuda, entre em contato com o suporte.
-        </p>
-        
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
-        <p style="color: #999; font-size: 14px; text-align: center; margin: 0;">
-          Sistema de Gestão - Reset de Senha
-        </p>
-      </div>
-    </div>`;
-
-    // Enviar notificações
-    console.log('Enviando notificações...');
+    // 4. Preparar e enviar notificações
+    const whatsappMessage = `Olá, ${user.full_name}! 🔐 Sua nova senha de acesso ao sistema Girabot foi gerada:\n\n*Senha:* ${newPassword}\n\nPor segurança, recomendamos que você a altere após o primeiro login.`;
     
-    const [whatsappSuccess, emailSuccess] = await Promise.all([
-      sendWhatsApp(phone_number, whatsappMessage),
-      email ? sendEmail(email, 'Nova Senha de Acesso - Sistema de Gestão', emailHtml) : Promise.resolve(false)
-    ]);
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #E3A024, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Sua senha foi redefinida!</h1>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+            Olá, <strong>${user.full_name}</strong>!
+          </p>
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+            Conforme solicitado, sua senha de acesso ao <strong>Girabot</strong> foi redefinida.
+          </p>
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #27ae60;">
+            <h3 style="color: #E3A024; margin-top: 0;">Sua Nova Senha</h3>
+            <p style="margin: 10px 0; font-size: 20px; font-weight: bold; letter-spacing: 2px;">${newPassword}</p>
+          </div>
+          <p style="font-size: 16px; color: #333; margin-top: 20px;">
+            Recomendamos que você altere esta senha para uma de sua preferência após o login.
+          </p>
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+            <p style="color: #666; font-size: 14px;">
+              Atenciosamente,<br/>
+              <strong>Equipe Cresci e Perdi</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
 
-    console.log('Resultados das notificações:', { whatsappSuccess, emailSuccess });
+    // Chamar a função de envio de email e verificar o erro
+    const { error: emailError } = await supabaseAdmin.functions.invoke('brevo-send-email', {
+      body: {
+        to: user.email,
+        subject: 'Sua nova senha de acesso ao Girabot',
+        html: emailHtml,
+        from: "sistema@crescieperdi.com.br",
+        fromName: "Sistema de Gestão"
+      }
+    });
+
+    if (emailError) {
+      console.error('Erro ao invocar a função de e-mail:', emailError);
+      throw new Error('Falha ao enviar o e-mail de redefinição.');
+    }
+    console.log('E-mail de redefinição enviado com sucesso.');
+
+    // Chamar a função de envio de WhatsApp e verificar o erro
+    if (user.phone_number) {
+      console.log(`Tentando enviar WhatsApp para o número: ${user.phone_number}`);
+      const { error: whatsappError } = await supabaseAdmin.functions.invoke('zapi-send-text', {
+        body: {
+          phone: user.phone_number,
+          message: whatsappMessage,
+          logData: {
+            event_type: 'password_reset',
+            user_action: 'system'
+          }
+        }
+      });
+
+      if (whatsappError) {
+        console.error('Erro ao invocar a função de WhatsApp:', whatsappError);
+        throw new Error('Falha ao enviar a notificação via WhatsApp.');
+      }
+      console.log('WhatsApp de redefinição enviado com sucesso.');
+    } else {
+      // Log de Diagnóstico: Informa por que o envio de WhatsApp foi pulado.
+      console.log('Envio de WhatsApp pulado: o usuário não possui um número de telefone (phone_number).');
+    }
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Senha resetada com sucesso!',
-      notifications: {
-        whatsapp: whatsappSuccess,
-        email: emailSuccess
-      }
+      message: 'Senha resetada com sucesso!'
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

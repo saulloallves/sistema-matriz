@@ -44,36 +44,10 @@ export const ForgotPasswordModal = ({ open, onClose }: ForgotPasswordModalProps)
     setIsSubmitting(true);
 
     try {
-      // Buscar todos os usuários com emails usando a função RPC
-      const { data: usersWithEmails, error: searchError } = await supabase
-        .rpc('get_users_with_emails');
-
-      if (searchError) {
-        console.error('Erro ao buscar usuários:', searchError);
-        toast.error('Erro ao buscar usuário');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Filtrar pelo email informado
-      const user = usersWithEmails?.find(
-        (u: { email?: string; user_id: string; full_name: string; phone_number: string }) => 
-          u.email?.toLowerCase().trim() === email.toLowerCase().trim()
-      );
-
-      if (!user) {
-        toast.error('Email não encontrado no sistema');
-        setIsSubmitting(false);
-        return;
-      }
-
       // Chamar a Edge Function de reset de senha
       const { error: resetError } = await supabase.functions.invoke('reset-user-password', {
         body: {
-          user_id: user.user_id,
-          full_name: user.full_name,
-          phone_number: user.phone_number,
-          email: user.email,
+          email: email,
         },
       });
 
