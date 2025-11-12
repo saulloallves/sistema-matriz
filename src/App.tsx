@@ -25,7 +25,6 @@ const CargosLojaPage = lazy(() => import("./pages/CargosLojaPage"));
 const SenhasPage = lazy(() => import("./pages/SenhasPage"));
 const PermissoesPage = lazy(() => import("./pages/PermissoesPage"));
 const OnboardingRequestsPage = lazy(() => import("./pages/OnboardingRequestsPage"));
-// Rota antiga de correção de estados descontinuada - redireciona para Configurações > Sistema
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -116,7 +115,7 @@ const App = () => (
                         <Route path="/onboarding" element={<OnboardingRequestsPage />} />
                         <Route path="/grupos-whatsapp" element={<GruposWhatsAppPage />} />
                         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-                        <Route path="/admin/correcao-estados" element={<CorrecaoEstadosPage />} /> {/* TEMPORÁRIO - Deletar após uso */}
+                        <Route path="/admin/correcao-estados" element={<Navigate to="/configuracoes?tab=sistema&focus=normalizacao-estados" replace />} /> {/* TEMPORÁRIO - Deletar após uso */}
                         <Route path="/evento-seguidores" element={
                           <Box sx={{ p: 3, textAlign: 'center' }}>
                             <Typography color="text.secondary">Página em desenvolvimento</Typography>
