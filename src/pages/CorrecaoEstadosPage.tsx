@@ -20,31 +20,38 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { CheckCircle, AlertTriangle, Database, ArrowRight } from 'lucide-react';
-import { useAnalisarEstados, useCorrigirEstados } from '../hooks/useCorrecaoEstados';
+import { CheckCircle, AlertTriangle, Database, ArrowRight, Users } from 'lucide-react';
+import { useAnalisarEstados, useCorrigirEstados, useAnalisarEstadosFranqueados, useCorrigirEstadosFranqueados } from '../hooks/useCorrecaoEstados';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 const CorrecaoEstadosPage = () => {
   const { data, isLoading } = useAnalisarEstados();
-  const { mutate: corrigir, isPending: isCorrigindo } = useCorrigirEstados();
+  const { mutate: corrigirUnidades, isPending: isCorrigindoUnidades } = useCorrigirEstados();
+
+  const { data: dataFranqueados, isLoading: isLoadingFranqueados } = useAnalisarEstadosFranqueados();
+  const { mutate: corrigirFranqueados, isPending: isCorrigindoFranqueados } = useCorrigirEstadosFranqueados();
+
+  const [tipo, setTipo] = useState<'unidades' | 'franqueados'>('unidades');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [correcaoConcluida, setCorrecaoConcluida] = useState(false);
 
   const handleCorrigir = () => {
-    if (!data?.incorretas || data.incorretas.length === 0) return;
-
-    corrigir(data.incorretas, {
-      onSuccess: () => {
-        setCorrecaoConcluida(true);
-        setDialogOpen(false);
-      },
-      onError: (error) => {
-        console.error('Erro ao corrigir:', error);
-        alert('Erro ao corrigir unidades. Verifique o console.');
-      },
-    });
+    if (tipo === 'unidades') {
+      if (!data?.incorretas || data.incorretas.length === 0) return;
+      corrigirUnidades(data.incorretas, {
+        onSuccess: () => { setCorrecaoConcluida(true); setDialogOpen(false); },
+        onError: (error) => { console.error('Erro ao corrigir:', error); alert('Erro ao corrigir unidades. Verifique o console.'); },
+      });
+    } else {
+      if (!dataFranqueados?.incorretas || dataFranqueados.incorretas.length === 0) return;
+      corrigirFranqueados(dataFranqueados.incorretas, {
+        onSuccess: () => { setCorrecaoConcluida(true); setDialogOpen(false); },
+        onError: (error) => { console.error('Erro ao corrigir:', error); alert('Erro ao corrigir franqueados. Verifique o console.'); },
+      });
+    }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingFranqueados) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
@@ -64,10 +71,23 @@ const CorrecaoEstadosPage = () => {
         </Typography>
       </Box>
 
+      {/* Toggle Tipo */}
+      <Box sx={{ mb: 2 }}>
+        <ToggleButtonGroup
+          value={tipo}
+          exclusive
+          onChange={(_, val) => val && setTipo(val)}
+          size="small"
+        >
+          <ToggleButton value="unidades">Unidades</ToggleButton>
+          <ToggleButton value="franqueados">Franqueados</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
       {/* Alerta de Conclusão */}
       {correcaoConcluida && (
         <Alert severity="success" sx={{ mb: 3 }}>
-          ✅ Correção concluída com sucesso! {data?.incorretas.length} unidades foram atualizadas.
+          ✅ Correção concluída com sucesso! {tipo === 'unidades' ? (data?.incorretas.length || 0) : (dataFranqueados?.incorretas.length || 0)} {tipo === 'unidades' ? 'unidades' : 'franqueados'} foram atualizados.
           Você pode fechar esta página e deletar os arquivos temporários.
         </Alert>
       )}
@@ -77,13 +97,13 @@ const CorrecaoEstadosPage = () => {
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Database size={40} color="#2196f3" />
+              {tipo === 'unidades' ? <Database size={40} color="#2196f3" /> : <Users size={40} color="#9c27b0" />}
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                  {data?.estatisticas.totalUnidades || 0}
+                  {tipo === 'unidades' ? (data?.estatisticas.totalUnidades || 0) : (dataFranqueados?.estatisticas.totalFranqueados || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Total de Unidades
+                  {tipo === 'unidades' ? 'Total de Unidades' : 'Total de Franqueados'}
                 </Typography>
               </Box>
             </Box>
@@ -96,10 +116,10 @@ const CorrecaoEstadosPage = () => {
               <AlertTriangle size={40} color="#f44336" />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 600, color: 'error.main' }}>
-                  {data?.estatisticas.totalIncorretas || 0}
+                  {tipo === 'unidades' ? (data?.estatisticas.totalIncorretas || 0) : (dataFranqueados?.estatisticas.totalIncorretas || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Unidades Incorretas
+                  {tipo === 'unidades' ? 'Unidades Incorretas' : 'Franqueados Incorretos'}
                 </Typography>
               </Box>
             </Box>
@@ -112,10 +132,10 @@ const CorrecaoEstadosPage = () => {
               <CheckCircle size={40} color="#4caf50" />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 600, color: 'success.main' }}>
-                  {data?.estatisticas.totalCorretas || 0}
+                  {tipo === 'unidades' ? (data?.estatisticas.totalCorretas || 0) : (dataFranqueados?.estatisticas.totalCorretas || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Unidades Corretas
+                  {tipo === 'unidades' ? 'Unidades Corretas' : 'Franqueados Corretos'}
                 </Typography>
               </Box>
             </Box>
@@ -124,13 +144,13 @@ const CorrecaoEstadosPage = () => {
       </Box>
 
       {/* Distribuição por UF */}
-      {data?.estatisticas.porUF && Object.keys(data.estatisticas.porUF).length > 0 && (
+      {(tipo === 'unidades' ? data?.estatisticas.porUF : dataFranqueados?.estatisticas.porUF) && Object.keys(tipo === 'unidades' ? (data?.estatisticas.porUF || {}) : (dataFranqueados?.estatisticas.porUF || {})).length > 0 && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
             Distribuição de erros por UF:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {Object.entries(data.estatisticas.porUF).map(([uf, count]) => (
+            {Object.entries(tipo === 'unidades' ? (data!.estatisticas.porUF) : (dataFranqueados!.estatisticas.porUF)).map(([uf, count]) => (
               <Chip key={uf} label={`${uf}: ${count}`} size="small" color="warning" />
             ))}
           </Box>
@@ -138,24 +158,24 @@ const CorrecaoEstadosPage = () => {
       )}
 
       {/* Botão de Correção */}
-      {data?.incorretas && data.incorretas.length > 0 && !correcaoConcluida && (
+      {((tipo === 'unidades' && data?.incorretas && data.incorretas.length > 0) || (tipo === 'franqueados' && dataFranqueados?.incorretas && dataFranqueados.incorretas.length > 0)) && !correcaoConcluida && (
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
           <Button
             variant="contained"
-            color="error"
+            color={tipo === 'unidades' ? 'error' : 'secondary'}
             size="large"
             onClick={() => setDialogOpen(true)}
-            disabled={isCorrigindo}
-            startIcon={isCorrigindo ? <CircularProgress size={20} /> : <CheckCircle />}
+            disabled={tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados}
+            startIcon={(tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados) ? <CircularProgress size={20} /> : <CheckCircle />}
             sx={{ px: 4, py: 1.5 }}
           >
-            {isCorrigindo ? 'Corrigindo...' : `Corrigir ${data.incorretas.length} Unidades`}
+            {(tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados) ? 'Corrigindo...' : `Corrigir ${(tipo === 'unidades' ? data?.incorretas.length : dataFranqueados?.incorretas.length) || 0} ${tipo === 'unidades' ? 'Unidades' : 'Franqueados'}`}
           </Button>
         </Box>
       )}
 
       {/* Tabela de Preview */}
-      {data?.incorretas && data.incorretas.length > 0 && (
+      {tipo === 'unidades' && data?.incorretas && data.incorretas.length > 0 && (
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -215,42 +235,94 @@ const CorrecaoEstadosPage = () => {
         </Card>
       )}
 
+      {/* Tabela de Preview - Franqueados */}
+      {tipo === 'franqueados' && dataFranqueados?.incorretas && dataFranqueados.incorretas.length > 0 && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              📋 Preview das Correções (Franqueados)
+            </Typography>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Franqueado</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Cidade</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>UF</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Estado Atual (Incorreto)</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>→</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Estado Correto</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {dataFranqueados.incorretas.slice(0, 50).map((f) => (
+                    <TableRow key={f.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{f.full_name}</Typography>
+                      </TableCell>
+                      <TableCell>{f.city || '-'}</TableCell>
+                      <TableCell>
+                        <Chip label={f.uf} size="small" color="secondary" />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="error.main">{f.state || '(vazio)'}</Typography>
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <ArrowRight size={16} color="#666" />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>{f.estadoCorreto}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {dataFranqueados.incorretas.length > 50 && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', textAlign: 'center' }}>
+                Mostrando 50 de {dataFranqueados.incorretas.length} franqueados. Todos serão corrigidos ao clicar no botão.
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Mensagem se tudo estiver correto */}
-      {data?.incorretas && data.incorretas.length === 0 && (
+      {(tipo === 'unidades' && data?.incorretas && data.incorretas.length === 0) || (tipo === 'franqueados' && dataFranqueados?.incorretas && dataFranqueados.incorretas.length === 0) ? (
         <Alert severity="success" sx={{ textAlign: 'center' }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
             ✅ Tudo Correto!
           </Typography>
           <Typography variant="body2">
-            Todas as unidades já estão com o campo "state" correto.
+            {tipo === 'unidades' ? 'Todas as unidades' : 'Todos os franqueados'} já estão com o campo "state" correto.
           </Typography>
         </Alert>
-      )}
+      ) : null}
 
       {/* Dialog de Confirmação */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>⚠️ Confirmar Correção em Massa</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Você está prestes a corrigir <strong>{data?.incorretas.length} unidades</strong>.
+            Você está prestes a corrigir <strong>{tipo === 'unidades' ? (data?.incorretas.length || 0) : (dataFranqueados?.incorretas.length || 0)} {tipo === 'unidades' ? 'unidades' : 'franqueados'}</strong>.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Esta ação irá atualizar o campo "state" de todas as unidades listadas.
+            Esta ação irá atualizar o campo "state" de todos os {tipo === 'unidades' ? 'unidades' : 'franqueados'} listados.
             Tem certeza que deseja continuar?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} disabled={isCorrigindo}>
+          <Button onClick={() => setDialogOpen(false)} disabled={tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados}>
             Cancelar
           </Button>
           <Button
             onClick={handleCorrigir}
             variant="contained"
-            color="error"
-            disabled={isCorrigindo}
-            startIcon={isCorrigindo ? <CircularProgress size={16} /> : null}
+            color={tipo === 'unidades' ? 'error' : 'secondary'}
+            disabled={tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados}
+            startIcon={(tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados) ? <CircularProgress size={16} /> : null}
           >
-            {isCorrigindo ? 'Corrigindo...' : 'Sim, Corrigir Tudo'}
+            {(tipo === 'unidades' ? isCorrigindoUnidades : isCorrigindoFranqueados) ? 'Corrigindo...' : 'Sim, Corrigir Tudo'}
           </Button>
         </DialogActions>
       </Dialog>

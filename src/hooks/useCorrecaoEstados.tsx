@@ -19,6 +19,23 @@ interface EstatisticasCorrecao {
   porUF: Record<string, number>;
 }
 
+// ===================== FRANQUEADOS =====================
+interface FranqueadoIncorreto {
+  id: string;
+  full_name: string;
+  city: string | null;
+  uf: string;
+  state: string | null;
+  estadoCorreto: string;
+}
+
+interface EstatisticasCorrecaoFranqueados {
+  totalFranqueados: number;
+  totalIncorretas: number;
+  totalCorretas: number;
+  porUF: Record<string, number>;
+}
+
 // Hook para analisar e buscar unidades com estado incorreto
 export const useAnalisarEstados = () => {
   return useQuery({
@@ -99,5 +116,77 @@ export const useCorrigirEstados = () => {
       queryClient.invalidateQueries({ queryKey: ['unidades-geolocation-region'] });
       queryClient.invalidateQueries({ queryKey: ['unidades'] });
     },
+  });
+};
+
+// Hook para analisar franqueados com estado incorreto
+export const useAnalisarEstadosFranqueados = () => {
+  return useQuery({
+    queryKey: ['analisar-estados-franqueados'],
+    queryFn: async (): Promise<{ incorretas: FranqueadoIncorreto[]; estatisticas: EstatisticasCorrecaoFranqueados }> => {
+      const { data: franqueados, error } = await supabase
+        .from('franqueados')
+        .select('id, full_name, city, state, uf')
+        .not('uf', 'is', null)
+        .order('uf');
+
+      if (error) throw error;
+
+      const totalFranqueados = franqueados?.length || 0;
+      const incorretas: FranqueadoIncorreto[] = [];
+      const porUF: Record<string, number> = {};
+
+      franqueados?.forEach(f => {
+        if (!f.uf) return;
+        const estadoCorreto = getNomeEstado(f.uf);
+        const estadoAtual = f.state || '';
+        if (estadoAtual !== estadoCorreto) {
+          incorretas.push({
+            id: f.id,
+            full_name: f.full_name,
+            city: f.city,
+            uf: f.uf,
+            state: estadoAtual,
+            estadoCorreto,
+          });
+          porUF[f.uf] = (porUF[f.uf] || 0) + 1;
+        }
+      });
+
+      const estatisticas: EstatisticasCorrecaoFranqueados = {
+        totalFranqueados,
+        totalIncorretas: incorretas.length,
+        totalCorretas: totalFranqueados - incorretas.length,
+        porUF,
+      };
+
+      return { incorretas, estatisticas };
+    },
+  });
+};
+
+// Hook para corrigir franqueados em massa
+export const useCorrigirEstadosFranqueados = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (franqueados: FranqueadoIncorreto[]) => {
+      const updates = franqueados.map(f =>
+        supabase
+          .from('franqueados')
+          .update({ state: f.estadoCorreto })
+          .eq('id', f.id)
+      );
+      const results = await Promise.all(updates);
+      const erros = results.filter(r => r.error);
+      if (erros.length > 0) {
+        throw new Error(`Falha ao corrigir ${erros.length} franqueados`);
+      }
+      return { corrigidos: franqueados.length };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['analisar-estados-franqueados'] });
+      queryClient.invalidateQueries({ queryKey: ['franqueados'] });
+      queryClient.invalidateQueries({ queryKey: ['franqueados-geolocation-region'] });
+    }
   });
 };
