@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -43,6 +43,8 @@ import {
   X,
   Key
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import NormalizacaoEstados from '@/components/configuracoes/NormalizacaoEstados';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useUsers } from '@/hooks/useUsers';
 import { User } from '@/types/user';
@@ -1370,6 +1372,8 @@ const AuditLogsTab = () => {
 
 const ConfiguracoesPage = () => {
   const [tabValue, setTabValue] = useState(0);
+  const location = useLocation();
+  const normalizacaoEstadosRef = useRef<HTMLDivElement | null>(null);
   const [normalizacaoModalOpen, setNormalizacaoModalOpen] = useState(false);
   const [normalizacaoContatosModalOpen, setNormalizacaoContatosModalOpen] = useState(false);
   const [normalizacaoPessoasModalOpen, setNormalizacaoPessoasModalOpen] = useState(false);
@@ -1382,6 +1386,22 @@ const ConfiguracoesPage = () => {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  // Deep-link: /configuracoes?tab=sistema&focus=normalizacao-estados
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    const focus = params.get('focus');
+    if (tab === 'sistema') {
+      setTabValue(4);
+      // scroll após render
+      setTimeout(() => {
+        if (focus === 'normalizacao-estados' && normalizacaoEstadosRef.current) {
+          normalizacaoEstadosRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 0);
+    }
+  }, [location.search]);
 
   return (
     <Box>
@@ -1469,6 +1489,10 @@ const ConfiguracoesPage = () => {
 
           <TabPanel value={tabValue} index={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Box ref={normalizacaoEstadosRef}>
+                <NormalizacaoEstados />
+              </Box>
+
               <Card>
                 <CardContent>
                   <Box sx={{ mb: 3 }}>

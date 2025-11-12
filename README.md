@@ -115,6 +115,10 @@ O **Sistema Matriz** é uma aplicação web completa para gestão de franquias d
 - **Nomes de Unidades:** Correção de grafias e padronização
 - **Contatos de Franqueados:** Validação e normalização
 - **Nomes de Pessoas:** Padronização de nomenclaturas
+- **Estados (UF → Estado) de Unidades e Franqueados:** Correção do campo "state" a partir da UF
+
+Localização: Configurações > aba "Sistema" > seção "Normalização de Estados (UF → Estado)".
+Observação: a rota temporária "/admin/correcao-estados" foi descontinuada e agora redireciona para a tela de Configurações.
 
 #### Sistema de Webhooks
 
