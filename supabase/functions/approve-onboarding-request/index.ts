@@ -111,6 +111,7 @@ async function createAuthUserIfNeeded(supabaseAdmin: any, franchisee: any, formD
     const email = String(rawEmail).trim().toLowerCase();
     const full_name = franchisee?.full_name || formData?.full_name || "Franqueado";
     const password = String(systemPassword);
+    const phone_number = formData?.contact ? cleanPhoneNumber(formData.contact) : null;
 
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -120,6 +121,7 @@ async function createAuthUserIfNeeded(supabaseAdmin: any, franchisee: any, formD
         full_name,
         role: "franqueado",
         franqueado_id: franchisee?.id || null,
+        phone_number,
       },
     });
 
