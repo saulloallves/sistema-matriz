@@ -7,7 +7,6 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
--- Garante que a função opere no contexto correto, evitando problemas de schema.
 SET search_path = public, extensions
 AS $$
 BEGIN
@@ -15,8 +14,8 @@ BEGIN
   SELECT
     u.id AS user_id,
     u.raw_user_meta_data->>'full_name' AS full_name,
-    u.raw_user_meta_data->>'phone' AS phone_number,
-    u.email::text -- Cast explícito para text
+    u.raw_user_meta_data->>'phone_number' AS phone_number, -- Correção final para buscar a chave exata
+    u.email::text
   FROM
     auth.users u
   ORDER BY

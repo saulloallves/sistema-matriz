@@ -209,28 +209,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
     console.log('E-mail de redefinição enviado com sucesso.');
 
-    // Chamar a função de envio de WhatsApp e verificar o erro
+    // Chamar a função de envio de WhatsApp usando a função auxiliar
     if (user.phone_number) {
-      console.log(`Tentando enviar WhatsApp para o número: ${user.phone_number}`);
-      const { error: whatsappError } = await supabaseAdmin.functions.invoke('zapi-send-text', {
-        body: {
-          phone: user.phone_number,
-          message: whatsappMessage,
-          logData: {
-            event_type: 'password_reset',
-            user_action: 'system'
-          }
-        }
-      });
-
-      if (whatsappError) {
-        console.error('Erro ao invocar a função de WhatsApp:', whatsappError);
+      const whatsappSuccess = await sendWhatsApp(user.phone_number, whatsappMessage);
+      if (!whatsappSuccess) {
+        // O erro já é logado dentro da função sendWhatsApp
         throw new Error('Falha ao enviar a notificação via WhatsApp.');
       }
       console.log('WhatsApp de redefinição enviado com sucesso.');
     } else {
-      // Log de Diagnóstico: Informa por que o envio de WhatsApp foi pulado.
-      console.log('Envio de WhatsApp pulado: o usuário não possui um número de telefone (phone_number).');
+      console.log('Envio de WhatsApp pulado: o usuário não possui um número de telefone.');
     }
 
     return new Response(JSON.stringify({
