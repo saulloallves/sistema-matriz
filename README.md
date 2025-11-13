@@ -241,6 +241,149 @@ docker run -p 80:80 sistema-matriz
 - Log de entregas e retry automático
 ```
 
+### 4. zapi-send-text
+
+```typescript
+// Envio de mensagens WhatsApp via Z-API
+- Busca credenciais de notification_credentials (com fallback para env vars)
+- Envia mensagens de texto para números brasileiros
+- Registro automático em comunicacao_logs para auditoria
+- Usado internamente por outras edge functions
+```
+
+### 4. send-sms (OTP Phone Login)
+
+```typescript
+// Envio de código OTP (login por telefone) via SMS + WhatsApp
+// - Recebe hook "Send SMS" do Supabase Auth
+// - Extrai phone + otp do payload usando Standard Webhooks
+// - Envia SIMULTANEAMENTE via:
+//   * SMS pela API Bird (MessageBird)
+//   * WhatsApp via edge-function zapi-send-text
+// - Tolerância a falhas: sucesso se pelo menos 1 canal funcionar
+```
+
+#### Fluxo resumido
+
+1. Typebot (ou cliente externo) chama `POST /auth/v1/otp` com `{ phone, channel: "sms" }`.
+2. Supabase gera OTP e aciona o Send SMS Hook.
+3. Hook chama a Edge Function `send-sms` (URL correta abaixo) com verificação Standard Webhooks.
+4. Função envia **PARALELAMENTE**:
+   - **SMS** via Bird API (MessageBird)
+   - **WhatsApp** via `zapi-send-text` (Z-API)
+5. Usuário recebe código por SMS e/ou WhatsApp.
+6. Usuário informa código → `POST /auth/v1/verify` com `{ type: "sms", phone, token }`.
+7. Supabase retorna access/refresh token.
+
+#### URL correta da função
+
+Use SEMPRE o domínio de funções:
+
+```text
+https://<PROJECT_REF>.functions.supabase.co/send-sms
+```
+
+Evite usar o formato de gestão interna:
+
+```text
+https://<PROJECT_REF>.supabase.co/functions/v1/send-sms  # ERRADO para hooks
+```
+
+Se você usar a URL errada, o Supabase não consegue autenticar o hook e retorna:
+`{"msg": "Hook requires authorization token"}` sem chegar nos logs da função.
+
+#### Configuração do Hook (Dashboard → Authentication → Hooks → Send SMS Hook)
+
+- **Endpoint:** `https://<PROJECT_REF>.functions.supabase.co/send-sms`
+- **Secret:** gere um secret (ex.: aparece como `v1,whsec_...`). Copie exatamente o valor completo.
+- **Defina nos secrets do projeto:** `SEND_SMS_HOOK_SECRETS="v1,whsec_..."`
+- **Importante:** Desabilite "Verify JWT" para esta função (Dashboard → Functions → send-sms → Settings)
+
+#### Variáveis de ambiente exigidas
+
+```text
+# Bird (MessageBird) - Envio SMS
+SMS_WORKSPACE_ID
+SMS_CHANNEL_ID
+SMS_ACCESS_KEY
+
+# Standard Webhooks - Verificação de assinatura
+SEND_SMS_HOOK_SECRETS="v1,whsec_..."  # recomendado em produção
+
+# Supabase - Comunicação interna (já presentes no ambiente)
+SUPABASE_URL
+SUPABASE_ANON_KEY
+
+# Debug (opcional)
+DEBUG=true            # ativa logs detalhados de headers/payload
+```
+
+#### Exemplo de set com Supabase CLI
+
+```bash
+supabase secrets set \
+  SMS_WORKSPACE_ID="workspaceId" \
+  SMS_CHANNEL_ID="channelId" \
+  SMS_ACCESS_KEY="AccessKey_xxx" \
+  SEND_SMS_HOOK_SECRETS="v1,whsec_..." \
+  DEBUG="true"
+
+# Deploy com JWT desabilitado
+supabase functions deploy send-sms --no-verify-jwt
+```
+
+#### Testes `curl`
+
+Solicitar código:
+
+```bash
+curl -X POST "https://<PROJECT_REF>.supabase.co/auth/v1/otp" \
+  -H "apikey: <ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+5511999999999","channel":"sms"}'
+```
+
+Validar OTP:
+
+```bash
+curl -X POST "https://<PROJECT_REF>.supabase.co/auth/v1/verify" \
+  -H "apikey: <ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"sms","phone":"+5511999999999","token":"123456"}'
+```
+
+#### Resposta da função
+
+```json
+{
+  "status": "sent",
+  "channels": {
+    "sms": true,
+    "whatsapp": true
+  }
+}
+```
+
+Se ambos os canais falharem, retorna erro 502. Se pelo menos um funcionar, retorna 200.
+
+#### Troubleshooting
+
+- **Erro:** `Hook requires authorization token`
+  - Causa 1: URL incorreta (`supabase.co/functions/v1/...`). Use `functions.supabase.co/<nome>`.
+  - Causa 2: "Verify JWT" habilitado na função (deve estar desabilitado).
+  - Causa 3: Secret ausente em `SEND_SMS_HOOK_SECRETS` nos secrets da função.
+- **Não aparece log:** requisição nunca chegou à função (checar domínio ou status 401/403 na aba Hooks).
+- **Bird retorna erro:** verifique `SMS_*` corretos e se número está em formato E.164 (+55...).
+- **WhatsApp não envia:** verifique credenciais Z-API em `notification_credentials` ou env vars.
+- **Signature verification failed:** secret do Hook diferente de `SEND_SMS_HOOK_SECRETS` (devem ser idênticos).
+- **Ambos os canais falharam:** ative `DEBUG=true` e consulte logs para detalhes.
+
+#### Integração Typebot
+
+1. Passo "Enviar Código": POST `/auth/v1/otp` (headers: `apikey`, body com `phone` + `channel: "sms"`).
+2. Passo "Verificar Código": POST `/auth/v1/verify` (headers: `apikey`, body com `type: "sms"`, `phone`, `token`).
+3. Tratar respostas de erro (4xx) para repetição do fluxo.
+
 ## 📚 Padrões de Desenvolvimento
 
 ### Estrutura de Componentes
