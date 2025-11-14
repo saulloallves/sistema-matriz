@@ -257,10 +257,12 @@ docker run -p 80:80 sistema-matriz
 // Envio de código OTP (login por telefone) via SMS + WhatsApp
 // - Recebe hook "Send SMS" do Supabase Auth
 // - Extrai phone + otp do payload usando Standard Webhooks
+// - VALIDA se telefone pertence a franqueado cadastrado
 // - Envia SIMULTANEAMENTE via:
 //   * SMS pela API Bird (MessageBird)
 //   * WhatsApp via edge-function zapi-send-text
 // - Tolerância a falhas: sucesso se pelo menos 1 canal funcionar
+// - Segurança: apenas franqueados cadastrados recebem OTP
 ```
 
 #### Fluxo resumido
@@ -268,12 +270,15 @@ docker run -p 80:80 sistema-matriz
 1. Typebot (ou cliente externo) chama `POST /auth/v1/otp` com `{ phone, channel: "sms" }`.
 2. Supabase gera OTP e aciona o Send SMS Hook.
 3. Hook chama a Edge Function `send-sms` (URL correta abaixo) com verificação Standard Webhooks.
-4. Função envia **PARALELAMENTE**:
+4. **Função valida se telefone pertence a franqueado cadastrado:**
+   - ✅ **Franqueado encontrado:** continua fluxo
+   - ❌ **Não encontrado:** retorna erro 403 (acesso negado)
+5. Função envia **PARALELAMENTE**:
    - **SMS** via Bird API (MessageBird)
    - **WhatsApp** via `zapi-send-text` (Z-API)
-5. Usuário recebe código por SMS e/ou WhatsApp.
-6. Usuário informa código → `POST /auth/v1/verify` com `{ type: "sms", phone, token }`.
-7. Supabase retorna access/refresh token.
+6. Usuário recebe código por SMS e/ou WhatsApp.
+7. Usuário informa código → `POST /auth/v1/verify` com `{ type: "sms", phone, token }`.
+8. Supabase retorna access/refresh token.
 
 #### URL correta da função
 
@@ -310,9 +315,10 @@ SMS_ACCESS_KEY
 # Standard Webhooks - Verificação de assinatura
 SEND_SMS_HOOK_SECRETS="v1,whsec_..."  # recomendado em produção
 
-# Supabase - Comunicação interna (já presentes no ambiente)
+# Supabase - Comunicação interna e validação (já presentes no ambiente)
 SUPABASE_URL
 SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY  # para validação de franqueado
 
 # Debug (opcional)
 DEBUG=true            # ativa logs detalhados de headers/payload
@@ -354,6 +360,8 @@ curl -X POST "https://<PROJECT_REF>.supabase.co/auth/v1/verify" \
 
 #### Resposta da função
 
+**Sucesso - Código enviado (200):**
+
 ```json
 {
   "status": "sent",
@@ -361,6 +369,26 @@ curl -X POST "https://<PROJECT_REF>.supabase.co/auth/v1/verify" \
     "sms": true,
     "whatsapp": true
   }
+}
+```
+
+**Bloqueado - Franqueado não cadastrado (200):**
+
+```json
+{
+  "status": "blocked",
+  "reason": "franchisee_not_registered",
+  "message": "Telefone não cadastrado como franqueado"
+}
+```
+
+**Importante:** A função sempre retorna status 200 para o Supabase Auth Hook. Quando o telefone não está cadastrado, retorna `status: "blocked"` mas **não envia** SMS/WhatsApp, impedindo o login.
+
+**Falha em ambos os canais (502):**
+
+```json
+{
+  "error": "Failed to send OTP via SMS and WhatsApp"
 }
 ```
 
@@ -372,11 +400,19 @@ Se ambos os canais falharem, retorna erro 502. Se pelo menos um funcionar, retor
   - Causa 1: URL incorreta (`supabase.co/functions/v1/...`). Use `functions.supabase.co/<nome>`.
   - Causa 2: "Verify JWT" habilitado na função (deve estar desabilitado).
   - Causa 3: Secret ausente em `SEND_SMS_HOOK_SECRETS` nos secrets da função.
+- **Erro:** `Unexpected status code returned from hook: 403`
+  - O hook retornou 403 mas Supabase Auth espera sempre 200.
+  - Solução: função já foi corrigida para retornar 200 sempre.
+- **Código OTP não chega:**
+  - Verificar logs da função: se aparecer `status: "blocked"`, telefone não está cadastrado.
+  - Verificar se campo `contact` do franqueado está correto (apenas números).
+  - Ativar `DEBUG=true` para ver detalhes da validação.
 - **Não aparece log:** requisição nunca chegou à função (checar domínio ou status 401/403 na aba Hooks).
 - **Bird retorna erro:** verifique `SMS_*` corretos e se número está em formato E.164 (+55...).
 - **WhatsApp não envia:** verifique credenciais Z-API em `notification_credentials` ou env vars.
 - **Signature verification failed:** secret do Hook diferente de `SEND_SMS_HOOK_SECRETS` (devem ser idênticos).
 - **Ambos os canais falharam:** ative `DEBUG=true` e consulte logs para detalhes.
+- **Erro de validação:** verificar se `SUPABASE_SERVICE_ROLE_KEY` está configurada corretamente.
 
 #### Integração Typebot
 

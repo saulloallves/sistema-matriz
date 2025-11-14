@@ -54,3 +54,9 @@ verify_jwt = false
 
 [functions.send-sms]
 verify_jwt = false
+
+[functions.validate-franchisee-phone]
+verify_jwt = false
+
+[functions.update-franchisee-password]
+verify_jwt = false

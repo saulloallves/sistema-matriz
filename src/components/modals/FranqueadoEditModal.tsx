@@ -271,8 +271,10 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         updated_at: new Date().toISOString()
       };
 
+      const passwordChanged = data.systems_password && data.systems_password !== franqueado.systems_password;
+
       // Only include password if it has been changed
-      if (data.systems_password && data.systems_password !== franqueado.systems_password) {
+      if (passwordChanged) {
         updatePayload.systems_password = data.systems_password;
       }
 
@@ -285,7 +287,41 @@ export function FranqueadoEditModal({ open, onClose, franqueado, onUpdate }: Fra
         throw error;
       }
 
-      toast.success("Franqueado atualizado com sucesso!");
+      // Se a senha foi alterada, sincronizar com auth.users
+      if (passwordChanged && data.systems_password) {
+        try {
+          const { data: syncData, error: syncError } = await supabase.functions.invoke(
+            'update-franchisee-password',
+            {
+              body: {
+                franqueado_id: franqueado.id,
+                new_password: data.systems_password,
+                email: data.email || undefined,
+                phone: data.contact || undefined,
+              },
+            }
+          );
+
+          if (syncError) {
+            console.error('Erro ao sincronizar senha com auth.users:', syncError);
+            toast.error('Franqueado atualizado, mas falha ao sincronizar senha de autenticação');
+          } else if (syncData?.success) {
+            toast.success('Franqueado e senha de autenticação atualizados com sucesso!');
+          } else {
+            toast(`Franqueado atualizado. ${syncData?.message || 'Senha de autenticação não sincronizada'}`, {
+              icon: '⚠️',
+            });
+          }
+        } catch (syncError: any) {
+          console.error('Exceção ao sincronizar senha:', syncError);
+          toast('Franqueado atualizado, mas não foi possível sincronizar a senha de autenticação', {
+            icon: '⚠️',
+          });
+        }
+      } else {
+        toast.success("Franqueado atualizado com sucesso!");
+      }
+
       onUpdate();
       onClose();
     } catch (error) {

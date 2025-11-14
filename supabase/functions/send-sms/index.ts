@@ -10,7 +10,9 @@
 //   SMS_WORKSPACE_ID
 //   SMS_CHANNEL_ID
 //   SMS_ACCESS_KEY
-//   (Opcional) HOOK_SIGNING_SECRET
+//   SUPABASE_URL
+//   SUPABASE_SERVICE_ROLE_KEY
+//   (Opcional) SEND_SMS_HOOK_SECRETS
 
 // Shim de tipos para evitar erros de editor no ambiente Node/TS local
 // (Em produção, o runtime é Deno e esse namespace existe.)
@@ -104,13 +106,52 @@ Deno.serve(async (req: Request) => {
   }
 
   const normalizedPhone = normalizePhone(phone);
-  const messageBody = `Seu código de login é: ${otp}`;
+  
+  // Validação: verificar se telefone pertence a franqueado cadastrado
+  try {
+    const validation = await validateFranqueadoByPhone(normalizedPhone);
+    
+    if (!validation.exists) {
+      console.warn("Tentativa de login com telefone não cadastrado:", normalizedPhone);
+      // IMPORTANTE: Supabase Auth Hook espera status 200 sempre
+      // Não enviamos SMS/WhatsApp, apenas retornamos sucesso vazio para não quebrar o fluxo
+      // O usuário não receberá código e não conseguirá fazer login
+      return new Response(JSON.stringify({ 
+        status: "blocked",
+        reason: "franchisee_not_registered",
+        message: "Telefone não cadastrado como franqueado"
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    
+    debugLog("Franqueado validado:", validation.franqueado?.full_name);
+  } catch (e) {
+    console.error("Erro na validação do franqueado:", e);
+    // Fail-safe: em caso de erro técnico, permite continuar (não bloqueia o sistema)
+    debugLog("Prosseguindo com envio apesar de erro na validação (fail-safe)");
+  }
+
+  const messageBody = `Seu código de acesso ao Girabot é: ${otp}`;
+  const messageBodyWhats = `👋 GiraBot por aqui!
+
+Aqui está seu código de acesso:
+
+🗝️ ${otp}
+
+Use o botão abaixo para copiar facilmente. Não compartilhe com ninguém. 😉
+
+_⏳ Ele expira em 5 minutos_`;
 
   try {
+    // Para SMS via Bird, precisamos do formato internacional com +55
+    const phoneForSms = normalizedPhone.startsWith("55") ? `+${normalizedPhone}` : `+55${normalizedPhone}`;
+    
     // Envio paralelo: SMS via Bird e WhatsApp via Z-API
     const [smsResult, whatsappResult] = await Promise.allSettled([
-      sendSmsViaBird(normalizedPhone, messageBody),
-      sendWhatsAppViaZapi(normalizedPhone, messageBody),
+      sendSmsViaBird(phoneForSms, messageBody),
+      sendWhatsAppViaZapi(normalizedPhone, messageBodyWhats),
     ]);
 
     const smsSuccess = smsResult.status === "fulfilled";
@@ -127,7 +168,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    debugLog("Envio concluído", { sms: smsSuccess, whatsapp: whatsappSuccess });
+    console.log("Envio concluído", { sms: smsSuccess, whatsapp: whatsappSuccess });
     return new Response(JSON.stringify({ 
       status: "sent", 
       channels: { sms: smsSuccess, whatsapp: whatsappSuccess } 
@@ -150,14 +191,52 @@ function pickFirstDefined<T>(arr: (T | undefined | null)[]): T | undefined {
 }
 
 function normalizePhone(raw: string): string {
-  let p = raw.trim();
-  // Remove espaços e hifens comuns
-  p = p.replace(/[\s-]/g, "");
-  // Se começar com 00, troca por +
-  if (p.startsWith("00")) p = "+" + p.slice(2);
-  // Se não tiver + e for só dígitos, adiciona + (assumindo já em formato país Ex: 55119...)
-  if (!p.startsWith("+")) p = "+" + p;
-  return p;
+  // Remove todos os caracteres especiais, deixando apenas dígitos
+  let cleanPhone = raw.replace(/\D/g, "");
+  
+  // Remove código do país (55) se presente
+  if (cleanPhone.startsWith("55") && cleanPhone.length > 11) {
+    cleanPhone = cleanPhone.substring(2);
+  }
+  
+  console.log(`Telefone normalizado: ${raw} -> ${cleanPhone}`);
+  return cleanPhone;
+}
+
+async function validateFranqueadoByPhone(phone: string): Promise<{ 
+  exists: boolean; 
+  franqueado?: { id: string; full_name: string } 
+}> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  }
+
+  // @ts-expect-error Deno remote import resolved at runtime
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+  const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Busca exata com o número normalizado (apenas dígitos, sem +55/55)
+  const { data, error } = await supabase
+    .from("franqueados")
+    .select("id, full_name, contact")
+    .eq("contact", phone)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao validar franqueado no banco:", error);
+    throw new Error("Falha na validação do franqueado");
+  }
+
+  console.log(`Validação para ${phone}: ${data ? "encontrado" : "não encontrado"}`);
+
+  return {
+    exists: !!data,
+    franqueado: data ? { id: data.id, full_name: data.full_name } : undefined,
+  };
 }
 
 async function sendSmsViaBird(phoneNumber: string, messageBody: string) {
