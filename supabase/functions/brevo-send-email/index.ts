@@ -25,25 +25,18 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-
     // Criar cliente Supabase para buscar credenciais do banco
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
     // Buscar credenciais do banco de dados primeiro
-    const { data: credentials } = await supabase
-      .from('notification_credentials')
-      .select('brevo_api_key, brevo_default_from, brevo_default_from_name')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
-
+    const { data: credentials } = await supabase.from('notification_credentials').select('brevo_api_key, brevo_default_from, brevo_default_from_name').order('updated_at', {
+      ascending: false
+    }).limit(1).single();
     // Usar credenciais do banco, com fallback para variáveis de ambiente
     const brevoApiKey = credentials?.brevo_api_key || Deno.env.get("BREVO_API_KEY");
     const defaultFrom = credentials?.brevo_default_from || Deno.env.get("BREVO_DEFAULT_FROM") || "noreply@crescieperdi.com.br";
     const defaultFromName = credentials?.brevo_default_from_name || Deno.env.get("BREVO_DEFAULT_FROM_NAME") || "Sistema Matriz - Cresci e Perdi";
-
     if (!brevoApiKey) {
       return new Response(JSON.stringify({
         error: "Brevo API key not configured"
@@ -87,16 +80,10 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    
     // Log de auditoria no sucesso
     try {
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '', 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      
+      const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
       const destinatarios = Array.isArray(to) ? to.join(', ') : to;
-      
       const logEntry = {
         event_type: logData?.event_type || 'email_message',
         user_action: logData?.user_action || 'system',
@@ -111,21 +98,16 @@ serve(async (req)=>{
           request_data: logData
         }
       };
-      
-      const { error: logError } = await supabaseAdmin
-        .from('comunicacoes')
-        .insert(logEntry);
-      
+      const { error: logError } = await supabaseAdmin.from('comunicacoes').insert(logEntry);
       if (logError) {
         console.error('⚠️ Falha ao registrar log de comunicação:', logError);
-        // Não falha a requisição principal, apenas loga o erro
+      // Não falha a requisição principal, apenas loga o erro
       } else {
         console.log('✅ Log de comunicação registrado com sucesso');
       }
     } catch (logErr) {
       console.error('⚠️ Erro ao tentar registrar log:', logErr);
     }
-    
     return new Response(JSON.stringify({
       success: true,
       data: brevoData

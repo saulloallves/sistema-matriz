@@ -159,39 +159,55 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Erro ao atualizar a senha.');
     }
     console.log(`Senha para o usuário ${user.user_id} atualizada com sucesso no Auth.`);
-
     // 4. Preparar e enviar notificações
     const whatsappMessage = `Olá, ${user.full_name}! 🔐 Sua nova senha de acesso ao sistema Girabot foi gerada:\n\n*Senha:* ${newPassword}\n\nPor segurança, recomendamos que você a altere após o primeiro login.`;
-    
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #E3A024, #42a5f5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">Sua senha foi redefinida!</h1>
-        </div>
-        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
-          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
-            Olá, <strong>${user.full_name}</strong>!
-          </p>
-          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
-            Conforme solicitado, sua senha de acesso ao <strong>Girabot</strong> foi redefinida.
-          </p>
-          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #27ae60;">
-            <h3 style="color: #E3A024; margin-top: 0;">Sua Nova Senha</h3>
-            <p style="margin: 10px 0; font-size: 20px; font-weight: bold; letter-spacing: 2px;">${newPassword}</p>
+<div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
+  <!-- HEADER -->
+  <div style="background: linear-gradient(135deg, #FFC31A, #E3A024); padding: 30px 40px;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td align="left" valign="middle" style="width: 140px;">
+          <div style="background-color: #ffffff; border-radius: 12px; padding: 15px; max-width: 120px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <img src="https://cdn.jsdelivr.net/gh/saulloallves/sistema-matriz@main/src/assets/logo-principal.png" alt="Logo Girabot" style="max-width: 100px; display: block;">
           </div>
-          <p style="font-size: 16px; color: #333; margin-top: 20px;">
-            Recomendamos que você altere esta senha para uma de sua preferência após o login.
-          </p>
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
-            <p style="color: #666; font-size: 14px;">
-              Atenciosamente,<br/>
-              <strong>Equipe Cresci e Perdi</strong>
-            </p>
-          </div>
-        </div>
-      </div>
+        </td>
+        <td align="center" valign="middle">
+          <h1 style="color: #FFFFFF; margin: 0; font-size: 28px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">Sua Senha Foi Redefinida</h1>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- CONTENT -->
+  <div style="padding: 30px 40px; color: #333333;">
+    <p style="font-size: 16px; line-height: 1.6;">
+      Olá, <strong>${user.full_name}</strong>,
+    </p>
+    <p style="font-size: 16px; line-height: 1.6;">
+      Conforme solicitado, uma nova senha de acesso à plataforma <strong>Girabot</strong> foi gerada para você.
+    </p>
+    <div style="background-color: #f7f7f7; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center; border-left: 5px solid #FFC31A;">
+      <h3 style="color: #555555; margin-top: 0; font-size: 16px; font-weight: normal;">Sua nova senha é:</h3>
+      <p style="font-size: 24px; font-weight: bold; color: #6B3A10; margin: 10px 0; letter-spacing: 2px; font-family: 'Courier New', Courier, monospace;">
+        ${newPassword}
+      </p>
+    </div>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+      Por segurança, recomendamos que você altere esta senha para uma de sua preferência assim que acessar sua conta.
+    </p>
+    <div style="text-align: center;">
+      <a href="https://matriz.girabot.com.br/auth" target="_blank" style="background-color: #E3A024; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; display: inline-block;">
+        Acessar Minha Conta
+      </a>
+    </div>
+  </div>
+  <!-- FOOTER -->
+  <div style="background-color: #f7f7f7; padding: 20px; text-align: center; font-size: 12px; color: #888888;">
+    <p style="margin: 0;">Se você não solicitou esta alteração, por favor, entre em contato com nosso suporte.</p>
+    <p style="margin: 10px 0 0 0;">&copy; 2025 Cresci e Perdi. Todos os direitos reservados.</p>
+  </div>
+</div>
     `;
-
     // Chamar a função de envio de email e verificar o erro
     const { error: emailError } = await supabaseAdmin.functions.invoke('brevo-send-email', {
       body: {
