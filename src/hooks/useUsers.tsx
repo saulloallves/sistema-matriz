@@ -14,7 +14,7 @@ export const useUsers = () => {
     queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_users_with_emails');
+        .rpc('get_profiles_with_users_data');
 
       if (error) {
         throw new Error(error.message);
