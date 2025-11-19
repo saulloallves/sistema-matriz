@@ -29,6 +29,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const WebViewResetPasswordThemedPage = lazy(() => import("./pages/WebViewResetPasswordThemedPage"));
+const EditFranchiseePage = lazy(() => import("./pages/EditFranchiseePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Componente de loading centralizado
@@ -91,6 +92,14 @@ const App = () => (
               element={
                 <Suspense fallback={<PageLoader />}>
                   <WebViewResetPasswordThemedPage themeMode="dark" />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/webview/edit-data" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <EditFranchiseePage />
                 </Suspense>
               } 
             />
