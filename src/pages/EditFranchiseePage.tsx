@@ -21,6 +21,10 @@ import {
   Avatar,
   IconButton,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { toast, Toaster } from "react-hot-toast";
 import { Link2Off, Upload, Trash2, User } from "lucide-react";
@@ -47,6 +51,11 @@ export default function EditFranchiseePage({
   const [unitsData, setUnitsData] = useState<any[]>([]);
   const [isPrincipal, setIsPrincipal] = useState(false);
   const [unlinkedUnitIds, setUnlinkedUnitIds] = useState<string[]>([]);
+
+  // Unit Editing State
+  const [editingUnit, setEditingUnit] = useState<any>(null);
+  const [modifiedUnitIds, setModifiedUnitIds] = useState<string[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Profile Image State
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -217,6 +226,61 @@ export default function EditFranchiseePage({
     );
   };
 
+  const handleOpenEditModal = (unit: any) => {
+    setEditingUnit({ ...unit });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditingUnit((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveUnit = () => {
+    if (!editingUnit) return;
+
+    setUnitsData((prev) =>
+      prev.map((u) => (u.id === editingUnit.id ? editingUnit : u))
+    );
+
+    if (!modifiedUnitIds.includes(editingUnit.id)) {
+      setModifiedUnitIds((prev) => [...prev, editingUnit.id]);
+    }
+
+    setIsEditModalOpen(false);
+    setEditingUnit(null);
+    toast.success("Dados da unidade atualizados localmente.");
+  };
+
+  const generateRequestNumber = async () => {
+    const { data, error } = await supabase
+      .from("onboarding_requests" as any)
+      .select("request_number")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching last request number:", error);
+      throw new Error("Failed to generate request number");
+    }
+
+    const currentYear = new Date().getFullYear();
+    let nextSequence = 1;
+
+    if (data?.request_number) {
+      const parts = data.request_number.split("-");
+      if (parts.length === 3 && parts[1] === currentYear.toString()) {
+        const lastSequence = parseInt(parts[2], 10);
+        if (!isNaN(lastSequence)) {
+          nextSequence = lastSequence + 1;
+        }
+      }
+    }
+
+    return `ONB-${currentYear}-${nextSequence.toString().padStart(5, "0")}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -242,15 +306,18 @@ export default function EditFranchiseePage({
         finalProfileImage = urlData.publicUrl;
       }
 
+      const requestNumber = await generateRequestNumber();
+
       const payload = {
         franchiseeData: {
           ...franchiseeData,
           profile_image: finalProfileImage
         },
         unitsData: isPrincipal
-          ? unitsData.filter((u) => !unlinkedUnitIds.includes(u.id))
+          ? unitsData.filter((u) => modifiedUnitIds.includes(u.id) && !unlinkedUnitIds.includes(u.id))
           : undefined,
         unlinkedUnitIds: unlinkedUnitIds,
+        request_number: requestNumber,
       };
 
       const { error } = await supabase.functions.invoke(
@@ -659,15 +726,26 @@ export default function EditFranchiseePage({
                 />
               </Box>
               {franchiseeData.was_referred && (
-                <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
-                  <TextField
-                    name="referral_name"
-                    label="Quem indicou?"
-                    value={franchiseeData.referral_name || ""}
-                    onChange={(e) => handleChange(e, "franchisee")}
-                    fullWidth
-                  />
-                </Box>
+                <>
+                  <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
+                    <TextField
+                      name="referrer_name"
+                      label="Quem indicou?"
+                      value={franchiseeData.referrer_name || ""}
+                      onChange={(e) => handleChange(e, "franchisee")}
+                      fullWidth
+                    />
+                  </Box>
+                  <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
+                    <TextField
+                      name="referrer_unit_code"
+                      label="Código da Unidade (Quem indicou)"
+                      value={franchiseeData.referrer_unit_code || ""}
+                      onChange={(e) => handleChange(e, "franchisee")}
+                      fullWidth
+                    />
+                  </Box>
+                </>
               )}
             </Box>
 
@@ -703,86 +781,99 @@ export default function EditFranchiseePage({
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="h6">
-                    {unit.fantasy_name || `Unidade ${unit.group_code}`}
-                  </Typography>
-                  <Button
-                    variant={
-                      unlinkedUnitIds.includes(unit.id)
-                        ? "contained"
-                        : "outlined"
-                    }
-                    color="error"
-                    startIcon={<Link2Off />}
-                    onClick={() => toggleUnlinkUnit(unit.id)}
-                  >
-                    {unlinkedUnitIds.includes(unit.id)
-                      ? "Manter Vínculo"
-                      : "Romper Vínculo"}
-                  </Button>
-                </Box>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: "repeat(12, 1fr)",
-                    mt: 1,
-                  }}
-                >
-                  <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
-                    <TextField
-                      name="phone"
-                      label="Telefone da Unidade"
-                      value={unit.phone}
-                      onChange={(e) => handleChange(e, "unit", index)}
-                      fullWidth
-                      disabled={!isPrincipal}
-                    />
+                  <Box>
+                    <Typography variant="h6">
+                      {unit.fantasy_name || `Unidade ${unit.group_code}`}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Código: {unit.group_code} | {unit.city}/{unit.uf}
+                    </Typography>
                   </Box>
-                  <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
-                    <TextField
-                      name="email"
-                      label="E-mail da Unidade"
-                      value={unit.email}
-                      onChange={(e) => handleChange(e, "unit", index)}
-                      fullWidth
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleOpenEditModal(unit)}
                       disabled={!isPrincipal}
-                    />
-                  </Box>
-                  <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
-                    <TextField
-                      name="instagram_profile"
-                      label="Instagram da Unidade"
-                      value={unit.instagram_profile}
-                      onChange={(e) => handleChange(e, "unit", index)}
-                      fullWidth
-                      disabled={!isPrincipal}
-                    />
-                  </Box>
-                  <Box sx={{ gridColumn: { xs: "span 12", sm: "span 4" } }}>
-                    <TextField
-                      name="postal_code"
-                      label="CEP"
-                      value={unit.postal_code}
-                      onChange={(e) => handleChange(e, "unit", index)}
-                      fullWidth
-                      disabled={!isPrincipal}
-                    />
-                  </Box>
-                  <Box sx={{ gridColumn: { xs: "span 12", sm: "span 8" } }}>
-                    <TextField
-                      name="address"
-                      label="Endereço"
-                      value={unit.address}
-                      onChange={(e) => handleChange(e, "unit", index)}
-                      fullWidth
-                      disabled={!isPrincipal}
-                    />
-                  </Box>
-                  {/* Adicione os outros campos da unidade aqui, sempre com disabled={!isPrincipal} */}
+                    >
+                      Editar Dados da Unidade
+                    </Button>
+                    <Button
+                      variant={
+                        unlinkedUnitIds.includes(unit.id)
+                          ? "contained"
+                          : "outlined"
+                      }
+                      color="error"
+                      startIcon={<Link2Off />}
+                      onClick={() => toggleUnlinkUnit(unit.id)}
+                    >
+                      {unlinkedUnitIds.includes(unit.id)
+                        ? "Manter Vínculo"
+                        : "Romper Vínculo"}
+                    </Button>
+                  </Stack>
                 </Box>
               </Paper>
             ))}
+
+            {/* Unit Edit Modal */}
+            <Dialog
+              open={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>Editar Unidade: {editingUnit?.fantasy_name}</DialogTitle>
+              <DialogContent dividers>
+                {editingUnit && (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gap: 2,
+                      gridTemplateColumns: "repeat(12, 1fr)",
+                      mt: 1,
+                    }}
+                  >
+                    <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
+                      <TextField
+                        name="phone"
+                        label="Telefone da Unidade"
+                        value={editingUnit.phone || ""}
+                        onChange={handleUnitChange}
+                        fullWidth
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
+                      <TextField
+                        name="email"
+                        label="E-mail da Unidade"
+                        value={editingUnit.email || ""}
+                        onChange={handleUnitChange}
+                        fullWidth
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: { xs: "span 12", md: "span 6" } }}>
+                      <TextField
+                        name="instagram_profile"
+                        label="Instagram da Unidade"
+                        value={editingUnit.instagram_profile || ""}
+                        onChange={handleUnitChange}
+                        fullWidth
+                      />
+                    </Box>
+                    {/* Add other unit fields as needed */}
+                  </Box>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
+                <Button onClick={handleSaveUnit} variant="contained">
+                  Salvar Alterações
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+
 
             <Button
               type="submit"
@@ -796,7 +887,7 @@ export default function EditFranchiseePage({
                 "Enviar Alterações para Aprovação"
               )}
             </Button>
-          </form>
+          </form >
         );
       default:
         return null;
