@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Box,
@@ -25,11 +25,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const steps = ["Identificação", "Verificação de Segurança", "Edição dos Dados"];
 
-export default function EditFranchiseePage() {
+interface EditFranchiseePageProps {
+  cpfFromUrl?: string | null;
+}
+
+export default function EditFranchiseePage({
+  cpfFromUrl = null,
+}: EditFranchiseePageProps) {
   const isMobile = useIsMobile();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState(cpfFromUrl || "");
   const [verificationType, setVerificationType] = useState<
     "email" | "phone" | null
   >(null);
@@ -77,6 +83,12 @@ export default function EditFranchiseePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (cpfFromUrl) {
+      handleIdentifierSubmit();
+    }
+  }, [cpfFromUrl]);
 
   const handleRequestOtp = async (type: "email" | "phone") => {
     setLoading(true);
