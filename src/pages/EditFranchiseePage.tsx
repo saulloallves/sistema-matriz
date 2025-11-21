@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Box,
@@ -18,9 +18,12 @@ import {
   Switch,
   FormControlLabel,
   Divider,
+  Avatar,
+  IconButton,
+  Stack,
 } from "@mui/material";
 import { toast, Toaster } from "react-hot-toast";
-import { Link2Off } from "lucide-react";
+import { Link2Off, Upload, Trash2, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const steps = ["Identificação", "Verificação de Segurança", "Edição dos Dados"];
@@ -44,6 +47,11 @@ export default function EditFranchiseePage({
   const [unitsData, setUnitsData] = useState<any[]>([]);
   const [isPrincipal, setIsPrincipal] = useState(false);
   const [unlinkedUnitIds, setUnlinkedUnitIds] = useState<string[]>([]);
+
+  // Profile Image State
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleIdentifierSubmit = async () => {
     if (!identifier) {
@@ -73,6 +81,12 @@ export default function EditFranchiseePage({
       setFranchiseeData(data.franchiseeData);
       setUnitsData(data.unitsData);
       setIsPrincipal(data.franchiseeData.owner_type === "Principal");
+
+      // Initialize avatar preview
+      if (data.franchiseeData.profile_image) {
+        setAvatarPreview(data.franchiseeData.profile_image);
+      }
+
       setActiveStep(1);
       toast.success(
         "Franqueado encontrado! Prossiga com a verificação de segurança."
@@ -100,8 +114,7 @@ export default function EditFranchiseePage({
 
       if (!target) {
         toast.error(
-          `Não foi possível encontrar um ${
-            type === "phone" ? "telefone" : "e-mail"
+          `Não foi possível encontrar um ${type === "phone" ? "telefone" : "e-mail"
           } para verificação.`
         );
         setLoading(false);
@@ -175,6 +188,27 @@ export default function EditFranchiseePage({
     }
   };
 
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+
+      // Basic validation
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error("A imagem deve ter no máximo 5MB.");
+        return;
+      }
+
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setFranchiseeData({ ...franchiseeData, profile_image: null });
+  };
+
   const toggleUnlinkUnit = (unitId: string) => {
     setUnlinkedUnitIds((prev) =>
       prev.includes(unitId)
@@ -187,8 +221,32 @@ export default function EditFranchiseePage({
     e.preventDefault();
     setLoading(true);
     try {
+      let finalProfileImage = franchiseeData.profile_image;
+
+      // Upload image if a new file was selected
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${franchiseeData.id}/${fileName}`; // Using franchisee ID for folder structure
+
+        const { error: uploadError } = await supabase.storage
+          .from('franchisee_profiles')
+          .upload(filePath, avatarFile, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('franchisee_profiles')
+          .getPublicUrl(filePath);
+
+        finalProfileImage = urlData.publicUrl;
+      }
+
       const payload = {
-        franchiseeData,
+        franchiseeData: {
+          ...franchiseeData,
+          profile_image: finalProfileImage
+        },
         unitsData: isPrincipal
           ? unitsData.filter((u) => !unlinkedUnitIds.includes(u.id))
           : undefined,
@@ -205,8 +263,9 @@ export default function EditFranchiseePage({
       if (error) throw error;
 
       toast.success("Dados enviados para aprovação com sucesso!");
-    } catch (err) {
-      toast.error("Erro ao enviar atualização.");
+    } catch (err: any) {
+      console.error("Erro no envio:", err);
+      toast.error(err.message || "Erro ao enviar atualização.");
     } finally {
       setLoading(false);
     }
@@ -247,9 +306,9 @@ export default function EditFranchiseePage({
             {!verificationType ? (
               <Box
                 sx={{
-                  display: "grid",
-                  gap: 2,
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
                 <Box>
@@ -260,16 +319,6 @@ export default function EditFranchiseePage({
                     fullWidth
                   >
                     Verificar por Telefone (SMS)
-                  </Button>
-                </Box>
-                <Box>
-                  <Button
-                    variant="outlined"
-                    onClick={() => handleRequestOtp("email")}
-                    disabled={loading || !franchiseeData?.email}
-                    fullWidth
-                  >
-                    Verificar por E-mail
                   </Button>
                 </Box>
               </Box>
@@ -368,14 +417,45 @@ export default function EditFranchiseePage({
                   fullWidth
                 />
               </Box>
-              <Box sx={{ gridColumn: "span 12" }}>
-                <TextField
-                  name="profile_image"
-                  label="URL da Foto de Perfil"
-                  value={franchiseeData.profile_image || ""}
-                  onChange={(e) => handleChange(e, "franchisee")}
-                  fullWidth
+
+              {/* Profile Image Upload Section */}
+              <Box sx={{ gridColumn: "span 12", display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
+                <Typography variant="subtitle1">Foto de Perfil</Typography>
+                <Avatar
+                  src={avatarPreview || undefined}
+                  sx={{ width: 120, height: 120 }}
+                >
+                  <User size={60} />
+                </Avatar>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  hidden
                 />
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Upload size={16} />}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Alterar Foto
+                  </Button>
+                  {avatarPreview && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<Trash2 size={16} />}
+                      onClick={handleRemoveAvatar}
+                    >
+                      Remover
+                    </Button>
+                  )}
+                </Stack>
+                <Typography variant="caption" color="text.secondary">
+                  JPG, PNG ou GIF. Máx 5MB.
+                </Typography>
               </Box>
             </Box>
 
@@ -502,17 +582,7 @@ export default function EditFranchiseePage({
                   fullWidth
                 />
               </Box>
-              <Box sx={{ gridColumn: "span 12" }}>
-                <TextField
-                  name="other_activities_description"
-                  label="Descrição de Outras Atividades"
-                  value={franchiseeData.other_activities_description || ""}
-                  onChange={(e) => handleChange(e, "franchisee")}
-                  fullWidth
-                  multiline
-                  rows={2}
-                />
-              </Box>
+
               <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
                 <FormControlLabel
                   control={
@@ -525,6 +595,7 @@ export default function EditFranchiseePage({
                   label="Já foi empreendedor?"
                 />
               </Box>
+
               <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
                 <FormControlLabel
                   control={
@@ -537,6 +608,20 @@ export default function EditFranchiseePage({
                   label="Possui outras atividades?"
                 />
               </Box>
+              {franchiseeData.has_other_activities && (
+                <Box sx={{ gridColumn: "span 12" }}>
+                  <TextField
+                    name="other_activities_description"
+                    label="Descrição de Outras Atividades"
+                    value={franchiseeData.other_activities_description || ""}
+                    onChange={(e) => handleChange(e, "franchisee")}
+                    fullWidth
+                    multiline
+                    rows={2}
+                  />
+                </Box>
+              )}
+
               <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
                 <FormControlLabel
                   control={
@@ -549,6 +634,18 @@ export default function EditFranchiseePage({
                   label="Recebe Pró-labore?"
                 />
               </Box>
+              {franchiseeData.receives_prolabore && (
+                <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
+                  <TextField
+                    name="prolabore_amount"
+                    label="Valor do Pró-labore"
+                    value={franchiseeData.prolabore_amount || ""}
+                    onChange={(e) => handleChange(e, "franchisee")}
+                    fullWidth
+                  />
+                </Box>
+              )}
+
               <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
                 <FormControlLabel
                   control={
@@ -561,6 +658,17 @@ export default function EditFranchiseePage({
                   label="Foi referenciado?"
                 />
               </Box>
+              {franchiseeData.was_referred && (
+                <Box sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}>
+                  <TextField
+                    name="referral_name"
+                    label="Quem indicou?"
+                    value={franchiseeData.referral_name || ""}
+                    onChange={(e) => handleChange(e, "franchisee")}
+                    fullWidth
+                  />
+                </Box>
+              )}
             </Box>
 
             {/* === DADOS DAS UNIDADES === */}
