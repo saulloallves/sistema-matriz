@@ -804,7 +804,13 @@ export default function EditFranchiseePage({
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: (theme) =>
+          theme.palette.mode === "dark" ? "#111827" : "rgb(252, 252, 255)",
+      }}
+    >
       <Toaster position="top-center" />
       <AppBar position="static">
         <Toolbar>
@@ -828,6 +834,6 @@ export default function EditFranchiseePage({
         </Stepper>
         {renderStepContent()}
       </Container>
-    </>
+    </Box>
   );
 }
