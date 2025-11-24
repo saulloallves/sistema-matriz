@@ -8,12 +8,13 @@ export default function ThemedEditFranchiseePage() {
   const { theme } = useParams<{ theme?: string }>();
   const [searchParams] = useSearchParams();
   const cpf = searchParams.get("cpf");
+  const updatePhoto = searchParams.get("update-photo") !== "false";
   const selectedTheme = theme === "dark" ? darkTheme : lightTheme;
 
   return (
     <ThemeProvider theme={selectedTheme}>
       <CssBaseline />
-      <EditFranchiseePage cpfFromUrl={cpf} />
+      <EditFranchiseePage cpfFromUrl={cpf} updatePhoto={updatePhoto} />
     </ThemeProvider>
   );
 }

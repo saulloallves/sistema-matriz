@@ -34,10 +34,12 @@ const steps = ["Identificação", "Verificação de Segurança", "Edição dos D
 
 interface EditFranchiseePageProps {
   cpfFromUrl?: string | null;
+  updatePhoto?: boolean;
 }
 
 export default function EditFranchiseePage({
   cpfFromUrl = null,
+  updatePhoto = true,
 }: EditFranchiseePageProps) {
   const isMobile = useIsMobile();
   const [activeStep, setActiveStep] = useState(0);
@@ -486,44 +488,46 @@ export default function EditFranchiseePage({
               </Box>
 
               {/* Profile Image Upload Section */}
-              <Box sx={{ gridColumn: "span 12", display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
-                <Typography variant="subtitle1">Foto de Perfil</Typography>
-                <Avatar
-                  src={avatarPreview || undefined}
-                  sx={{ width: 120, height: 120 }}
-                >
-                  <User size={60} />
-                </Avatar>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleAvatarChange}
-                  accept="image/*"
-                  hidden
-                />
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Upload size={16} />}
-                    onClick={() => fileInputRef.current?.click()}
+              {updatePhoto && (
+                <Box sx={{ gridColumn: "span 12", display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, my: 2 }}>
+                  <Typography variant="subtitle1">Foto de Perfil</Typography>
+                  <Avatar
+                    src={avatarPreview || undefined}
+                    sx={{ width: 120, height: 120 }}
                   >
-                    Alterar Foto
-                  </Button>
-                  {avatarPreview && (
+                    <User size={60} />
+                  </Avatar>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    hidden
+                  />
+                  <Stack direction="row" spacing={2}>
                     <Button
                       variant="outlined"
-                      color="error"
-                      startIcon={<Trash2 size={16} />}
-                      onClick={handleRemoveAvatar}
+                      startIcon={<Upload size={16} />}
+                      onClick={() => fileInputRef.current?.click()}
                     >
-                      Remover
+                      Alterar Foto
                     </Button>
-                  )}
-                </Stack>
-                <Typography variant="caption" color="text.secondary">
-                  JPG, PNG ou GIF. Máx 5MB.
-                </Typography>
-              </Box>
+                    {avatarPreview && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<Trash2 size={16} />}
+                        onClick={handleRemoveAvatar}
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">
+                    JPG, PNG ou GIF. Máx 5MB.
+                  </Typography>
+                </Box>
+              )}
             </Box>
 
             <Divider sx={{ my: 4 }} />
