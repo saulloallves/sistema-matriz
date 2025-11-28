@@ -494,14 +494,6 @@ export default function EditFranchiseePage({
                 >
                   {loading ? <CircularProgress size={24} color="inherit" /> : "VERIFICAR & CONTINUAR"}
                 </Button>
-                
-                <Button 
-                  onClick={() => setVerificationType(null)}
-                  variant="text" 
-                  sx={{ mt: 2, color: 'text.secondary' }}
-                >
-                  Voltar
-                </Button>
               </Box>
             )}
           </Box>
